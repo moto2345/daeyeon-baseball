@@ -611,7 +611,7 @@
                     <input type="text" id="searchInput" placeholder="이름 / 등번호 검색" oninput="render()">
                 </div>
                 <div class="view-switch">
-                    <button class="view-btn active" id="btnListView" onclick="switchView('list')">☰ 리스트형</button>
+                    <button class="view-btn" id="btnListView" onclick="switchView('list')">☰ 리스트형</button>
                     <button class="view-btn" id="btnCardView" onclick="switchView('card')">▦ 이미지형</button>
                 </div>
             </div>
@@ -811,10 +811,8 @@
 </div>
 
 <script>
-    // 기본 실루엣 야구선수 아바타
     const defaultAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23e2e8f0'/%3E%3Cpath d='M32 32 C32 18 42 12 50 12 C58 12 68 18 68 32 C68 40 58 48 50 48 C42 48 32 40 32 32 Z' fill='%2394a3b8'/%3E%3Cpath d='M44 14 C48 10 56 10 65 14 C74 18 84 18 86 21 C86 24 75 25 65 24 Z' fill='%230b2240'/%3E%3Cpath d='M20 92 C20 66 34 56 50 56 C66 56 80 66 80 92 Z' fill='%2364748b'/%3E%3C/svg%3E";
 
-    // 이미지 로드 실패 시 기본 이미지로 교체하는 안전 핸들러 함수
     function handleImgError(el) {
         el.onerror = null;
         el.src = defaultAvatar;
@@ -866,7 +864,8 @@
 
     let players = JSON.parse(localStorage.getItem('daeyeon_players_auth_v2')) || initialPlayers;
     let selectedGrade = 'all';
-    let currentView = 'list';
+    // 로컬스토리지에서 마지막 뷰 모드 복원 (기본값: 'list')
+    let currentView = localStorage.getItem('daeyeon_view_mode') || 'list';
     let currentRole = 'guest';
 
     function saveToStorage() {
@@ -889,7 +888,6 @@
         return `<span class="pos-tag pos-${pos}">${pos}</span>`;
     }
 
-    // 신장/체중 포맷 함수 (비공개 마스킹)
     function formatPhys(p) {
         const h = p.height;
         const w = p.weight;
@@ -912,6 +910,8 @@
 
     function switchView(view) {
         currentView = view;
+        localStorage.setItem('daeyeon_view_mode', view); // 브라우저에 보기 설정 기억
+
         const btnList = document.getElementById('btnListView');
         const btnCard = document.getElementById('btnCardView');
         const listContainer = document.getElementById('listContainer');
@@ -991,7 +991,6 @@
             const hiddenBadge = isHidden ? `<span class="hidden-badge">숨김</span>` : '';
             const playerPath = isStaff(p.grade) ? `staff/${p.no}` : `${p.grade}/${p.no}`;
 
-            // 사진 열 렌더링 (비공개 시 🔒 뱃지 표시, 파일 부재 시 기본 이미지 자동 연결)
             let photoCell = '';
             if (p.hidePhoto && currentRole !== 'super') {
                 photoCell = `
@@ -1354,7 +1353,8 @@
         a.click();
     }
 
-    render();
+    // 초기 실행: 저장된 보기 모드(리스트형 또는 이미지형)로 동기화하며 최초 화면 표시
+    switchView(currentView);
 </script>
 
 </body>
