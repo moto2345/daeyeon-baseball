@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>대연초등학교 야구부 선수명단</title>
+    <style>
+        :root {
+            --kbo-blue: #0b2240;
+            --kbo-light-blue: #0056b3;
+            --kbo-red: #c8102e;
+            --bg-gray: #f4f6f9;
+            --border-color: #d1d5db;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "맑은 고딕", sans-serif; }
+        body { background-color: var(--bg-gray); color: #333; padding-bottom: 40px; }
+        
+        /* 헤더 */
+        header { background-color: var(--kbo-blue); color: white; padding: 25px 20px; text-align: center; border-bottom: 4px solid var(--kbo-red); }
+        header h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+        header p { font-size: 14px; color: #cbd5e1; margin-top: 6px; }
+
+        .container { max-width: 900px; margin: 20px auto; padding: 0 15px; }
+
+        /* 컨트롤 영역 (필터 & 검색) */
+        .controls { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 15px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; align-items: center; }
+        .filter-group { display: flex; flex-wrap: wrap; gap: 6px; }
+        .filter-btn { border: 1px solid var(--border-color); background: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600; color: #555; transition: 0.2s; }
+        .filter-btn.active, .filter-btn:hover { background: var(--kbo-blue); color: white; border-color: var(--kbo-blue); }
+        
+        .search-box input { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px; width: 180px; outline: none; }
+        .search-box input:focus { border-color: var(--kbo-light-blue); }
+
+        /* 테이블 */
+        .table-wrap { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: center; font-size: 14px; }
+        th { background-color: #edf2f7; color: #2d3748; font-weight: 700; padding: 12px 10px; border-bottom: 2px solid var(--border-color); white-space: nowrap; }
+        td { padding: 12px 10px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+        tr:hover { background-color: #f8fafc; }
+
+        .badge-no { font-weight: 800; color: var(--kbo-blue); font-size: 15px; }
+        .player-name { font-weight: 700; font-size: 15px; color: #111; }
+        .grade-tag { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; background: #e2e8f0; color: #475569; }
+        .grade-6 { background: #fee2e2; color: #991b1b; }
+        .grade-5 { background: #fef3c7; color: #92400e; }
+        .grade-4 { background: #e0e7ff; color: #3730a3; }
+        .grade-3 { background: #dcfce7; color: #166534; }
+        .grade-2 { background: #f3e8ff; color: #6b21a8; }
+
+        .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #888; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>대연초등학교 야구부</h1>
+    <p>2026 OFFICIAL ROSTER (총 38명)</p>
+</header>
+
+<div class="container">
+    <div class="controls">
+        <div class="filter-group">
+            <button class="filter-btn active" onclick="filterGrade('all')">전체</button>
+            <button class="filter-btn" onclick="filterGrade('6')">6학년</button>
+            <button class="filter-btn" onclick="filterGrade('5')">5학년</button>
+            <button class="filter-btn" onclick="filterGrade('4')">4학년</button>
+            <button class="filter-btn" onclick="filterGrade('3')">3학년</button>
+            <button class="filter-btn" onclick="filterGrade('2')">2학년</button>
+        </div>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="이름 / 등번호 검색" onkeyup="searchPlayer()">
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <table id="rosterTable">
+            <thead>
+                <tr>
+                    <th>등번호</th>
+                    <th>선수명</th>
+                    <th>학년</th>
+                    <th>포지션</th>
+                    <th>투/타</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 38명 선수 명단 -->
+                <tr data-grade="5"><td class="badge-no">2</td><td class="player-name">오승환</td><td><span class="grade-tag grade-5">5학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="6"><td class="badge-no">3</td><td class="player-name">마성민</td><td><span class="grade-tag grade-6">6학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="4"><td class="badge-no">4</td><td class="player-name">김주원</td><td><span class="grade-tag grade-4">4학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="5"><td class="badge-no">5</td><td class="player-name">박도현</td><td><span class="grade-tag grade-5">5학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="6"><td class="badge-no">6</td><td class="player-name">이지윤</td><td><span class="grade-tag grade-6">6학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="6"><td class="badge-no">7</td><td class="player-name">여승우</td><td><span class="grade-tag grade-6">6학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="5"><td class="badge-no">8</td><td class="player-name">김민준</td><td><span class="grade-tag grade-5">5학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="6"><td class="badge-no">9</td><td class="player-name">강건승</td><td><span class="grade-tag grade-6">6학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="5"><td class="badge-no">10</td><td class="player-name">김재백</td><td><span class="grade-tag grade-5">5학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="6"><td class="badge-no">11</td><td class="player-name">김범서</td><td><span class="grade-tag grade-6">6학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="6"><td class="badge-no">12</td><td class="player-name">조정린</td><td><span class="grade-tag grade-6">6학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="5"><td class="badge-no">13</td><td class="player-name">박세훈</td><td><span class="grade-tag grade-5">5학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="5"><td class="badge-no">14</td><td class="player-name">강태원</td><td><span class="grade-tag grade-5">5학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="3"><td class="badge-no">15</td><td class="player-name">김민준</td><td><span class="grade-tag grade-3">3학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="3"><td class="badge-no">16</td><td class="player-name">정서현</td><td><span class="grade-tag grade-3">3학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="6"><td class="badge-no">17</td><td class="player-name">박태이</td><td><span class="grade-tag grade-6">6학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="5"><td class="badge-no">18</td><td class="player-name">염성우</td><td><span class="grade-tag grade-5">5학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="6"><td class="badge-no">19</td><td class="player-name">오지환</td><td><span class="grade-tag grade-6">6학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="4"><td class="badge-no">20</td><td class="player-name">박시후</td><td><span class="grade-tag grade-4">4학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="5"><td class="badge-no">21</td><td class="player-name">남시윤</td><td><span class="grade-tag grade-5">5학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="6"><td class="badge-no">22</td><td class="player-name">이시완</td><td><span class="grade-tag grade-6">6학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="5"><td class="badge-no">23</td><td class="player-name">손지완</td><td><span class="grade-tag grade-5">5학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="4"><td class="badge-no">24</td><td class="player-name">이하성</td><td><span class="grade-tag grade-4">4학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="2"><td class="badge-no">25</td><td class="player-name">최진혁</td><td><span class="grade-tag grade-2">2학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="6"><td class="badge-no">27</td><td class="player-name">김서준</td><td><span class="grade-tag grade-6">6학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="4"><td class="badge-no">28</td><td class="player-name">고에이든</td><td><span class="grade-tag grade-4">4학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="5"><td class="badge-no">29</td><td class="player-name">고준서</td><td><span class="grade-tag grade-5">5학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="5"><td class="badge-no">30</td><td class="player-name">김승원</td><td><span class="grade-tag grade-5">5학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="6"><td class="badge-no">31</td><td class="player-name">김도현</td><td><span class="grade-tag grade-6">6학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="3"><td class="badge-no">32</td><td class="player-name">하승후</td><td><span class="grade-tag grade-3">3학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="3"><td class="badge-no">33</td><td class="player-name">이주원</td><td><span class="grade-tag grade-3">3학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="6"><td class="badge-no">35</td><td class="player-name">김수현</td><td><span class="grade-tag grade-6">6학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="4"><td class="badge-no">36</td><td class="player-name">이하준</td><td><span class="grade-tag grade-4">4학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="5"><td class="badge-no">37</td><td class="player-name">강도헌</td><td><span class="grade-tag grade-5">5학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="6"><td class="badge-no">38</td><td class="player-name">하승민</td><td><span class="grade-tag grade-6">6학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="4"><td class="badge-no">39</td><td class="player-name">이든</td><td><span class="grade-tag grade-4">4학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="3"><td class="badge-no">44</td><td class="player-name">김민찬</td><td><span class="grade-tag grade-3">3학년</span></td><td>-</td><td>-</td></tr>
+                <tr data-grade="5"><td class="badge-no">47</td><td class="player-name">류태영</td><td><span class="grade-tag grade-5">5학년</span></td><td>-</td><td>-</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="footer">대연초등학교 야구부 &copy; All Rights Reserved.</div>
+
+<script>
+    let currentGrade = 'all';
+
+    function filterGrade(grade) {
+        currentGrade = grade;
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        applyFilters();
+    }
+
+    function searchPlayer() {
+        applyFilters();
+    }
+
+    function applyFilters() {
+        const query = document.getElementById('searchInput').value.trim().toLowerCase();
+        const rows = document.querySelectorAll('#rosterTable tbody tr');
+
+        rows.forEach(row => {
+            const grade = row.getAttribute('data-grade');
+            const no = row.children[0].textContent.toLowerCase();
+            const name = row.children[1].textContent.toLowerCase();
+
+            const matchesGrade = (currentGrade === 'all' || grade === currentGrade);
+            const matchesSearch = (no.includes(query) || name.includes(query));
+
+            if (matchesGrade && matchesSearch) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
