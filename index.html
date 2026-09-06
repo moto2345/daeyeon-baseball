@@ -187,7 +187,7 @@
             color: #ffffff;
         }
 
-        /* 최고관리자 액션 바 */
+        /* 관리자 안내 및 액션 패널 */
         .admin-bar {
             display: none;
             background: #eff6ff;
@@ -272,7 +272,7 @@
             font-size: 15px;
         }
 
-        /* 학년 및 코칭스태프 뱃지 */
+        /* 학년별 뱃지 스타일 (1학년 스카이블루 추가) */
         .grade-tag {
             display: inline-block;
             padding: 3px 10px;
@@ -286,6 +286,7 @@
         .grade-4 { background: #e0e7ff; color: #3730a3; }
         .grade-3 { background: #dcfce7; color: #166534; }
         .grade-2 { background: #f3e8ff; color: #6b21a8; }
+        .grade-1 { background: #e0f2fe; color: #0369a1; } /* 1학년 신입 선수 */
 
         /* 포지션 뱃지 */
         .pos-tag {
@@ -296,8 +297,8 @@
             font-weight: 700;
             color: #ffffff;
         }
-        .pos-staff-leader { background: #b45309; }  /* 감독 */
-        .pos-staff-coach { background: #475569; }   /* 코치 */
+        .pos-staff-leader { background: #b45309; }
+        .pos-staff-coach { background: #475569; }
         .pos-투수 { background: #c2410c; }
         .pos-포수 { background: #0f766e; }
         .pos-내야수 { background: #1d4ed8; }
@@ -476,7 +477,7 @@
 <div class="container">
     <div class="control-card">
         <div class="control-top">
-            <!-- 구분 필터 (코칭스태프 탭 추가) -->
+            <!-- 구분 필터 (1학년 버튼 추가) -->
             <div class="grade-filters" id="gradeFilters">
                 <button class="filter-btn active" onclick="setGrade('all', this)">전체</button>
                 <button class="filter-btn staff-tab" onclick="setGrade('staff', this)">코칭스태프</button>
@@ -485,6 +486,7 @@
                 <button class="filter-btn" onclick="setGrade('4', this)">4학년</button>
                 <button class="filter-btn" onclick="setGrade('3', this)">3학년</button>
                 <button class="filter-btn" onclick="setGrade('2', this)">2학년</button>
+                <button class="filter-btn" onclick="setGrade('1', this)">1학년</button>
             </div>
 
             <div class="control-right">
@@ -579,6 +581,7 @@
                         <option value="4">4학년</option>
                         <option value="3">3학년</option>
                         <option value="2">2학년</option>
+                        <option value="1">1학년</option>
                     </optgroup>
                 </select>
             </div>
@@ -616,17 +619,17 @@
 
         <div class="form-group">
             <label>생년월일</label>
-            <input type="text" id="inpBirth" placeholder="예: 1985.03.15 또는 2014.05.12">
+            <input type="text" id="inpBirth" placeholder="예: 1985.03.15 또는 2018.05.12">
         </div>
 
         <div class="form-row">
             <div class="form-group" style="flex: 1;">
                 <label>신장 (키 cm)</label>
-                <input type="number" id="inpHeight" placeholder="예: 178">
+                <input type="number" id="inpHeight" placeholder="예: 130">
             </div>
             <div class="form-group" style="flex: 1;">
                 <label>체중 (몸무게 kg)</label>
-                <input type="number" id="inpWeight" placeholder="예: 80">
+                <input type="number" id="inpWeight" placeholder="예: 30">
             </div>
         </div>
 
@@ -648,11 +651,9 @@
 
     // 코칭스태프 2인 + 38명 선수단 초기 데이터
     const initialPlayers = [
-        // 코칭스태프 (관리자 모드에서 수정 가능)
         { id: 101, no: 70, name: "감독님", grade: "감독", pos: "총괄/지휘", bt: "-", birth: "", height: "", weight: "", photo: "" },
         { id: 102, no: 71, name: "코치님", grade: "코치", pos: "수석코치", bt: "-", birth: "", height: "", weight: "", photo: "" },
 
-        // 선수단 (38명)
         { id: 1, no: 2, name: "오승환", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
         { id: 2, no: 3, name: "마성민", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
         { id: 3, no: 4, name: "김주원", grade: "4", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
@@ -693,13 +694,13 @@
         { id: 38, no: 47, name: "류태영", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" }
     ];
 
-    let players = JSON.parse(localStorage.getItem('daeyeon_players_v3')) || initialPlayers;
+    let players = JSON.parse(localStorage.getItem('daeyeon_players_v4')) || initialPlayers;
     let selectedGrade = 'all';
     let currentView = 'list';
     let isAdmin = false;
 
     function saveToStorage() {
-        localStorage.setItem('daeyeon_players_v3', JSON.stringify(players));
+        localStorage.setItem('daeyeon_players_v4', JSON.stringify(players));
     }
 
     function isStaff(grade) {
@@ -764,7 +765,6 @@
 
         thAdmin.style.display = isAdmin ? 'table-cell' : 'none';
 
-        // 필터링
         const filtered = players.filter(p => {
             let matchGrade = false;
             if (selectedGrade === 'all') {
@@ -781,14 +781,12 @@
                                 (p.grade && p.grade.includes(query));
             return matchGrade && matchSearch;
         }).sort((a, b) => {
-            // 정렬: 코칭스태프 우선(감독 > 코치), 이후 등번호 오름차순
             const rankA = a.grade === '감독' ? 1 : (a.grade === '코치' ? 2 : 3);
             const rankB = b.grade === '감독' ? 1 : (b.grade === '코치' ? 2 : 3);
             if (rankA !== rankB) return rankA - rankB;
             return a.no - b.no;
         });
 
-        // 상단 인원 요약 갱신
         const staffCount = players.filter(p => isStaff(p.grade)).length;
         const studentCount = players.length - staffCount;
         document.getElementById('rosterCountText').textContent = `2026 OFFICIAL ROSTER (코칭스태프 ${staffCount}명 · 등록선수 ${studentCount}명)`;
@@ -910,7 +908,7 @@
 
     function handleLogin() {
         const pw = document.getElementById('adminPw').value;
-        if (pw === '1234') { // 기본 관리자 비밀번호
+        if (pw === '1234') {
             isAdmin = true;
             closeModal('loginModal');
             document.getElementById('adminLoginBtn').textContent = '🔓 관리자 로그아웃';
