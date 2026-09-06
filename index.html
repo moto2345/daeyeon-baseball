@@ -29,7 +29,6 @@
             padding-bottom: 70px;
         }
 
-        /* 1. KBO 헤더 */
         header {
             background-color: var(--kbo-blue);
             color: white;
@@ -59,7 +58,6 @@
             padding: 0 16px;
         }
 
-        /* 컨트롤 패널 */
         .control-card {
             background: #ffffff;
             border: 1px solid var(--card-border);
@@ -152,7 +150,7 @@
             color: #ffffff;
         }
 
-        /* 3. [리스트형] KBO 테이블 */
+        /* 리스트형 테이블 */
         .table-wrap {
             background: #ffffff;
             border-radius: 8px;
@@ -190,9 +188,7 @@
             transition: background 0.15s;
         }
 
-        tr.clickable-row:hover td {
-            background-color: #f1f5f9;
-        }
+        tr.clickable-row:hover td { background-color: #f1f5f9; }
 
         .td-no {
             font-weight: 900;
@@ -226,7 +222,6 @@
             font-size: 15px;
         }
 
-        /* 학년 뱃지 */
         .grade-tag {
             display: inline-block;
             padding: 3px 10px;
@@ -242,7 +237,6 @@
         .grade-2 { background: #f3e8ff; color: #6b21a8; }
         .grade-1 { background: #e0f2fe; color: #0369a1; }
 
-        /* 포지션 뱃지 */
         .pos-tag {
             display: inline-block;
             padding: 2px 7px;
@@ -258,7 +252,7 @@
         .pos-내야수 { background: #1d4ed8; }
         .pos-외야수 { background: #15803d; }
 
-        /* 4. [이미지형] 카드 그리드 */
+        /* 이미지형 카드 그리드 */
         .roster-grid {
             display: none;
             grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
@@ -391,7 +385,7 @@
 <body>
 
 <header>
-    <div class="header-title">대연초등학교 야구부 명단</div>
+    <div class="header-title">대연초등학교 야구부</div>
     <div class="header-subtitle" id="rosterCountText">선수단 데이터를 불러오는 중...</div>
 </header>
 
@@ -504,8 +498,8 @@
         render();
     }
 
-    function goToPlayer(no) {
-        window.location.href = `player.html?no=${no}`;
+    function goToPlayer(path) {
+        window.location.href = `player.html?path=${encodeURIComponent(path)}`;
     }
 
     function render() {
@@ -529,17 +523,17 @@
         if (filtered.length === 0) {
             tableBody.innerHTML = '';
             cardContainer.innerHTML = '';
-            notice.textContent = '조건에 맞는 선수가 없습니다.';
+            notice.textContent = '조건에 맞는 명단이 없습니다.';
             notice.style.display = 'block';
             return;
         }
         notice.style.display = 'none';
 
-        // 1. [리스트형] 렌더링 (행 클릭 시 player.html 이동)
+        // 1. [리스트형]
         tableBody.innerHTML = filtered.map(p => {
             const imgSrc = p.photo || defaultAvatar;
             return `
-                <tr class="clickable-row" onclick="goToPlayer(${p.no})" title="클릭하여 ${p.name} 상세 프로필 보기">
+                <tr class="clickable-row" onclick="goToPlayer('${p._path}')" title="클릭하여 ${p.name} 상세 프로필 보기">
                     <td class="td-no">${p.no}</td>
                     <td>
                         <div class="table-thumb-wrap">
@@ -556,14 +550,14 @@
             `;
         }).join('');
 
-        // 2. [이미지형] 렌더링 (카드 클릭 시 player.html 이동)
+        // 2. [이미지형]
         cardContainer.innerHTML = filtered.map(p => {
             const imgSrc = p.photo || defaultAvatar;
             const posBadge = (p.pos && p.pos !== '-') ? getPosBadge(p.pos, p.grade) : '';
             const extraMeta = isStaff(p.grade) ? (p.bt && p.bt !== '-' ? p.bt : '지도자') : (p.bt || '우투우타');
 
             return `
-                <div class="player-card" onclick="goToPlayer(${p.no})" title="클릭하여 ${p.name} 상세 프로필 보기">
+                <div class="player-card" onclick="goToPlayer('${p._path}')" title="클릭하여 ${p.name} 상세 프로필 보기">
                     <div class="card-photo-box">
                         <span class="card-no-badge">No.${p.no}</span>
                         <div class="card-pos">${posBadge}</div>
@@ -585,24 +579,27 @@
         }).join('');
     }
 
-    // data/roster.json 및 data/players/{no}.json 비동기 로드
+    // data/roster.json 읽고 data/players/{학년}/{등번호}.json 로드
     async function initData() {
         try {
             const rosterRes = await fetch('data/roster.json');
             if (!rosterRes.ok) throw new Error('roster.json 로드 실패');
             const rosterList = await rosterRes.json();
 
-            // 병렬 fetch
-            const fetchPromises = rosterList.map(no =>
-                fetch(`data/players/${no}.json`)
+            const fetchPromises = rosterList.map(itemPath =>
+                fetch(`data/players/${itemPath}.json`)
                     .then(res => res.ok ? res.json() : null)
+                    .then(data => {
+                        if (data) data._path = itemPath; // 상세 페이지 경로 보존
+                        return data;
+                    })
                     .catch(() => null)
             );
 
             const loaded = await Promise.all(fetchPromises);
             players = loaded.filter(p => p !== null);
 
-            // 코칭스태프 우선 정렬, 이후 등번호순
+            // 코칭스태프 우선, 이후 등번호순 정렬
             players.sort((a, b) => {
                 const rankA = a.grade === '감독' ? 1 : (a.grade === '코치' ? 2 : 3);
                 const rankB = b.grade === '감독' ? 1 : (b.grade === '코치' ? 2 : 3);
@@ -617,7 +614,7 @@
             render();
         } catch (e) {
             document.getElementById('statusNotice').innerHTML = 
-                `선수 데이터 파일을 읽을 수 없습니다.<br>GitHub 저장소에 <code>data/roster.json</code> 및 <code>data/players/*.json</code> 파일이 존재하는지 확인해주세요.`;
+                `데이터를 불러올 수 없습니다.<br><code>data/roster.json</code> 및 <code>data/players/학년/등번호.json</code> 구조를 확인해주세요.`;
         }
     }
 
