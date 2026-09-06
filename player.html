@@ -266,7 +266,7 @@
 
     async function loadPlayerProfile() {
         const params = new URLSearchParams(window.location.search);
-        const playerPath = params.get('path'); // 예: "5/2" 또는 "staff/70"
+        const playerPath = params.get('path'); // 예: "5/2"
 
         if (!playerPath) {
             document.getElementById('loading').innerHTML = '선수 정보 경로가 지정되지 않았습니다.<br><br><a href="index.html" class="back-btn" style="background:#0b2240;">목록으로 이동</a>';
@@ -289,8 +289,9 @@
             document.getElementById('pGradeBadge').textContent = isStaff ? data.grade : `${data.grade}학년`;
             document.getElementById('pPosBadge').textContent = data.pos || '선수';
 
+            // data/photos/{등번호}.jpg 자동 조회 (에러 시 기본 아바타 교체)
             const photoElem = document.getElementById('pPhoto');
-            photoElem.src = data.photo || defaultAvatar;
+            photoElem.src = `data/photos/${data.no}.jpg`;
             photoElem.onerror = () => { photoElem.src = defaultAvatar; };
 
             document.getElementById('pPos').textContent = data.pos || '-';
