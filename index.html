@@ -251,11 +251,12 @@
             opacity: 0.65;
         }
 
+        /* [개선] 리스트형 등번호 폰트 */
         .td-no {
-            font-weight: 900;
+            font-weight: 800;
             color: var(--kbo-blue);
             font-size: 16px;
-            font-family: "Impact", sans-serif;
+            letter-spacing: -0.2px;
         }
 
         .table-thumb-wrap {
@@ -391,17 +392,18 @@
             display: block;
         }
 
+        /* [개선] 사진 좌상단 등번호 뱃지 가독성 수정 */
         .card-no-badge {
             position: absolute;
             top: 8px;
             left: 8px;
             background: rgba(11, 34, 64, 0.92);
             color: #ffffff;
-            font-size: 13px;
-            font-weight: 900;
+            font-size: 12px;
+            font-weight: 800;
             padding: 3px 8px;
             border-radius: 6px;
-            font-family: "Impact", sans-serif;
+            letter-spacing: 0.4px;
             border: 1px solid rgba(255, 255, 255, 0.4);
             z-index: 2;
         }
@@ -435,11 +437,12 @@
             gap: 4px;
         }
 
+        /* [개선] 이름 앞 빨간색 등번호 가독성 수정 */
         .card-name-no {
-            font-family: "Impact", sans-serif;
             color: var(--kbo-red);
             font-size: 15px;
-            font-weight: 900;
+            font-weight: 800;
+            letter-spacing: -0.2px;
         }
 
         .card-meta {
@@ -852,7 +855,6 @@
     // 구글 스프레드시트 실시간 데이터 불러오기
     async function loadGoogleSheetData() {
         try {
-            // 브라우저 캐시 방지 파라미터 적용
             const cacheUrl = GOOGLE_SHEET_CSV_URL + (GOOGLE_SHEET_CSV_URL.includes('?') ? '&' : '?') + 'nocache=' + new Date().getTime();
             const response = await fetch(cacheUrl);
             const csvText = await response.text();
