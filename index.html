@@ -226,7 +226,7 @@
             border-collapse: collapse;
             text-align: center;
             font-size: 14px;
-            min-width: 780px;
+            min-width: 820px;
         }
 
         th {
@@ -325,6 +325,49 @@
             border-radius: 4px;
             margin-left: 4px;
         }
+
+        /* ====================================================
+           [개선] 테이블 관리 버튼 한 줄 정렬 Flex 컨테이너
+           ==================================================== */
+        .admin-btn-group {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+
+        .admin-btn-group button {
+            margin: 0 !important;
+            white-space: nowrap;
+            padding: 4px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .btn-table-edit {
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #334155;
+        }
+        .btn-table-edit:hover { background: #f1f5f9; }
+
+        .btn-table-toggle {
+            border: 1px solid #94a3b8;
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+        .btn-table-toggle:hover { background: #e2e8f0; }
+
+        .btn-table-del {
+            border: 1px solid #fca5a5;
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .btn-table-del:hover { background: #fecaca; }
 
         /* 이미지형 카드 그리드 */
         .roster-grid {
@@ -438,11 +481,6 @@
             border: 1px solid #f1f5f9;
         }
 
-        /* 관리자 버튼 바 */
-        .btn-table-edit { padding: 4px 8px; border: 1px solid #cbd5e1; background: #ffffff; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; }
-        .btn-table-del { padding: 4px 8px; border: 1px solid #fca5a5; background: #fee2e2; color: #b91c1c; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; margin-left: 4px; }
-        .btn-table-toggle { padding: 4px 8px; border: 1px solid #94a3b8; background: #f1f5f9; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; margin-left: 4px; }
-
         .card-admin-bar {
             display: none;
             padding: 8px 10px;
@@ -450,7 +488,17 @@
             gap: 4px;
             background: #fafafa;
         }
-        .card-admin-bar button { flex: 1; padding: 5px 0; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; border: 1px solid #cbd5e1; background: #ffffff; }
+        .card-admin-bar button {
+            flex: 1;
+            padding: 5px 0;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            white-space: nowrap;
+        }
 
         /* 모달 팝업 */
         .modal {
@@ -546,7 +594,7 @@
         </div>
     </div>
 
-    <!-- 1. 리스트형 -->
+    <!-- 1. 리스트형 (관리 열 너비 180px 지정 및 flex 컨테이너 적용) -->
     <div class="table-wrap" id="listContainer">
         <table>
             <thead>
@@ -559,7 +607,7 @@
                     <th>투/타</th>
                     <th>생년월일</th>
                     <th>신장 / 체중</th>
-                    <th id="thAdmin" style="display: none; width: 140px;">관리</th>
+                    <th id="thAdmin" style="display: none; width: 180px; min-width: 180px;">관리</th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
@@ -598,7 +646,6 @@
         <div class="modal-header" id="playerModalTitle">명단 정보 수정</div>
         <input type="hidden" id="editPlayerId">
         
-        <!-- [최고관리자 전용] 명단 표시/숨김 스위치 -->
         <div class="form-group" id="groupVisibility" style="display: none; background: #fef2f2; padding: 10px; border-radius: 8px; border: 1px solid #fecaca;">
             <label style="color: #991b1b; font-weight: 800;">🔒 명단 표시 상태 (최고관리자 전용)</label>
             <select id="inpVisible" style="font-weight: 700;">
@@ -694,7 +741,6 @@
 <script>
     const defaultAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23e2e8f0'/%3E%3Cpath d='M32 32 C32 18 42 12 50 12 C58 12 68 18 68 32 C68 40 58 48 50 48 C42 48 32 40 32 32 Z' fill='%2394a3b8'/%3E%3Cpath d='M44 14 C48 10 56 10 65 14 C74 18 84 18 86 21 C86 24 75 25 65 24 Z' fill='%230b2240'/%3E%3Cpath d='M20 92 C20 66 34 56 50 56 C66 56 80 66 80 92 Z' fill='%2364748b'/%3E%3C/svg%3E";
 
-    // 코칭스태프 2인 + 선수단 38명 기본 초기 데이터 (visible: true 기본값)
     const initialPlayers = [
         { id: 101, no: 70, name: "감독님", grade: "감독", pos: "총괄/지휘", bt: "우투우타", birth: "1982.05.18", height: 178, weight: 82, visible: true },
         { id: 102, no: 71, name: "코치님", grade: "코치", pos: "수석코치", bt: "우투좌타", birth: "1989.11.04", height: 183, weight: 85, visible: true },
@@ -742,7 +788,7 @@
     let players = JSON.parse(localStorage.getItem('daeyeon_players_auth')) || initialPlayers;
     let selectedGrade = 'all';
     let currentView = 'list';
-    let currentRole = 'guest'; // 'guest', 'general', 'sub', 'super'
+    let currentRole = 'guest';
 
     function saveToStorage() {
         localStorage.setItem('daeyeon_players_auth', JSON.stringify(players));
@@ -810,10 +856,8 @@
         const notice = document.getElementById('statusNotice');
         const thAdmin = document.getElementById('thAdmin');
 
-        // 관리 열 표시 여부
         thAdmin.style.display = (currentRole !== 'guest') ? 'table-cell' : 'none';
 
-        // 필터링: 최고관리자가 아니면 visible !== false 인 사람만 표시
         const filtered = players.filter(p => {
             const isVisible = (p.visible !== false);
             if (currentRole !== 'super' && !isVisible) return false;
@@ -847,14 +891,13 @@
         }
         notice.style.display = 'none';
 
-        // 1. 리스트형 렌더링
+        // 1. [리스트형] 렌더링
         tableBody.innerHTML = filtered.map(p => {
             const photoUrl = `data/photos/${p.no}.jpg`;
             const isHidden = (p.visible === false);
             const hiddenBadge = isHidden ? `<span class="hidden-badge">숨김</span>` : '';
             const playerPath = isStaff(p.grade) ? `staff/${p.no}` : `${p.grade}/${p.no}`;
 
-            // 관리자 조작 버튼 (역할별 분기)
             let adminActions = '';
             if (currentRole !== 'guest') {
                 const editBtn = `<button class="btn-table-edit" onclick="event.stopPropagation(); editPlayer(${p.id})">수정</button>`;
@@ -866,7 +909,7 @@
                         <button class="btn-table-del" onclick="event.stopPropagation(); deletePlayer(${p.id})">삭제</button>
                     `;
                 }
-                adminActions = `<td>${editBtn}${extraBtn}</td>`;
+                adminActions = `<td><div class="admin-btn-group">${editBtn}${extraBtn}</div></td>`;
             }
 
             return `
@@ -874,7 +917,7 @@
                     <td class="td-no">${p.no}</td>
                     <td>
                         <div class="table-thumb-wrap">
-                            <img class="table-thumb" src="${photoUrl}" alt="${p.name}" onerror="this.onerror=null; this.src='${defaultAvatar}';">
+                            <img class="table-thumb" src="${photoUrl}" alt="" onerror="this.onerror=null; this.src='${defaultAvatar}';">
                         </div>
                     </td>
                     <td class="td-name">${p.name}${hiddenBadge}</td>
@@ -888,7 +931,7 @@
             `;
         }).join('');
 
-        // 2. 이미지형 렌더링
+        // 2. [이미지형] 렌더링
         cardContainer.innerHTML = filtered.map(p => {
             const photoUrl = `data/photos/${p.no}.jpg`;
             const isHidden = (p.visible === false);
@@ -913,7 +956,7 @@
                     <div class="card-photo-box">
                         <span class="card-no-badge">No.${p.no}</span>
                         <div class="card-pos">${posBadge}</div>
-                        <img class="card-img" src="${photoUrl}" alt="${p.name}" onerror="this.onerror=null; this.src='${defaultAvatar}';">
+                        <img class="card-img" src="${photoUrl}" alt="" onerror="this.onerror=null; this.src='${defaultAvatar}';">
                     </div>
                     <div class="card-info">
                         <div class="card-name-row">
@@ -932,7 +975,6 @@
         }).join('');
     }
 
-    // 관리자 로그인/로그아웃 처리
     function openAdminModal() {
         if (currentRole !== 'guest') {
             if (confirm('관리자 모드를 로그아웃 하시겠습니까?')) {
@@ -1007,7 +1049,6 @@
         }
     }
 
-    // 선수 정보 수정 모달 열기 및 권한별 필드 잠금/해제
     function editPlayer(id) {
         const p = players.find(x => x.id === id);
         if (!p) return;
@@ -1024,10 +1065,8 @@
         document.getElementById('inpWeight').value = p.weight || '';
         document.getElementById('inpVisible').value = (p.visible !== false) ? 'true' : 'false';
 
-        // 1. [최고관리자]만 노출 여부(ON/OFF) 제어 가능
         document.getElementById('groupVisibility').style.display = (currentRole === 'super') ? 'flex' : 'none';
 
-        // 2. [일반관리자]는 등번호, 성명, 학년 수정 금지 (잠금 처리)
         if (currentRole === 'general') {
             document.getElementById('inpNo').disabled = true;
             document.getElementById('inpName').disabled = true;
@@ -1038,7 +1077,6 @@
             document.getElementById('inpGrade').disabled = false;
         }
 
-        // 공통 수정 가능 필드는 항상 활성화
         document.getElementById('inpPos').disabled = false;
         document.getElementById('inpBt').disabled = false;
         document.getElementById('inpBirth').disabled = false;
@@ -1091,13 +1129,10 @@
             const idx = players.findIndex(x => x.id == idVal);
             if (idx !== -1) {
                 if (currentRole === 'general') {
-                    // 일반관리자: 포지션, 투타, 생일, 키, 몸무게만 반영
                     players[idx] = { ...players[idx], pos, bt, birth, height, weight };
                 } else if (currentRole === 'sub') {
-                    // 부관리자: 선수 모든 정보 반영 (노출 여부 변경은 유지)
                     players[idx] = { ...players[idx], no, name, grade, pos, bt, birth, height, weight };
                 } else if (currentRole === 'super') {
-                    // 최고관리자: 노출 여부 포함 전체 반영
                     players[idx] = { ...players[idx], no, name, grade, pos, bt, birth, height, weight, visible };
                 }
             }
@@ -1111,7 +1146,6 @@
         render();
     }
 
-    // [최고관리자] 명단에서 빠른 표시/숨김 토글
     function quickToggleVisibility(id) {
         if (currentRole !== 'super') return;
         const idx = players.findIndex(p => p.id === id);
@@ -1123,7 +1157,6 @@
         }
     }
 
-    // [최고관리자] 삭제
     function deletePlayer(id) {
         if (currentRole !== 'super') {
             alert('삭제 권한은 최고관리자에게만 있습니다.');
@@ -1140,7 +1173,6 @@
         document.getElementById(id).style.display = 'none';
     }
 
-    // 수정본 HTML 영구 저장 내보내기
     function exportUpdatedHTML() {
         if (currentRole !== 'super') {
             alert('최고관리자만 전체 소스코드를 내보낼 수 있습니다.');
@@ -1158,7 +1190,6 @@
         a.click();
     }
 
-    // 초기 화면 구성
     render();
 </script>
 
