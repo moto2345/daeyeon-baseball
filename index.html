@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- 구글 스프레드시트 실시간 연동 주소 -->
+    <!-- 구글 스프레드시트 연동 설정 (CSV 주소 & 편집창 주소) -->
     <script>
         const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw2YtYByfiPWXbRfqkzmZ6yzaZVfJHO0f9zAmCiLnwlMvVXCt9lv4AmQAz4_vSjzPy0APtl0hwYNmW/pub?output=csv";
+        const GOOGLE_SHEET_EDIT_URL = "https://docs.google.com/spreadsheets/d/1ljpHkiJL_H1NN5rwTaQOL5QYeev32QvaBTKzxSPgNVA/edit?gid=1653839889#gid=1653839889";
     </script>
 
     <meta charset="UTF-8">
@@ -251,7 +252,6 @@
             opacity: 0.65;
         }
 
-        /* [개선] 리스트형 등번호 폰트 */
         .td-no {
             font-weight: 800;
             color: var(--kbo-blue);
@@ -392,7 +392,6 @@
             display: block;
         }
 
-        /* [개선] 사진 좌상단 등번호 뱃지 가독성 수정 */
         .card-no-badge {
             position: absolute;
             top: 8px;
@@ -437,7 +436,6 @@
             gap: 4px;
         }
 
-        /* [개선] 이름 앞 빨간색 등번호 가독성 수정 */
         .card-name-no {
             color: var(--kbo-red);
             font-size: 15px;
@@ -546,7 +544,7 @@
     <!-- 관리자 안내 바 -->
     <div id="adminBar" class="admin-bar">
         <span id="adminRoleText" style="font-size: 13px; font-weight: 700;"></span>
-        <button class="btn-sheet-link" onclick="window.open('https://sheets.google.com', '_blank')">📊 구글 시트 편집창 열기</button>
+        <button class="btn-sheet-link" onclick="window.open(GOOGLE_SHEET_EDIT_URL, '_blank')">📊 구글 시트 편집창 열기</button>
     </div>
 
     <!-- 1. 리스트형 -->
