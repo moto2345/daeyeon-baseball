@@ -29,7 +29,7 @@
             padding-bottom: 70px;
         }
 
-        /* 1. 상단 KBO 스타일 헤더 */
+        /* 1. KBO 헤더 */
         header {
             background-color: var(--kbo-blue);
             color: white;
@@ -79,14 +79,14 @@
             border-color: #fca5a5;
         }
 
-        /* 메인 컨테이너 */
+        /* 메인 레이아웃 */
         .container {
-            max-width: 980px;
+            max-width: 1040px;
             margin: 20px auto 0;
             padding: 0 16px;
         }
 
-        /* 2. 컨트롤 패널 (필터, 검색, 뷰 선택) */
+        /* 2. 컨트롤 패널 */
         .control-card {
             background: #ffffff;
             border: 1px solid var(--card-border);
@@ -107,7 +107,6 @@
             gap: 10px;
         }
 
-        /* 학년별 필터 버튼 */
         .grade-filters {
             display: flex;
             flex-wrap: wrap;
@@ -137,7 +136,11 @@
             font-weight: 700;
         }
 
-        /* 우측 컨트롤 (검색창 & 보기 전환 버튼) */
+        .filter-btn.staff-tab.active {
+            background: #1e293b;
+            border-color: #1e293b;
+        }
+
         .control-right {
             display: flex;
             align-items: center;
@@ -184,7 +187,7 @@
             color: #ffffff;
         }
 
-        /* 관리자 안내 및 액션 패널 */
+        /* 최고관리자 액션 바 */
         .admin-bar {
             display: none;
             background: #eff6ff;
@@ -220,7 +223,7 @@
             cursor: pointer;
         }
 
-        /* 3. [방식 A] 리스트형 (테이블 뷰) */
+        /* 3. [리스트형] KBO 테이블 */
         .table-wrap {
             background: #ffffff;
             border-radius: 8px;
@@ -234,6 +237,7 @@
             border-collapse: collapse;
             text-align: center;
             font-size: 14px;
+            min-width: 700px;
         }
 
         th {
@@ -247,7 +251,7 @@
         }
 
         td {
-            padding: 13px 10px;
+            padding: 12px 10px;
             border-bottom: 1px solid #edf2f7;
             vertical-align: middle;
         }
@@ -268,7 +272,7 @@
             font-size: 15px;
         }
 
-        /* 학년 뱃지 */
+        /* 학년 및 코칭스태프 뱃지 */
         .grade-tag {
             display: inline-block;
             padding: 3px 10px;
@@ -276,13 +280,14 @@
             font-size: 12px;
             font-weight: 700;
         }
+        .grade-staff { background: #0f172a; color: #ffffff; }
         .grade-6 { background: #fee2e2; color: #991b1b; }
         .grade-5 { background: #fef3c7; color: #92400e; }
         .grade-4 { background: #e0e7ff; color: #3730a3; }
         .grade-3 { background: #dcfce7; color: #166534; }
         .grade-2 { background: #f3e8ff; color: #6b21a8; }
 
-        /* 포지션 뱃지 (테이블/카드 공통) */
+        /* 포지션 뱃지 */
         .pos-tag {
             display: inline-block;
             padding: 2px 7px;
@@ -291,16 +296,18 @@
             font-weight: 700;
             color: #ffffff;
         }
+        .pos-staff-leader { background: #b45309; }  /* 감독 */
+        .pos-staff-coach { background: #475569; }   /* 코치 */
         .pos-투수 { background: #c2410c; }
         .pos-포수 { background: #0f766e; }
         .pos-내야수 { background: #1d4ed8; }
         .pos-외야수 { background: #15803d; }
         .pos-기타 { background: #64748b; }
 
-        /* 4. [방식 B] 이미지형 (카드 그리드 뷰) */
+        /* 4. [이미지형] 카드 그리드 */
         .roster-grid {
             display: none;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
             gap: 14px;
         }
 
@@ -364,6 +371,12 @@
             gap: 4px;
         }
 
+        .card-name-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
         .card-name {
             font-size: 16px;
             font-weight: 800;
@@ -375,7 +388,20 @@
             color: var(--text-sub);
         }
 
-        /* 관리자 버튼 (테이블 & 카드 공통) */
+        .card-extra {
+            font-size: 11px;
+            color: #64748b;
+            background: #f8fafc;
+            border-radius: 6px;
+            padding: 5px 6px;
+            margin-top: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            border: 1px solid #f1f5f9;
+        }
+
+        /* 관리자 수정/삭제 버튼 */
         .btn-table-edit { padding: 4px 8px; border: 1px solid #cbd5e1; background: #ffffff; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; }
         .btn-table-del { padding: 4px 8px; border: 1px solid #fca5a5; background: #fee2e2; color: #b91c1c; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; margin-left: 4px; }
 
@@ -405,17 +431,20 @@
         .modal-content {
             background: #ffffff;
             width: 100%;
-            max-width: 400px;
+            max-width: 440px;
+            max-height: 90vh;
+            overflow-y: auto;
             border-radius: 12px;
             padding: 22px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
 
         .modal-header { font-size: 18px; font-weight: 800; margin-bottom: 16px; }
-        .form-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px; }
+        .form-group { margin-bottom: 11px; display: flex; flex-direction: column; gap: 4px; }
+        .form-row { display: flex; gap: 8px; }
         .form-group label { font-size: 12px; font-weight: 700; color: #475569; }
         .form-group input, .form-group select { padding: 9px 12px; border: 1px solid var(--card-border); border-radius: 6px; font-size: 14px; outline: none; }
-        .modal-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+        .modal-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
         .btn-cancel { background: #f1f5f9; border: 1px solid var(--card-border); padding: 8px 14px; border-radius: 6px; font-weight: 700; cursor: pointer; }
         .btn-save { background: var(--kbo-blue); color: #ffffff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; }
 
@@ -440,17 +469,17 @@
 
 <header>
     <div class="header-title">대연초등학교 야구부</div>
-    <div class="header-subtitle" id="rosterCountText">2026 OFFICIAL ROSTER (총 38명)</div>
+    <div class="header-subtitle" id="rosterCountText">2026 OFFICIAL ROSTER</div>
     <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
 </header>
 
 <div class="container">
-    <!-- 컨트롤 패널 -->
     <div class="control-card">
         <div class="control-top">
-            <!-- 학년별 탭 버튼 -->
+            <!-- 구분 필터 (코칭스태프 탭 추가) -->
             <div class="grade-filters" id="gradeFilters">
                 <button class="filter-btn active" onclick="setGrade('all', this)">전체</button>
+                <button class="filter-btn staff-tab" onclick="setGrade('staff', this)">코칭스태프</button>
                 <button class="filter-btn" onclick="setGrade('6', this)">6학년</button>
                 <button class="filter-btn" onclick="setGrade('5', this)">5학년</button>
                 <button class="filter-btn" onclick="setGrade('4', this)">4학년</button>
@@ -458,7 +487,6 @@
                 <button class="filter-btn" onclick="setGrade('2', this)">2학년</button>
             </div>
 
-            <!-- 검색 및 뷰 전환 버튼 -->
             <div class="control-right">
                 <div class="search-box">
                     <input type="text" id="searchInput" placeholder="이름 / 등번호 검색" oninput="render()">
@@ -471,41 +499,43 @@
         </div>
     </div>
 
-    <!-- 최고관리자 모드 전용 액션 패널 -->
+    <!-- 최고관리자 모드 전용 액션 바 -->
     <div id="adminBar" class="admin-bar">
         <span style="font-size: 13px; font-weight: 700; color: #1e40af;">🔧 최고관리자 모드 실행 중</span>
         <div style="display: flex; gap: 6px;">
-            <button class="btn-add" onclick="openPlayerModal()">+ 선수 등록</button>
-            <button class="btn-export" onclick="exportUpdatedHTML()" title="수정된 전체 소스코드를 파일로 다운로드">💾 HTML 내보내기</button>
+            <button class="btn-add" onclick="openPlayerModal()">+ 등록 (지도자/선수)</button>
+            <button class="btn-export" onclick="exportUpdatedHTML()" title="수정된 전체 소스코드를 다운로드">💾 HTML 내보내기</button>
         </div>
     </div>
 
-    <!-- [뷰 1] 리스트형 (테이블) -->
+    <!-- 1. 리스트형 (테이블) -->
     <div class="table-wrap" id="listContainer">
         <table>
             <thead>
                 <tr>
-                    <th style="width: 70px;">등번호</th>
-                    <th>선수명</th>
-                    <th>학년</th>
-                    <th>포지션</th>
+                    <th style="width: 60px;">등번호</th>
+                    <th>성명</th>
+                    <th>구분/학년</th>
+                    <th>포지션/역할</th>
                     <th>투/타</th>
-                    <th id="thAdmin" style="display: none; width: 120px;">관리</th>
+                    <th>생년월일</th>
+                    <th>신장 / 체중</th>
+                    <th id="thAdmin" style="display: none; width: 110px;">관리</th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
         </table>
     </div>
 
-    <!-- [뷰 2] 이미지형 (카드 그리드) -->
+    <!-- 2. 이미지형 (카드 그리드) -->
     <div class="roster-grid" id="cardContainer"></div>
 
-    <div id="noDataNotice" class="no-data" style="display: none;">검색 조건에 맞는 선수가 없습니다.</div>
+    <div id="noDataNotice" class="no-data" style="display: none;">검색 조건에 맞는 명단이 없습니다.</div>
 </div>
 
 <!-- 로그인 모달 -->
 <div id="loginModal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 360px;">
         <div class="modal-header">최고관리자 로그인</div>
         <div class="form-group">
             <label>관리자 비밀번호</label>
@@ -518,40 +548,61 @@
     </div>
 </div>
 
-<!-- 선수 등록 / 수정 모달 -->
+<!-- 지도자 / 선수 등록 및 수정 모달 -->
 <div id="playerModal" class="modal">
     <div class="modal-content">
-        <div class="modal-header" id="playerModalTitle">선수 정보 등록</div>
+        <div class="modal-header" id="playerModalTitle">명단 정보 등록</div>
         <input type="hidden" id="editPlayerId">
         
-        <div class="form-group">
-            <label>등번호 (숫자)</label>
-            <input type="number" id="inpNo" required placeholder="예: 2">
+        <div class="form-row">
+            <div class="form-group" style="flex: 1;">
+                <label>등번호</label>
+                <input type="number" id="inpNo" required placeholder="예: 70">
+            </div>
+            <div class="form-group" style="flex: 2;">
+                <label>이름</label>
+                <input type="text" id="inpName" required placeholder="예: 홍길동">
+            </div>
         </div>
-        <div class="form-group">
-            <label>선수 이름</label>
-            <input type="text" id="inpName" required placeholder="예: 오승환">
+
+        <div class="form-row">
+            <div class="form-group" style="flex: 1;">
+                <label>구분 / 학년</label>
+                <select id="inpGrade">
+                    <optgroup label="코칭스태프">
+                        <option value="감독">감독</option>
+                        <option value="코치">코치</option>
+                    </optgroup>
+                    <optgroup label="선수단 (학년)">
+                        <option value="6">6학년</option>
+                        <option value="5" selected>5학년</option>
+                        <option value="4">4학년</option>
+                        <option value="3">3학년</option>
+                        <option value="2">2학년</option>
+                    </optgroup>
+                </select>
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>포지션 / 역할</label>
+                <select id="inpPos">
+                    <optgroup label="지도자 역할">
+                        <option value="총괄/지휘">총괄/지휘</option>
+                        <option value="수석코치">수석코치</option>
+                        <option value="투수코치">투수코치</option>
+                        <option value="야수코치">야수코치</option>
+                        <option value="타격코치">타격코치</option>
+                    </optgroup>
+                    <optgroup label="선수 포지션">
+                        <option value="-">- 미정 -</option>
+                        <option value="투수">투수</option>
+                        <option value="포수">포수</option>
+                        <option value="내야수">내야수</option>
+                        <option value="외야수">외야수</option>
+                    </optgroup>
+                </select>
+            </div>
         </div>
-        <div class="form-group">
-            <label>학년</label>
-            <select id="inpGrade">
-                <option value="6">6학년</option>
-                <option value="5" selected>5학년</option>
-                <option value="4">4학년</option>
-                <option value="3">3학년</option>
-                <option value="2">2학년</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>포지션</label>
-            <select id="inpPos">
-                <option value="-">- 미정 -</option>
-                <option value="투수">투수</option>
-                <option value="포수">포수</option>
-                <option value="내야수">내야수</option>
-                <option value="외야수">외야수</option>
-            </select>
-        </div>
+
         <div class="form-group">
             <label>투/타 유형</label>
             <select id="inpBt">
@@ -562,8 +613,25 @@
                 <option value="좌투우타">좌투우타</option>
             </select>
         </div>
+
         <div class="form-group">
-            <label>선수 사진 (이미지형에 표시)</label>
+            <label>생년월일</label>
+            <input type="text" id="inpBirth" placeholder="예: 1985.03.15 또는 2014.05.12">
+        </div>
+
+        <div class="form-row">
+            <div class="form-group" style="flex: 1;">
+                <label>신장 (키 cm)</label>
+                <input type="number" id="inpHeight" placeholder="예: 178">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>체중 (몸무게 kg)</label>
+                <input type="number" id="inpWeight" placeholder="예: 80">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>프로필 사진</label>
             <input type="file" id="inpPhotoFile" accept="image/*" onchange="processImageFile(event)">
             <input type="hidden" id="inpPhotoBase64">
         </div>
@@ -576,61 +644,89 @@
 </div>
 
 <script>
-    // 기본 야구 실루엣 아바타
     const defaultAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23e2e8f0'/%3E%3Cpath d='M32 32 C32 18 42 12 50 12 C58 12 68 18 68 32 C68 40 58 48 50 48 C42 48 32 40 32 32 Z' fill='%2394a3b8'/%3E%3Cpath d='M44 14 C48 10 56 10 65 14 C74 18 84 18 86 21 C86 24 75 25 65 24 Z' fill='%230b2240'/%3E%3Cpath d='M20 92 C20 66 34 56 50 56 C66 56 80 66 80 92 Z' fill='%2364748b'/%3E%3C/svg%3E";
 
-    // 38명 초기 명단 데이터
+    // 코칭스태프 2인 + 38명 선수단 초기 데이터
     const initialPlayers = [
-        { id: 1, no: 2, name: "오승환", grade: 5, pos: "-", bt: "-", photo: "" },
-        { id: 2, no: 3, name: "마성민", grade: 6, pos: "-", bt: "-", photo: "" },
-        { id: 3, no: 4, name: "김주원", grade: 4, pos: "-", bt: "-", photo: "" },
-        { id: 4, no: 5, name: "박도현", grade: 5, pos: "-", bt: "-", photo: "" },
-        { id: 5, no: 6, name: "이지윤", grade: 6, pos: "-", bt: "-", photo: "" },
-        { id: 6, no: 7, name: "여승우", grade: 6, pos: "-", bt: "-", photo: "" },
-        { id: 7, no: 8, name: "김민준", grade: 5, pos: "-", bt: "-", photo: "" },
-        { id: 8, no: 9, name: "강건승", grade: 6, pos: "-", bt: "-", photo: "" },
-        { id: 9, no: 10, name: "김재백", grade: 5, pos: "-", bt: "-", photo: "" },
-        { id: 10, no: 11, name: "김범서", grade: 6, pos: "-", bt: "-", photo: "" },
-        { id: 11, no: 12, name: "조정린", grade: 6, pos: "-", bt: "-", photo: "" },
-        { id: 12, no: 13, name: "박세훈", grade: 5, pos: "-", bt: "-", photo: "" },
-        { id: 13, no: 14, name: "강태원", grade: 5, pos: "-", bt: "-", photo: "" },
-        { id: 14, no: 15, name: "김민준", grade: 3, pos: "-", bt: "-", photo: "" },
-        { id: 15, no: 16, name: "정서현", grade: 3, pos: "-", bt: "-", photo: "" },
-        { id: 16, no: 17, name: "박태이", grade: 6, pos: "-", bt: "-", photo: "" },
-        { id: 17, no: 18, name: "염성우", grade: 5, pos: "-", bt: "-", photo: "" },
-        { id: 18, no: 19, name: "오지환", grade: 6, pos: "-", bt: "-", photo: "" },
-        { id: 19, no: 20, name: "박시후", grade: 4, pos: "-", bt: "-", photo: "" },
-        { id: 20, no: 21, name: "남시윤", grade: 5, pos: "-", bt: "-", photo: "" },
-        { id: 21, no: 22, name: "이시완", grade: 6, pos: "-", bt: "-", photo: "" },
-        { id: 22, no: 23, name: "손지완", grade: 5, pos: "-", bt: "-", photo: "" },
-        { id: 23, no: 24, name: "이하성", grade: 4, pos: "-", bt: "-", photo: "" },
-        { id: 24, no: 25, name: "최진혁", grade: 2, pos: "-", bt: "-", photo: "" },
-        { id: 25, no: 27, name: "김서준", grade: 6, pos: "-", bt: "-", photo: "" },
-        { id: 26, no: 28, name: "고에이든", grade: 4, pos: "-", bt: "-", photo: "" },
-        { id: 27, no: 29, name: "고준서", grade: 5, pos: "-", bt: "-", photo: "" },
-        { id: 28, no: 30, name: "김승원", grade: 5, pos: "-", bt: "-", photo: "" },
-        { id: 29, no: 31, name: "김도현", grade: 6, pos: "-", bt: "-", photo: "" },
-        { id: 30, no: 32, name: "하승후", grade: 3, pos: "-", bt: "-", photo: "" },
-        { id: 31, no: 33, name: "이주원", grade: 3, pos: "-", bt: "-", photo: "" },
-        { id: 32, no: 35, name: "김수현", grade: 6, pos: "-", bt: "-", photo: "" },
-        { id: 33, no: 36, name: "이하준", grade: 4, pos: "-", bt: "-", photo: "" },
-        { id: 34, no: 37, name: "강도헌", grade: 5, pos: "-", bt: "-", photo: "" },
-        { id: 35, no: 38, name: "하승민", grade: 6, pos: "-", bt: "-", photo: "" },
-        { id: 36, no: 39, name: "이든", grade: 4, pos: "-", bt: "-", photo: "" },
-        { id: 37, no: 44, name: "김민찬", grade: 3, pos: "-", bt: "-", photo: "" },
-        { id: 38, no: 47, name: "류태영", grade: 5, pos: "-", bt: "-", photo: "" }
+        // 코칭스태프 (관리자 모드에서 수정 가능)
+        { id: 101, no: 70, name: "감독님", grade: "감독", pos: "총괄/지휘", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 102, no: 71, name: "코치님", grade: "코치", pos: "수석코치", bt: "-", birth: "", height: "", weight: "", photo: "" },
+
+        // 선수단 (38명)
+        { id: 1, no: 2, name: "오승환", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 2, no: 3, name: "마성민", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 3, no: 4, name: "김주원", grade: "4", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 4, no: 5, name: "박도현", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 5, no: 6, name: "이지윤", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 6, no: 7, name: "여승우", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 7, no: 8, name: "김민준", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 8, no: 9, name: "강건승", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 9, no: 10, name: "김재백", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 10, no: 11, name: "김범서", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 11, no: 12, name: "조정린", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 12, no: 13, name: "박세훈", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 13, no: 14, name: "강태원", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 14, no: 15, name: "김민준", grade: "3", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 15, no: 16, name: "정서현", grade: "3", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 16, no: 17, name: "박태이", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 17, no: 18, name: "염성우", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 18, no: 19, name: "오지환", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 19, no: 20, name: "박시후", grade: "4", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 20, no: 21, name: "남시윤", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 21, no: 22, name: "이시완", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 22, no: 23, name: "손지완", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 23, no: 24, name: "이하성", grade: "4", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 24, no: 25, name: "최진혁", grade: "2", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 25, no: 27, name: "김서준", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 26, no: 28, name: "고에이든", grade: "4", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 27, no: 29, name: "고준서", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 28, no: 30, name: "김승원", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 29, no: 31, name: "김도현", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 30, no: 32, name: "하승후", grade: "3", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 31, no: 33, name: "이주원", grade: "3", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 32, no: 35, name: "김수현", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 33, no: 36, name: "이하준", grade: "4", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 34, no: 37, name: "강도헌", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 35, no: 38, name: "하승민", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 36, no: 39, name: "이든", grade: "4", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 37, no: 44, name: "김민찬", grade: "3", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" },
+        { id: 38, no: 47, name: "류태영", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" }
     ];
 
-    let players = JSON.parse(localStorage.getItem('daeyeon_players_master')) || initialPlayers;
+    let players = JSON.parse(localStorage.getItem('daeyeon_players_v3')) || initialPlayers;
     let selectedGrade = 'all';
     let currentView = 'list';
     let isAdmin = false;
 
     function saveToStorage() {
-        localStorage.setItem('daeyeon_players_master', JSON.stringify(players));
+        localStorage.setItem('daeyeon_players_v3', JSON.stringify(players));
     }
 
-    // 뷰 모드 전환 (리스트형 / 이미지형)
+    function isStaff(grade) {
+        return grade === '감독' || grade === '코치';
+    }
+
+    function getGradeBadge(grade) {
+        if (isStaff(grade)) {
+            return `<span class="grade-tag grade-staff">${grade}</span>`;
+        }
+        return `<span class="grade-tag grade-${grade}">${grade}학년</span>`;
+    }
+
+    function getPosBadge(pos, grade) {
+        if (!pos || pos === '-') return '-';
+        if (grade === '감독') return `<span class="pos-tag pos-staff-leader">${pos}</span>`;
+        if (grade === '코치') return `<span class="pos-tag pos-staff-coach">${pos}</span>`;
+        return `<span class="pos-tag pos-${pos}">${pos}</span>`;
+    }
+
+    function formatPhys(h, w) {
+        if (h && w) return `${h}cm / ${w}kg`;
+        if (h) return `${h}cm`;
+        if (w) return `${w}kg`;
+        return '-';
+    }
+
     function switchView(view) {
         currentView = view;
         const btnList = document.getElementById('btnListView');
@@ -652,7 +748,6 @@
         render();
     }
 
-    // 학년 필터
     function setGrade(grade, btn) {
         selectedGrade = grade;
         document.querySelectorAll('#gradeFilters .filter-btn').forEach(b => b.classList.remove('active'));
@@ -660,7 +755,6 @@
         render();
     }
 
-    // 메인 렌더링
     function render() {
         const query = document.getElementById('searchInput').value.trim().toLowerCase();
         const tableBody = document.getElementById('tableBody');
@@ -670,13 +764,34 @@
 
         thAdmin.style.display = isAdmin ? 'table-cell' : 'none';
 
+        // 필터링
         const filtered = players.filter(p => {
-            const matchGrade = (selectedGrade === 'all' || p.grade.toString() === selectedGrade);
-            const matchSearch = p.name.toLowerCase().includes(query) || p.no.toString().includes(query) || (p.pos && p.pos.includes(query));
-            return matchGrade && matchSearch;
-        }).sort((a, b) => a.no - b.no);
+            let matchGrade = false;
+            if (selectedGrade === 'all') {
+                matchGrade = true;
+            } else if (selectedGrade === 'staff') {
+                matchGrade = isStaff(p.grade);
+            } else {
+                matchGrade = (p.grade.toString() === selectedGrade);
+            }
 
-        document.getElementById('rosterCountText').textContent = `2026 OFFICIAL ROSTER (총 ${players.length}명)`;
+            const matchSearch = p.name.toLowerCase().includes(query) || 
+                                p.no.toString().includes(query) || 
+                                (p.pos && p.pos.includes(query)) ||
+                                (p.grade && p.grade.includes(query));
+            return matchGrade && matchSearch;
+        }).sort((a, b) => {
+            // 정렬: 코칭스태프 우선(감독 > 코치), 이후 등번호 오름차순
+            const rankA = a.grade === '감독' ? 1 : (a.grade === '코치' ? 2 : 3);
+            const rankB = b.grade === '감독' ? 1 : (b.grade === '코치' ? 2 : 3);
+            if (rankA !== rankB) return rankA - rankB;
+            return a.no - b.no;
+        });
+
+        // 상단 인원 요약 갱신
+        const staffCount = players.filter(p => isStaff(p.grade)).length;
+        const studentCount = players.length - staffCount;
+        document.getElementById('rosterCountText').textContent = `2026 OFFICIAL ROSTER (코칭스태프 ${staffCount}명 · 등록선수 ${studentCount}명)`;
 
         if (filtered.length === 0) {
             tableBody.innerHTML = '';
@@ -686,9 +801,12 @@
         }
         noData.style.display = 'none';
 
-        // 1. [리스트형] 테이블 렌더링
+        // 1. 리스트형 렌더링
         tableBody.innerHTML = filtered.map(p => {
-            const posHtml = (p.pos && p.pos !== '-') ? `<span class="pos-tag pos-${p.pos}">${p.pos}</span>` : '-';
+            const posBadge = getPosBadge(p.pos, p.grade);
+            const gradeBadge = getGradeBadge(p.grade);
+            const physText = formatPhys(p.height, p.weight);
+            const birthText = p.birth || '-';
             const adminCol = isAdmin ? `
                 <td>
                     <button class="btn-table-edit" onclick="editPlayer(${p.id})">수정</button>
@@ -700,29 +818,42 @@
                 <tr>
                     <td class="td-no">${p.no}</td>
                     <td class="td-name">${p.name}</td>
-                    <td><span class="grade-tag grade-${p.grade}">${p.grade}학년</span></td>
-                    <td>${posHtml}</td>
+                    <td>${gradeBadge}</td>
+                    <td>${posBadge}</td>
                     <td style="color: #64748b;">${p.bt || '-'}</td>
+                    <td style="color: #475569; font-size: 13px;">${birthText}</td>
+                    <td style="color: #475569; font-size: 13px;">${physText}</td>
                     ${adminCol}
                 </tr>
             `;
         }).join('');
 
-        // 2. [이미지형] 카드 렌더링
+        // 2. 이미지형 렌더링
         cardContainer.innerHTML = filtered.map(p => {
             const imgSrc = p.photo || defaultAvatar;
-            const posHtml = (p.pos && p.pos !== '-') ? `<span class="pos-tag pos-${p.pos}">${p.pos}</span>` : '';
+            const posBadge = (p.pos && p.pos !== '-') ? getPosBadge(p.pos, p.grade) : '';
+            const gradeBadge = getGradeBadge(p.grade);
+            const physText = formatPhys(p.height, p.weight);
+            const birthText = p.birth || '-';
+            const extraMeta = isStaff(p.grade) ? (p.bt && p.bt !== '-' ? p.bt : '지도자') : (p.bt || '우투우타');
 
             return `
                 <div class="player-card">
                     <div class="card-photo-box">
                         <span class="card-no">${p.no}</span>
-                        <div class="card-pos">${posHtml}</div>
+                        <div class="card-pos">${posBadge}</div>
                         <img class="card-img" src="${imgSrc}" alt="${p.name}" onerror="this.src='${defaultAvatar}';">
                     </div>
                     <div class="card-info">
-                        <div class="card-name">${p.name}</div>
-                        <div class="card-meta"><span class="grade-tag grade-${p.grade}" style="padding: 1px 7px; font-size: 11px;">${p.grade}학년</span> · ${p.bt || '우투우타'}</div>
+                        <div class="card-name-row">
+                            <span class="card-name">${p.name}</span>
+                            ${gradeBadge}
+                        </div>
+                        <div class="card-meta">${extraMeta}</div>
+                        <div class="card-extra">
+                            <div>🎂 ${birthText}</div>
+                            <div>📏 ${physText}</div>
+                        </div>
                     </div>
                     <div class="card-admin-bar" style="display: ${isAdmin ? 'flex' : 'none'};">
                         <button class="btn-card-edit" onclick="editPlayer(${p.id})">수정</button>
@@ -733,7 +864,6 @@
         }).join('');
     }
 
-    // 사진 최적화 리사이징 (Base64 변환)
     function processImageFile(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -756,8 +886,6 @@
                 canvas.height = height;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
-
-                // JPEG 압축으로 용량 최소화
                 document.getElementById('inpPhotoBase64').value = canvas.toDataURL('image/jpeg', 0.85);
             };
             img.src = e.target.result;
@@ -765,7 +893,6 @@
         reader.readAsDataURL(file);
     }
 
-    // 관리자 로그인/로그아웃
     function openAdminModal() {
         if (isAdmin) {
             if (confirm('최고관리자 모드를 로그아웃 하시겠습니까?')) {
@@ -783,7 +910,7 @@
 
     function handleLogin() {
         const pw = document.getElementById('adminPw').value;
-        if (pw === '1234') { // 관리자 기본 비밀번호
+        if (pw === '1234') { // 기본 관리자 비밀번호
             isAdmin = true;
             closeModal('loginModal');
             document.getElementById('adminLoginBtn').textContent = '🔓 관리자 로그아웃';
@@ -795,9 +922,8 @@
         }
     }
 
-    // 모달 제어
     function openPlayerModal(isEdit = false) {
-        document.getElementById('playerModalTitle').textContent = isEdit ? '선수 정보 수정' : '새 선수 등록';
+        document.getElementById('playerModalTitle').textContent = isEdit ? '명단 정보 수정' : '새 지도자 / 선수 등록';
         document.getElementById('playerModal').style.display = 'flex';
     }
 
@@ -810,6 +936,9 @@
         document.getElementById('inpGrade').value = p.grade;
         document.getElementById('inpPos').value = p.pos || '-';
         document.getElementById('inpBt').value = p.bt || '-';
+        document.getElementById('inpBirth').value = p.birth || '';
+        document.getElementById('inpHeight').value = p.height || '';
+        document.getElementById('inpWeight').value = p.weight || '';
         document.getElementById('inpPhotoBase64').value = p.photo || '';
         document.getElementById('inpPhotoFile').value = '';
         openPlayerModal(true);
@@ -819,24 +948,31 @@
         const idVal = document.getElementById('editPlayerId').value;
         const no = parseInt(document.getElementById('inpNo').value);
         const name = document.getElementById('inpName').value.trim();
-        const grade = parseInt(document.getElementById('inpGrade').value);
+        const grade = document.getElementById('inpGrade').value;
         const pos = document.getElementById('inpPos').value;
         const bt = document.getElementById('inpBt').value;
+        const birth = document.getElementById('inpBirth').value.trim();
+        const height = document.getElementById('inpHeight').value.trim();
+        const weight = document.getElementById('inpWeight').value.trim();
         const photo = document.getElementById('inpPhotoBase64').value;
 
         if (!no || !name) {
-            alert('등번호와 선수 이름을 입력해 주세요.');
+            alert('등번호와 성명을 입력해 주세요.');
             return;
         }
 
         if (idVal) {
             const idx = players.findIndex(x => x.id == idVal);
             if (idx !== -1) {
-                players[idx] = { ...players[idx], no, name, grade, pos, bt, photo: photo || players[idx].photo };
+                players[idx] = { 
+                    ...players[idx], 
+                    no, name, grade, pos, bt, birth, height, weight,
+                    photo: photo || players[idx].photo 
+                };
             }
         } else {
             const newId = players.length > 0 ? Math.max(...players.map(p => p.id)) + 1 : 1;
-            players.push({ id: newId, no, name, grade, pos, bt, photo });
+            players.push({ id: newId, no, name, grade, pos, bt, birth, height, weight, photo });
         }
 
         saveToStorage();
@@ -845,7 +981,7 @@
     }
 
     function deletePlayer(id) {
-        if (confirm('해당 선수를 명단에서 삭제하시겠습니까?')) {
+        if (confirm('해당 항목을 명단에서 완전히 삭제하시겠습니까?')) {
             players = players.filter(p => p.id !== id);
             saveToStorage();
             render();
@@ -858,12 +994,14 @@
             document.getElementById('editPlayerId').value = '';
             document.getElementById('inpNo').value = '';
             document.getElementById('inpName').value = '';
+            document.getElementById('inpBirth').value = '';
+            document.getElementById('inpHeight').value = '';
+            document.getElementById('inpWeight').value = '';
             document.getElementById('inpPhotoBase64').value = '';
             document.getElementById('inpPhotoFile').value = '';
         }
     }
 
-    // 수정본 HTML 영구 저장 내보내기
     function exportUpdatedHTML() {
         const fullSource = document.documentElement.outerHTML;
         const jsonStr = JSON.stringify(players, null, 8);
@@ -877,7 +1015,6 @@
         a.click();
     }
 
-    // 첫 실행
     render();
 </script>
 
