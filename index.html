@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>대연초등학교 야구부 공식 선수단</title>
+    <title>대연초 야구부 명단</title>
     <style>
         :root {
             --kbo-blue: #0b2240;
@@ -383,7 +383,7 @@
 <body>
 
 <header>
-    <div class="header-title">대연초등학교 야구부</div>
+    <div class="header-title">대연초 야구부 명단</div>
     <div class="header-subtitle" id="rosterCountText">선수단 데이터를 불러오는 중...</div>
 </header>
 
@@ -437,7 +437,6 @@
 </div>
 
 <script>
-    // 기본 야구 실루엣 아바타
     const defaultAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23e2e8f0'/%3E%3Cpath d='M32 32 C32 18 42 12 50 12 C58 12 68 18 68 32 C68 40 58 48 50 48 C42 48 32 40 32 32 Z' fill='%2394a3b8'/%3E%3Cpath d='M44 14 C48 10 56 10 65 14 C74 18 84 18 86 21 C86 24 75 25 65 24 Z' fill='%230b2240'/%3E%3Cpath d='M20 92 C20 66 34 56 50 56 C66 56 80 66 80 92 Z' fill='%2364748b'/%3E%3C/svg%3E";
 
     let players = [];
@@ -526,7 +525,7 @@
         }
         notice.style.display = 'none';
 
-        // 1. [리스트형] 렌더링 - data/photos/{등번호}.jpg 자동 조회 및 에러시 기본 아바타
+        // 1. 리스트형 렌더링
         tableBody.innerHTML = filtered.map(p => {
             const photoUrl = `data/photos/${p.no}.jpg`;
             return `
@@ -547,7 +546,7 @@
             `;
         }).join('');
 
-        // 2. [이미지형] 렌더링 - data/photos/{등번호}.jpg 자동 조회 및 에러시 기본 아바타
+        // 2. 이미지형 렌더링
         cardContainer.innerHTML = filtered.map(p => {
             const photoUrl = `data/photos/${p.no}.jpg`;
             const posBadge = (p.pos && p.pos !== '-') ? getPosBadge(p.pos, p.grade) : '';
