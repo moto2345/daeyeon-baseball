@@ -187,7 +187,7 @@
             color: #ffffff;
         }
 
-        /* 관리자 안내 및 액션 패널 */
+        /* 최고관리자 액션 바 */
         .admin-bar {
             display: none;
             background: #eff6ff;
@@ -237,21 +237,21 @@
             border-collapse: collapse;
             text-align: center;
             font-size: 14px;
-            min-width: 700px;
+            min-width: 760px;
         }
 
         th {
             background-color: #f8fafc;
             color: #475569;
             font-weight: 700;
-            padding: 13px 10px;
+            padding: 12px 8px;
             font-size: 13px;
             border-bottom: 2px solid #e2e8f0;
             white-space: nowrap;
         }
 
         td {
-            padding: 12px 10px;
+            padding: 10px 8px;
             border-bottom: 1px solid #edf2f7;
             vertical-align: middle;
         }
@@ -264,6 +264,28 @@
             font-weight: 900;
             color: var(--kbo-blue);
             font-size: 16px;
+            font-family: "Impact", sans-serif;
+        }
+
+        /* 리스트형 작은 사진 썸네일 */
+        .table-thumb-wrap {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #e2e8f0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .table-thumb {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top center;
         }
 
         .td-name {
@@ -272,7 +294,7 @@
             font-size: 15px;
         }
 
-        /* 학년별 뱃지 스타일 (1학년 스카이블루 추가) */
+        /* 학년 및 코칭스태프 뱃지 */
         .grade-tag {
             display: inline-block;
             padding: 3px 10px;
@@ -286,7 +308,7 @@
         .grade-4 { background: #e0e7ff; color: #3730a3; }
         .grade-3 { background: #dcfce7; color: #166534; }
         .grade-2 { background: #f3e8ff; color: #6b21a8; }
-        .grade-1 { background: #e0f2fe; color: #0369a1; } /* 1학년 신입 선수 */
+        .grade-1 { background: #e0f2fe; color: #0369a1; }
 
         /* 포지션 뱃지 */
         .pos-tag {
@@ -303,7 +325,6 @@
         .pos-포수 { background: #0f766e; }
         .pos-내야수 { background: #1d4ed8; }
         .pos-외야수 { background: #15803d; }
-        .pos-기타 { background: #64748b; }
 
         /* 4. [이미지형] 카드 그리드 */
         .roster-grid {
@@ -346,23 +367,29 @@
             object-position: top center;
         }
 
-        .card-no {
+        /* 이미지형 좌측 상단 등번호 뱃지 */
+        .card-no-badge {
             position: absolute;
             top: 8px;
             left: 8px;
-            background: rgba(11, 34, 64, 0.9);
+            background: rgba(11, 34, 64, 0.92);
             color: #ffffff;
             font-size: 13px;
             font-weight: 900;
-            padding: 2px 7px;
-            border-radius: 5px;
-            font-family: "Impact", sans-serif;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-family: "Impact", "Arial Black", sans-serif;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            z-index: 2;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+            letter-spacing: 0.5px;
         }
 
         .card-pos {
             position: absolute;
             top: 8px;
             right: 8px;
+            z-index: 2;
         }
 
         .card-info {
@@ -382,6 +409,17 @@
             font-size: 16px;
             font-weight: 800;
             color: var(--text-title);
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        /* 이름 앞 등번호 텍스트 */
+        .card-name-no {
+            font-family: "Impact", "Arial Black", sans-serif;
+            color: var(--kbo-red);
+            font-size: 15px;
+            font-weight: 900;
         }
 
         .card-meta {
@@ -477,7 +515,6 @@
 <div class="container">
     <div class="control-card">
         <div class="control-top">
-            <!-- 구분 필터 (1학년 버튼 추가) -->
             <div class="grade-filters" id="gradeFilters">
                 <button class="filter-btn active" onclick="setGrade('all', this)">전체</button>
                 <button class="filter-btn staff-tab" onclick="setGrade('staff', this)">코칭스태프</button>
@@ -510,12 +547,13 @@
         </div>
     </div>
 
-    <!-- 1. 리스트형 (테이블) -->
+    <!-- 1. 리스트형 (사진 썸네일 열 추가) -->
     <div class="table-wrap" id="listContainer">
         <table>
             <thead>
                 <tr>
                     <th style="width: 60px;">등번호</th>
+                    <th style="width: 55px;">사진</th>
                     <th>성명</th>
                     <th>구분/학년</th>
                     <th>포지션/역할</th>
@@ -649,7 +687,7 @@
 <script>
     const defaultAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23e2e8f0'/%3E%3Cpath d='M32 32 C32 18 42 12 50 12 C58 12 68 18 68 32 C68 40 58 48 50 48 C42 48 32 40 32 32 Z' fill='%2394a3b8'/%3E%3Cpath d='M44 14 C48 10 56 10 65 14 C74 18 84 18 86 21 C86 24 75 25 65 24 Z' fill='%230b2240'/%3E%3Cpath d='M20 92 C20 66 34 56 50 56 C66 56 80 66 80 92 Z' fill='%2364748b'/%3E%3C/svg%3E";
 
-    // 코칭스태프 2인 + 38명 선수단 초기 데이터
+    // 코칭스태프 2인 + 선수단 38명
     const initialPlayers = [
         { id: 101, no: 70, name: "감독님", grade: "감독", pos: "총괄/지휘", bt: "-", birth: "", height: "", weight: "", photo: "" },
         { id: 102, no: 71, name: "코치님", grade: "코치", pos: "수석코치", bt: "-", birth: "", height: "", weight: "", photo: "" },
@@ -694,13 +732,13 @@
         { id: 38, no: 47, name: "류태영", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "" }
     ];
 
-    let players = JSON.parse(localStorage.getItem('daeyeon_players_v4')) || initialPlayers;
+    let players = JSON.parse(localStorage.getItem('daeyeon_players_v5')) || initialPlayers;
     let selectedGrade = 'all';
     let currentView = 'list';
     let isAdmin = false;
 
     function saveToStorage() {
-        localStorage.setItem('daeyeon_players_v4', JSON.stringify(players));
+        localStorage.setItem('daeyeon_players_v5', JSON.stringify(players));
     }
 
     function isStaff(grade) {
@@ -799,8 +837,9 @@
         }
         noData.style.display = 'none';
 
-        // 1. 리스트형 렌더링
+        // 1. [리스트형] 렌더링 (작은 사진 썸네일 열 포함)
         tableBody.innerHTML = filtered.map(p => {
+            const imgSrc = p.photo || defaultAvatar;
             const posBadge = getPosBadge(p.pos, p.grade);
             const gradeBadge = getGradeBadge(p.grade);
             const physText = formatPhys(p.height, p.weight);
@@ -815,6 +854,11 @@
             return `
                 <tr>
                     <td class="td-no">${p.no}</td>
+                    <td>
+                        <div class="table-thumb-wrap">
+                            <img class="table-thumb" src="${imgSrc}" alt="${p.name}" onerror="this.src='${defaultAvatar}';">
+                        </div>
+                    </td>
                     <td class="td-name">${p.name}</td>
                     <td>${gradeBadge}</td>
                     <td>${posBadge}</td>
@@ -826,7 +870,7 @@
             `;
         }).join('');
 
-        // 2. 이미지형 렌더링
+        // 2. [이미지형] 렌더링 (사진 위 No. 뱃지 + 이름 앞 No.XX 강조)
         cardContainer.innerHTML = filtered.map(p => {
             const imgSrc = p.photo || defaultAvatar;
             const posBadge = (p.pos && p.pos !== '-') ? getPosBadge(p.pos, p.grade) : '';
@@ -838,13 +882,13 @@
             return `
                 <div class="player-card">
                     <div class="card-photo-box">
-                        <span class="card-no">${p.no}</span>
+                        <span class="card-no-badge">No.${p.no}</span>
                         <div class="card-pos">${posBadge}</div>
                         <img class="card-img" src="${imgSrc}" alt="${p.name}" onerror="this.src='${defaultAvatar}';">
                     </div>
                     <div class="card-info">
                         <div class="card-name-row">
-                            <span class="card-name">${p.name}</span>
+                            <span class="card-name"><span class="card-name-no">No.${p.no}</span> ${p.name}</span>
                             ${gradeBadge}
                         </div>
                         <div class="card-meta">${extraMeta}</div>
