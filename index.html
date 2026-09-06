@@ -150,7 +150,6 @@
             color: #ffffff;
         }
 
-        /* 리스트형 테이블 */
         .table-wrap {
             background: #ffffff;
             border-radius: 8px;
@@ -252,7 +251,6 @@
         .pos-내야수 { background: #1d4ed8; }
         .pos-외야수 { background: #15803d; }
 
-        /* 이미지형 카드 그리드 */
         .roster-grid {
             display: none;
             grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
@@ -385,7 +383,7 @@
 <body>
 
 <header>
-    <div class="header-title">대연초등학교 야구부 명단</div>
+    <div class="header-title">대연초등학교 야구부</div>
     <div class="header-subtitle" id="rosterCountText">선수단 데이터를 불러오는 중...</div>
 </header>
 
@@ -415,7 +413,6 @@
         </div>
     </div>
 
-    <!-- 1. 리스트형 -->
     <div class="table-wrap" id="listContainer">
         <table>
             <thead>
@@ -434,13 +431,13 @@
         </table>
     </div>
 
-    <!-- 2. 이미지형 -->
     <div class="roster-grid" id="cardContainer"></div>
 
     <div id="statusNotice" class="loading-notice">선수 명단을 불러오고 있습니다...</div>
 </div>
 
 <script>
+    // 기본 야구 실루엣 아바타
     const defaultAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23e2e8f0'/%3E%3Cpath d='M32 32 C32 18 42 12 50 12 C58 12 68 18 68 32 C68 40 58 48 50 48 C42 48 32 40 32 32 Z' fill='%2394a3b8'/%3E%3Cpath d='M44 14 C48 10 56 10 65 14 C74 18 84 18 86 21 C86 24 75 25 65 24 Z' fill='%230b2240'/%3E%3Cpath d='M20 92 C20 66 34 56 50 56 C66 56 80 66 80 92 Z' fill='%2364748b'/%3E%3C/svg%3E";
 
     let players = [];
@@ -529,15 +526,15 @@
         }
         notice.style.display = 'none';
 
-        // 1. [리스트형]
+        // 1. [리스트형] 렌더링 - data/photos/{등번호}.jpg 자동 조회 및 에러시 기본 아바타
         tableBody.innerHTML = filtered.map(p => {
-            const imgSrc = p.photo || defaultAvatar;
+            const photoUrl = `data/photos/${p.no}.jpg`;
             return `
                 <tr class="clickable-row" onclick="goToPlayer('${p._path}')" title="클릭하여 ${p.name} 상세 프로필 보기">
                     <td class="td-no">${p.no}</td>
                     <td>
                         <div class="table-thumb-wrap">
-                            <img class="table-thumb" src="${imgSrc}" alt="${p.name}" onerror="this.src='${defaultAvatar}';">
+                            <img class="table-thumb" src="${photoUrl}" alt="${p.name}" onerror="this.onerror=null; this.src='${defaultAvatar}';">
                         </div>
                     </td>
                     <td class="td-name">${p.name}</td>
@@ -550,9 +547,9 @@
             `;
         }).join('');
 
-        // 2. [이미지형]
+        // 2. [이미지형] 렌더링 - data/photos/{등번호}.jpg 자동 조회 및 에러시 기본 아바타
         cardContainer.innerHTML = filtered.map(p => {
-            const imgSrc = p.photo || defaultAvatar;
+            const photoUrl = `data/photos/${p.no}.jpg`;
             const posBadge = (p.pos && p.pos !== '-') ? getPosBadge(p.pos, p.grade) : '';
             const extraMeta = isStaff(p.grade) ? (p.bt && p.bt !== '-' ? p.bt : '지도자') : (p.bt || '우투우타');
 
@@ -561,7 +558,7 @@
                     <div class="card-photo-box">
                         <span class="card-no-badge">No.${p.no}</span>
                         <div class="card-pos">${posBadge}</div>
-                        <img class="card-img" src="${imgSrc}" alt="${p.name}" onerror="this.src='${defaultAvatar}';">
+                        <img class="card-img" src="${photoUrl}" alt="${p.name}" onerror="this.onerror=null; this.src='${defaultAvatar}';">
                     </div>
                     <div class="card-info">
                         <div class="card-name-row">
@@ -579,7 +576,6 @@
         }).join('');
     }
 
-    // data/roster.json 읽고 data/players/{학년}/{등번호}.json 로드
     async function initData() {
         try {
             const rosterRes = await fetch('data/roster.json');
@@ -590,7 +586,7 @@
                 fetch(`data/players/${itemPath}.json`)
                     .then(res => res.ok ? res.json() : null)
                     .then(data => {
-                        if (data) data._path = itemPath; // 상세 페이지 경로 보존
+                        if (data) data._path = itemPath;
                         return data;
                     })
                     .catch(() => null)
@@ -599,7 +595,6 @@
             const loaded = await Promise.all(fetchPromises);
             players = loaded.filter(p => p !== null);
 
-            // 코칭스태프 우선, 이후 등번호순 정렬
             players.sort((a, b) => {
                 const rankA = a.grade === '감독' ? 1 : (a.grade === '코치' ? 2 : 3);
                 const rankB = b.grade === '감독' ? 1 : (b.grade === '코치' ? 2 : 3);
