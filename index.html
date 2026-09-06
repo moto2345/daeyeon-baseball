@@ -1,9 +1,17 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+    <!-- 구글 스프레드시트 실시간 연동 주소 -->
+    <script>
+        const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw2YtYByfiPWXbRfqkzmZ6yzaZVfJHO0f9zAmCiLnwlMvVXCt9lv4AmQAz4_vSjzPy0APtl0hwYNmW/pub?output=csv";
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>대연초 야구부 명단</title>
+    <!-- CSV 파싱 라이브러리 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
     <style>
         :root {
             --kbo-blue: #0b2240;
@@ -187,33 +195,8 @@
             margin-bottom: 16px;
         }
         .admin-bar.super { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; }
-        .admin-bar.sub { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
-        .admin-bar.general { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
 
-        .btn-add {
-            background: #2563eb;
-            color: white;
-            border: none;
-            padding: 7px 14px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        .btn-config {
-            background: #475569;
-            color: white;
-            border: none;
-            padding: 7px 14px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        .btn-config:hover { background: #334155; }
-
-        .btn-export {
+        .btn-sheet-link {
             background: #059669;
             color: white;
             border: none;
@@ -222,7 +205,12 @@
             font-size: 12px;
             font-weight: 700;
             cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
+        .btn-sheet-link:hover { background: #047857; }
 
         /* 리스트형 테이블 */
         .table-wrap {
@@ -329,7 +317,6 @@
         .pos-내야수 { background: #1d4ed8; }
         .pos-외야수 { background: #15803d; }
 
-        /* 숨김 & 비공개 뱃지 */
         .hidden-badge {
             display: inline-block;
             background: #64748b;
@@ -358,47 +345,6 @@
             margin-left: 3px;
             vertical-align: middle;
         }
-
-        /* 테이블 관리 버튼 컨테이너 */
-        .admin-btn-group {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            white-space: nowrap;
-        }
-
-        .admin-btn-group button {
-            margin: 0 !important;
-            white-space: nowrap;
-            padding: 4px 8px;
-            font-size: 11px;
-            font-weight: 700;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: 0.15s;
-        }
-
-        .btn-table-edit {
-            border: 1px solid #cbd5e1;
-            background: #ffffff;
-            color: #334155;
-        }
-        .btn-table-edit:hover { background: #f1f5f9; }
-
-        .btn-table-toggle {
-            border: 1px solid #94a3b8;
-            background: #f1f5f9;
-            color: #1e293b;
-        }
-        .btn-table-toggle:hover { background: #e2e8f0; }
-
-        .btn-table-del {
-            border: 1px solid #fca5a5;
-            background: #fee2e2;
-            color: #b91c1c;
-        }
-        .btn-table-del:hover { background: #fecaca; }
 
         /* 이미지형 카드 그리드 */
         .roster-grid {
@@ -514,26 +460,7 @@
             border: 1px solid #f1f5f9;
         }
 
-        .card-admin-bar {
-            display: none;
-            padding: 8px 10px;
-            border-top: 1px dashed var(--card-border);
-            gap: 4px;
-            background: #fafafa;
-        }
-        .card-admin-bar button {
-            flex: 1;
-            padding: 5px 0;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
-            border: 1px solid #cbd5e1;
-            background: #ffffff;
-            white-space: nowrap;
-        }
-
-        /* 모달 팝업 */
+        /* 로그인 모달 */
         .modal {
             display: none;
             position: fixed;
@@ -548,9 +475,7 @@
         .modal-content {
             background: #ffffff;
             width: 100%;
-            max-width: 440px;
-            max-height: 90vh;
-            overflow-y: auto;
+            max-width: 380px;
             border-radius: 12px;
             padding: 22px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
@@ -558,11 +483,8 @@
 
         .modal-header { font-size: 18px; font-weight: 800; margin-bottom: 16px; }
         .form-group { margin-bottom: 11px; display: flex; flex-direction: column; gap: 4px; }
-        .form-row { display: flex; gap: 8px; }
         .form-group label { font-size: 12px; font-weight: 700; color: #475569; }
-        .form-group input, .form-group select { padding: 9px 12px; border: 1px solid var(--card-border); border-radius: 6px; font-size: 14px; outline: none; }
-        .form-group input:disabled, .form-group select:disabled { background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
-
+        .form-group input { padding: 9px 12px; border: 1px solid var(--card-border); border-radius: 6px; font-size: 14px; outline: none; }
         .modal-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
         .btn-cancel { background: #f1f5f9; border: 1px solid var(--card-border); padding: 8px 14px; border-radius: 6px; font-weight: 700; cursor: pointer; }
         .btn-save { background: var(--kbo-blue); color: #ffffff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; }
@@ -618,14 +540,10 @@
         </div>
     </div>
 
-    <!-- 관리자 권한 안내 바 -->
+    <!-- 관리자 안내 바 -->
     <div id="adminBar" class="admin-bar">
         <span id="adminRoleText" style="font-size: 13px; font-weight: 700;"></span>
-        <div style="display: flex; gap: 6px;">
-            <button id="btnAddNew" class="btn-add" style="display: none;" onclick="openPlayerModal(false)">+ 등록</button>
-            <button id="btnConfig" class="btn-config" style="display: none;" onclick="openBatchModal()">⚙️ 일괄 비공개 설정</button>
-            <button id="btnExport" class="btn-export" style="display: none;" onclick="exportUpdatedHTML()" title="수정된 전체 소스코드를 다운로드">💾 HTML 내보내기</button>
-        </div>
+        <button class="btn-sheet-link" onclick="window.open('https://sheets.google.com', '_blank')">📊 구글 시트 편집창 열기</button>
     </div>
 
     <!-- 1. 리스트형 -->
@@ -641,7 +559,6 @@
                     <th>투/타</th>
                     <th>생년월일</th>
                     <th>신장 / 체중</th>
-                    <th id="thAdmin" style="display: none; width: 180px; min-width: 180px;">관리</th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
@@ -651,161 +568,23 @@
     <!-- 2. 이미지형 -->
     <div class="roster-grid" id="cardContainer"></div>
 
-    <div id="statusNotice" class="loading-notice">선수 명단을 불러오고 있습니다...</div>
+    <div id="statusNotice" class="loading-notice">선수 명단을 실시간으로 불러오고 있습니다...</div>
 </div>
 
 <!-- 로그인 모달 -->
 <div id="loginModal" class="modal">
-    <div class="modal-content" style="max-width: 380px;">
-        <div class="modal-header">관리자 접속 로그인</div>
+    <div class="modal-content">
+        <div class="modal-header">관리자 로그인</div>
         <div class="form-group">
             <label>관리자 비밀번호</label>
             <input type="password" id="adminPw" placeholder="비밀번호 입력">
             <span style="font-size: 11px; color: #64748b; margin-top: 4px;">
-                • 최고관리자: 9999 (전체 권한, 표시 ON/OFF 및 비공개 설정)<br>
-                • 부관리자: 7777 (선수 모든 정보 수정)<br>
-                • 일반관리자: 1111 (포지션, 투타, 생일, 체격만 수정)
+                • 최고관리자: 9999 (숨김 선수 및 비공개 실제 데이터 모두 열람 가능)
             </span>
         </div>
         <div class="modal-btns">
             <button class="btn-cancel" onclick="closeModal('loginModal')">취소</button>
             <button class="btn-save" onclick="handleLogin()">로그인</button>
-        </div>
-    </div>
-</div>
-
-<!-- 지도자 / 선수 정보 수정 모달 -->
-<div id="playerModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header" id="playerModalTitle">명단 정보 수정</div>
-        <input type="hidden" id="editPlayerId">
-        
-        <!-- 최고관리자 전용: 명단 표시 상태 -->
-        <div class="form-group" id="groupVisibility" style="display: none; background: #fef2f2; padding: 10px; border-radius: 8px; border: 1px solid #fecaca;">
-            <label style="color: #991b1b; font-weight: 800;">🔒 명단 노출 상태 (최고관리자 전용)</label>
-            <select id="inpVisible" style="font-weight: 700;">
-                <option value="true">✅ 화면에 정상 표시 (ON)</option>
-                <option value="false">🚫 명단에서 숨김 처리 (OFF - 일반 방문자에게 안 보임)</option>
-            </select>
-        </div>
-
-        <!-- 최고관리자 전용: 사진/신장/체중 비공개 옵션 -->
-        <div class="form-group" id="groupPrivacy" style="display: none; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
-            <label style="color: var(--kbo-blue); font-weight: 800; margin-bottom: 6px;">🔒 항목별 비공개 설정 (최고관리자 전용)</label>
-            <div style="display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; font-weight: 600; color: #334155;">
-                <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
-                    <input type="checkbox" id="inpHidePhoto"> 사진 비공개
-                </label>
-                <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
-                    <input type="checkbox" id="inpHideHeight"> 신장(키) 비공개
-                </label>
-                <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
-                    <input type="checkbox" id="inpHideWeight"> 체중(몸무게) 비공개
-                </label>
-            </div>
-            <span style="font-size: 11px; color: #94a3b8; margin-top: 4px;">* 체크 시 일반 방문자에게 해당 항목이 '비공개'로 마스킹됩니다.</span>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group" style="flex: 1;">
-                <label>등번호</label>
-                <input type="number" id="inpNo" required placeholder="예: 2">
-            </div>
-            <div class="form-group" style="flex: 2;">
-                <label>이름</label>
-                <input type="text" id="inpName" required placeholder="예: 오승환">
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group" style="flex: 1;">
-                <label>구분 / 학년</label>
-                <select id="inpGrade">
-                    <optgroup label="코칭스태프">
-                        <option value="감독">감독</option>
-                        <option value="코치">코치</option>
-                    </optgroup>
-                    <optgroup label="선수단 (학년)">
-                        <option value="6">6학년</option>
-                        <option value="5" selected>5학년</option>
-                        <option value="4">4학년</option>
-                        <option value="3">3학년</option>
-                        <option value="2">2학년</option>
-                        <option value="1">1학년</option>
-                    </optgroup>
-                </select>
-            </div>
-            <div class="form-group" style="flex: 1;">
-                <label>포지션 / 역할</label>
-                <select id="inpPos">
-                    <optgroup label="지도자 역할">
-                        <option value="총괄/지휘">총괄/지휘</option>
-                        <option value="수석코치">수석코치</option>
-                        <option value="투수코치">투수코치</option>
-                        <option value="야수코치">야수코치</option>
-                        <option value="타격코치">타격코치</option>
-                    </optgroup>
-                    <optgroup label="선수 포지션">
-                        <option value="-">- 미정 -</option>
-                        <option value="투수">투수</option>
-                        <option value="포수">포수</option>
-                        <option value="내야수">내야수</option>
-                        <option value="외야수">외야수</option>
-                    </optgroup>
-                </select>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>투/타 유형</label>
-            <select id="inpBt">
-                <option value="-">- 미정 -</option>
-                <option value="우투우타">우투우타</option>
-                <option value="좌투좌타">좌투좌타</option>
-                <option value="우투좌타">우투좌타</option>
-                <option value="좌투우타">좌투우타</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label>생년월일</label>
-            <input type="text" id="inpBirth" placeholder="예: 2015.05.15">
-        </div>
-
-        <div class="form-row">
-            <div class="form-group" style="flex: 1;">
-                <label>신장 (키 cm)</label>
-                <input type="number" id="inpHeight" placeholder="예: 153">
-            </div>
-            <div class="form-group" style="flex: 1;">
-                <label>체중 (몸무게 kg)</label>
-                <input type="number" id="inpWeight" placeholder="예: 46">
-            </div>
-        </div>
-
-        <div class="modal-btns">
-            <button class="btn-cancel" onclick="closeModal('playerModal')">취소</button>
-            <button class="btn-save" onclick="savePlayer()">저장하기</button>
-        </div>
-    </div>
-</div>
-
-<!-- 일괄 비공개 설정 모달 -->
-<div id="batchModal" class="modal">
-    <div class="modal-content" style="max-width: 380px;">
-        <div class="modal-header">일괄 공개/비공개 제어</div>
-        <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">등록된 전체 인원의 특정 항목을 한 번에 비공개 또는 전체 공개로 일괄 변경합니다.</p>
-        
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-            <button class="filter-btn" style="padding: 10px;" onclick="batchToggle('photo', true)">🔒 모든 사진 일괄 비공개</button>
-            <button class="filter-btn" style="padding: 10px;" onclick="batchToggle('photo', false)">👁️ 모든 사진 일괄 공개</button>
-            <hr style="border: 0; border-top: 1px dashed #cbd5e1; margin: 4px 0;">
-            <button class="filter-btn" style="padding: 10px;" onclick="batchToggle('phys', true)">🔒 모든 체격(키/몸무게) 일괄 비공개</button>
-            <button class="filter-btn" style="padding: 10px;" onclick="batchToggle('phys', false)">👁️ 모든 체격(키/몸무게) 일괄 공개</button>
-        </div>
-
-        <div class="modal-btns" style="margin-top: 18px;">
-            <button class="btn-cancel" onclick="closeModal('batchModal')">닫기</button>
         </div>
     </div>
 </div>
@@ -818,59 +597,10 @@
         el.src = defaultAvatar;
     }
 
-    const initialPlayers = [
-        { id: 101, no: 70, name: "감독님", grade: "감독", pos: "총괄/지휘", bt: "우투우타", birth: "1982.05.18", height: 178, weight: 82, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 102, no: 71, name: "코치님", grade: "코치", pos: "수석코치", bt: "우투좌타", birth: "1989.11.04", height: 183, weight: 85, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-
-        { id: 1, no: 2, name: "오승환", grade: "5", pos: "투수", bt: "우투우타", birth: "2015.05.15", height: 153, weight: 46, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 2, no: 3, name: "마성민", grade: "6", pos: "포수", bt: "우투우타", birth: "2014.04.18", height: 162, weight: 54, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 3, no: 4, name: "김주원", grade: "4", pos: "내야수", bt: "우투좌타", birth: "2016.03.14", height: 142, weight: 37, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 4, no: 5, name: "박도현", grade: "5", pos: "외야수", bt: "우투우타", birth: "2015.03.20", height: 150, weight: 43, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 5, no: 6, name: "이지윤", grade: "6", pos: "내야수", bt: "우투우타", birth: "2014.06.22", height: 158, weight: 48, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 6, no: 7, name: "여승우", grade: "6", pos: "외야수", bt: "좌투좌타", birth: "2014.03.11", height: 160, weight: 50, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 7, no: 8, name: "김민준", grade: "5", pos: "내야수", bt: "우투우타", birth: "2015.08.14", height: 148, weight: 41, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 8, no: 9, name: "강건승", grade: "6", pos: "투수", bt: "우투우타", birth: "2014.08.05", height: 165, weight: 56, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 9, no: 10, name: "김재백", grade: "5", pos: "내야수", bt: "우투좌타", birth: "2015.01.29", height: 152, weight: 45, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 10, no: 11, name: "김범서", grade: "6", pos: "투수", bt: "좌투좌타", birth: "2014.02.14", height: 163, weight: 52, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 11, no: 12, name: "조정린", grade: "6", pos: "포수", bt: "우투우타", birth: "2014.09.30", height: 164, weight: 58, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 12, no: 13, name: "박세훈", grade: "5", pos: "외야수", bt: "좌투좌타", birth: "2015.06.17", height: 151, weight: 44, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 13, no: 14, name: "강태원", grade: "5", pos: "내야수", bt: "우투우타", birth: "2015.10.05", height: 154, weight: 47, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 14, no: 15, name: "김민준", grade: "3", pos: "외야수", bt: "우투우타", birth: "2017.04.10", height: 135, weight: 31, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 15, no: 16, name: "정서현", grade: "3", pos: "내야수", bt: "우투우타", birth: "2017.07.25", height: 133, weight: 29, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 16, no: 17, name: "박태이", grade: "6", pos: "투수", bt: "우투우타", birth: "2014.05.27", height: 166, weight: 55, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 17, no: 18, name: "염성우", grade: "5", pos: "내야수", bt: "우투우타", birth: "2015.04.23", height: 149, weight: 42, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 18, no: 19, name: "오지환", grade: "6", pos: "내야수", bt: "우투좌타", birth: "2014.11.12", height: 159, weight: 49, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 19, no: 20, name: "박시후", grade: "4", pos: "외야수", bt: "우투우타", birth: "2016.06.09", height: 140, weight: 35, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 20, no: 21, name: "남시윤", grade: "5", pos: "투수", bt: "좌투좌타", birth: "2015.07.08", height: 155, weight: 46, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 21, no: 22, name: "이시완", grade: "6", pos: "내야수", bt: "우투우타", birth: "2014.07.03", height: 161, weight: 51, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 22, no: 23, name: "손지완", grade: "5", pos: "외야수", bt: "우투우타", birth: "2015.11.30", height: 147, weight: 40, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 23, no: 24, name: "이하성", grade: "4", pos: "내야수", bt: "우투우타", birth: "2016.09.18", height: 143, weight: 38, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 24, no: 25, name: "최진혁", grade: "2", pos: "내야수", bt: "우투우타", birth: "2018.06.12", height: 128, weight: 26, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 25, no: 27, name: "김서준", grade: "6", pos: "외야수", bt: "우투우타", birth: "2014.01.25", height: 157, weight: 47, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 26, no: 28, name: "고에이든", grade: "4", pos: "외야수", bt: "좌투좌타", birth: "2016.01.22", height: 141, weight: 36, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 27, no: 29, name: "고준서", grade: "5", pos: "투수", bt: "우투우타", birth: "2015.09.12", height: 156, weight: 48, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 28, no: 30, name: "김승원", grade: "5", pos: "내야수", bt: "우투우타", birth: "2015.02.04", height: 150, weight: 43, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 29, no: 31, name: "김도현", grade: "6", pos: "외야수", bt: "우투우타", birth: "2014.10.08", height: 162, weight: 53, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 30, no: 32, name: "하승후", grade: "3", pos: "외야수", bt: "좌투좌타", birth: "2017.02.16", height: 136, weight: 32, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 31, no: 33, name: "이주원", grade: "3", pos: "내야수", bt: "우투좌타", birth: "2017.10.03", height: 134, weight: 30, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 32, no: 35, name: "김수현", grade: "6", pos: "투수", bt: "우투좌타", birth: "2014.12.19", height: 167, weight: 57, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 33, no: 36, name: "이하준", grade: "4", pos: "내야수", bt: "우투우타", birth: "2016.07.31", height: 139, weight: 34, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 34, no: 37, name: "강도헌", grade: "5", pos: "외야수", bt: "우투좌타", birth: "2015.12.15", height: 149, weight: 42, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 35, no: 38, name: "하승민", grade: "6", pos: "내야수", bt: "우투우타", birth: "2014.04.02", height: 160, weight: 50, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 36, no: 39, name: "이든", grade: "4", pos: "외야수", bt: "우투우타", birth: "2016.11.05", height: 144, weight: 39, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 37, no: 44, name: "김민찬", grade: "3", pos: "내야수", bt: "우투우타", birth: "2017.05.28", height: 132, weight: 28, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 38, no: 47, name: "류태영", grade: "5", pos: "투수", bt: "우투우타", birth: "2015.08.27", height: 153, weight: 45, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false }
-    ];
-
-    let players = JSON.parse(localStorage.getItem('daeyeon_players_auth_v2')) || initialPlayers;
+    let players = [];
     let selectedGrade = 'all';
-    // 로컬스토리지에서 마지막 뷰 모드 복원 (기본값: 'list')
     let currentView = localStorage.getItem('daeyeon_view_mode') || 'list';
     let currentRole = 'guest';
-
-    function saveToStorage() {
-        localStorage.setItem('daeyeon_players_auth_v2', JSON.stringify(players));
-    }
 
     function isStaff(grade) {
         return grade === '감독' || grade === '코치';
@@ -910,7 +640,7 @@
 
     function switchView(view) {
         currentView = view;
-        localStorage.setItem('daeyeon_view_mode', view); // 브라우저에 보기 설정 기억
+        localStorage.setItem('daeyeon_view_mode', view);
 
         const btnList = document.getElementById('btnListView');
         const btnCard = document.getElementById('btnCardView');
@@ -947,9 +677,6 @@
         const tableBody = document.getElementById('tableBody');
         const cardContainer = document.getElementById('cardContainer');
         const notice = document.getElementById('statusNotice');
-        const thAdmin = document.getElementById('thAdmin');
-
-        thAdmin.style.display = (currentRole !== 'guest') ? 'table-cell' : 'none';
 
         const filtered = players.filter(p => {
             const isVisible = (p.visible !== false);
@@ -1008,20 +735,6 @@
                 `;
             }
 
-            let adminActions = '';
-            if (currentRole !== 'guest') {
-                const editBtn = `<button class="btn-table-edit" onclick="event.stopPropagation(); editPlayer(${p.id})">수정</button>`;
-                let extraBtn = '';
-                if (currentRole === 'super') {
-                    const toggleText = isHidden ? '표시 ON' : '숨김 OFF';
-                    extraBtn = `
-                        <button class="btn-table-toggle" onclick="event.stopPropagation(); quickToggleVisibility(${p.id})">${toggleText}</button>
-                        <button class="btn-table-del" onclick="event.stopPropagation(); deletePlayer(${p.id})">삭제</button>
-                    `;
-                }
-                adminActions = `<td><div class="admin-btn-group">${editBtn}${extraBtn}</div></td>`;
-            }
-
             return `
                 <tr class="clickable-row ${isHidden ? 'is-hidden' : ''}" onclick="goToPlayer('${playerPath}')">
                     <td class="td-no">${p.no}</td>
@@ -1032,7 +745,6 @@
                     <td style="color: #64748b;">${p.bt || '-'}</td>
                     <td style="color: #475569; font-size: 13px;">${p.birth || '-'}</td>
                     <td style="color: #475569; font-size: 13px;">${formatPhys(p)}</td>
-                    ${adminActions}
                 </tr>
             `;
         }).join('');
@@ -1068,17 +780,6 @@
                 `;
             }
 
-            let cardAdminHtml = '';
-            if (currentRole !== 'guest') {
-                let cardBtns = `<button onclick="event.stopPropagation(); editPlayer(${p.id})">수정</button>`;
-                if (currentRole === 'super') {
-                    const toggleLabel = isHidden ? '노출 ON' : '숨김 OFF';
-                    cardBtns += `<button onclick="event.stopPropagation(); quickToggleVisibility(${p.id})">${toggleLabel}</button>`;
-                    cardBtns += `<button style="color: #dc2626;" onclick="event.stopPropagation(); deletePlayer(${p.id})">삭제</button>`;
-                }
-                cardAdminHtml = `<div class="card-admin-bar" style="display: flex;">${cardBtns}</div>`;
-            }
-
             return `
                 <div class="player-card ${isHidden ? 'is-hidden' : ''}" onclick="goToPlayer('${playerPath}')">
                     ${cardPhotoHtml}
@@ -1093,7 +794,6 @@
                             <div>📏 ${formatPhys(p)}</div>
                         </div>
                     </div>
-                    ${cardAdminHtml}
                 </div>
             `;
         }).join('');
@@ -1116,13 +816,7 @@
         const pw = document.getElementById('adminPw').value.trim();
         if (pw === '9999') {
             currentRole = 'super';
-            alert('최고관리자로 로그인되었습니다. (전체 제어, 표시 ON/OFF 및 비공개 설정 가능)');
-        } else if (pw === '7777') {
-            currentRole = 'sub';
-            alert('부관리자로 로그인되었습니다. (선수 전체 정보 수정 가능)');
-        } else if (pw === '1111') {
-            currentRole = 'general';
-            alert('일반관리자로 로그인되었습니다. (포지션/투타/생일/체격 수정 가능)');
+            alert('최고관리자로 로그인되었습니다. (스프레드시트에서 수정 시 실시간 자동 반영)');
         } else {
             alert('비밀번호가 올바르지 않습니다.');
             return;
@@ -1137,39 +831,13 @@
         const adminBar = document.getElementById('adminBar');
         const adminBtn = document.getElementById('adminLoginBtn');
         const roleText = document.getElementById('adminRoleText');
-        const btnAddNew = document.getElementById('btnAddNew');
-        const btnConfig = document.getElementById('btnConfig');
-        const btnExport = document.getElementById('btnExport');
-
-        adminBar.className = 'admin-bar';
 
         if (currentRole === 'super') {
             adminBtn.textContent = '🔓 최고관리자 로그아웃';
             adminBtn.classList.add('logged-in');
-            adminBar.classList.add('super');
+            adminBar.className = 'admin-bar super';
             adminBar.style.display = 'flex';
-            roleText.textContent = '👑 최고관리자 모드 실행 중 (전체 제어, 노출/비공개 옵션 관리)';
-            btnAddNew.style.display = 'inline-block';
-            btnConfig.style.display = 'inline-block';
-            btnExport.style.display = 'inline-block';
-        } else if (currentRole === 'sub') {
-            adminBtn.textContent = '🔓 부관리자 로그아웃';
-            adminBtn.classList.add('logged-in');
-            adminBar.classList.add('sub');
-            adminBar.style.display = 'flex';
-            roleText.textContent = '🛠️ 부관리자 모드 실행 중 (선수 모든 정보 수정 가능)';
-            btnAddNew.style.display = 'none';
-            btnConfig.style.display = 'none';
-            btnExport.style.display = 'none';
-        } else if (currentRole === 'general') {
-            adminBtn.textContent = '🔓 일반관리자 로그아웃';
-            adminBtn.classList.add('logged-in');
-            adminBar.classList.add('general');
-            adminBar.style.display = 'flex';
-            roleText.textContent = '📋 일반관리자 모드 실행 중 (포지션·투타·생일·체격만 수정)';
-            btnAddNew.style.display = 'none';
-            btnConfig.style.display = 'none';
-            btnExport.style.display = 'none';
+            roleText.textContent = '👑 최고관리자 모드 (모든 비공개/숨김 정보 열람 중)';
         } else {
             adminBtn.textContent = '🔒 관리자 로그인';
             adminBtn.classList.remove('logged-in');
@@ -1177,184 +845,49 @@
         }
     }
 
-    function editPlayer(id) {
-        const p = players.find(x => x.id === id);
-        if (!p) return;
-
-        document.getElementById('playerModalTitle').textContent = `[No.${p.no} ${p.name}] 정보 수정`;
-        document.getElementById('editPlayerId').value = p.id;
-        document.getElementById('inpNo').value = p.no;
-        document.getElementById('inpName').value = p.name;
-        document.getElementById('inpGrade').value = p.grade;
-        document.getElementById('inpPos').value = p.pos || '-';
-        document.getElementById('inpBt').value = p.bt || '-';
-        document.getElementById('inpBirth').value = p.birth || '';
-        document.getElementById('inpHeight').value = p.height || '';
-        document.getElementById('inpWeight').value = p.weight || '';
-        document.getElementById('inpVisible').value = (p.visible !== false) ? 'true' : 'false';
-
-        document.getElementById('inpHidePhoto').checked = !!p.hidePhoto;
-        document.getElementById('inpHideHeight').checked = !!p.hideHeight;
-        document.getElementById('inpHideWeight').checked = !!p.hideWeight;
-
-        document.getElementById('groupVisibility').style.display = (currentRole === 'super') ? 'flex' : 'none';
-        document.getElementById('groupPrivacy').style.display = (currentRole === 'super') ? 'flex' : 'none';
-
-        if (currentRole === 'general') {
-            document.getElementById('inpNo').disabled = true;
-            document.getElementById('inpName').disabled = true;
-            document.getElementById('inpGrade').disabled = true;
-        } else {
-            document.getElementById('inpNo').disabled = false;
-            document.getElementById('inpName').disabled = false;
-            document.getElementById('inpGrade').disabled = false;
-        }
-
-        document.getElementById('inpPos').disabled = false;
-        document.getElementById('inpBt').disabled = false;
-        document.getElementById('inpBirth').disabled = false;
-        document.getElementById('inpHeight').disabled = false;
-        document.getElementById('inpWeight').disabled = false;
-
-        document.getElementById('playerModal').style.display = 'flex';
-    }
-
-    function openPlayerModal(isEdit) {
-        if (currentRole !== 'super') {
-            alert('신규 등록 권한이 없습니다.');
-            return;
-        }
-        document.getElementById('playerModalTitle').textContent = '새 지도자 / 선수 등록';
-        document.getElementById('editPlayerId').value = '';
-        document.getElementById('inpNo').value = '';
-        document.getElementById('inpName').value = '';
-        document.getElementById('inpBirth').value = '';
-        document.getElementById('inpHeight').value = '';
-        document.getElementById('inpWeight').value = '';
-        document.getElementById('groupVisibility').style.display = 'flex';
-        document.getElementById('groupPrivacy').style.display = 'flex';
-        document.getElementById('inpVisible').value = 'true';
-        document.getElementById('inpHidePhoto').checked = false;
-        document.getElementById('inpHideHeight').checked = false;
-        document.getElementById('inpHideWeight').checked = false;
-
-        document.getElementById('inpNo').disabled = false;
-        document.getElementById('inpName').disabled = false;
-        document.getElementById('inpGrade').disabled = false;
-
-        document.getElementById('playerModal').style.display = 'flex';
-    }
-
-    function savePlayer() {
-        const idVal = document.getElementById('editPlayerId').value;
-        const no = parseInt(document.getElementById('inpNo').value);
-        const name = document.getElementById('inpName').value.trim();
-        const grade = document.getElementById('inpGrade').value;
-        const pos = document.getElementById('inpPos').value;
-        const bt = document.getElementById('inpBt').value;
-        const birth = document.getElementById('inpBirth').value.trim();
-        const height = document.getElementById('inpHeight').value.trim();
-        const weight = document.getElementById('inpWeight').value.trim();
-        const visible = (document.getElementById('inpVisible').value === 'true');
-
-        const hidePhoto = document.getElementById('inpHidePhoto').checked;
-        const hideHeight = document.getElementById('inpHideHeight').checked;
-        const hideWeight = document.getElementById('inpHideWeight').checked;
-
-        if (!idVal && (!no || !name)) {
-            alert('등번호와 성명을 정확히 입력해 주세요.');
-            return;
-        }
-
-        if (idVal) {
-            const idx = players.findIndex(x => x.id == idVal);
-            if (idx !== -1) {
-                if (currentRole === 'general') {
-                    players[idx] = { ...players[idx], pos, bt, birth, height, weight };
-                } else if (currentRole === 'sub') {
-                    players[idx] = { ...players[idx], no, name, grade, pos, bt, birth, height, weight };
-                } else if (currentRole === 'super') {
-                    players[idx] = { ...players[idx], no, name, grade, pos, bt, birth, height, weight, visible, hidePhoto, hideHeight, hideWeight };
-                }
-            }
-        } else {
-            const newId = players.length > 0 ? Math.max(...players.map(p => p.id)) + 1 : 1;
-            players.push({ id: newId, no, name, grade, pos, bt, birth, height, weight, visible: true, hidePhoto, hideHeight, hideWeight });
-        }
-
-        saveToStorage();
-        closeModal('playerModal');
-        render();
-    }
-
-    function quickToggleVisibility(id) {
-        if (currentRole !== 'super') return;
-        const idx = players.findIndex(p => p.id === id);
-        if (idx !== -1) {
-            const current = (players[idx].visible !== false);
-            players[idx].visible = !current;
-            saveToStorage();
-            render();
-        }
-    }
-
-    function deletePlayer(id) {
-        if (currentRole !== 'super') {
-            alert('삭제 권한은 최고관리자에게만 있습니다.');
-            return;
-        }
-        if (confirm('해당 선수를 명단에서 완전히 삭제하시겠습니까?')) {
-            players = players.filter(p => p.id !== id);
-            saveToStorage();
-            render();
-        }
-    }
-
-    function openBatchModal() {
-        document.getElementById('batchModal').style.display = 'flex';
-    }
-
-    function batchToggle(type, hideState) {
-        const actionText = hideState ? '비공개' : '공개';
-        if (confirm(`등록된 전체 인원의 ${type === 'photo' ? '사진' : '체격(신장/체중)'}을 일괄 ${actionText}로 변경하시겠습니까?`)) {
-            players.forEach(p => {
-                if (type === 'photo') {
-                    p.hidePhoto = hideState;
-                } else if (type === 'phys') {
-                    p.hideHeight = hideState;
-                    p.hideWeight = hideState;
-                }
-            });
-            saveToStorage();
-            closeModal('batchModal');
-            render();
-            alert(`전체 ${type === 'photo' ? '사진' : '체격'}이 일괄 ${actionText} 처리되었습니다.`);
-        }
-    }
-
     function closeModal(id) {
         document.getElementById(id).style.display = 'none';
     }
 
-    function exportUpdatedHTML() {
-        if (currentRole !== 'super') {
-            alert('최고관리자만 전체 소스코드를 내보낼 수 있습니다.');
-            return;
-        }
-        const fullSource = document.documentElement.outerHTML;
-        const jsonStr = JSON.stringify(players, null, 8);
-        const regex = /const initialPlayers = \[[\s\S]*?\];/;
-        const updatedSource = "<!DOCTYPE html>\n<html lang=\"ko\">\n" + fullSource.replace(regex, `const initialPlayers = ${jsonStr};`) + "\n</html>";
+    // 구글 스프레드시트 실시간 데이터 불러오기
+    async function loadGoogleSheetData() {
+        try {
+            // 브라우저 캐시 방지 파라미터 적용
+            const cacheUrl = GOOGLE_SHEET_CSV_URL + (GOOGLE_SHEET_CSV_URL.includes('?') ? '&' : '?') + 'nocache=' + new Date().getTime();
+            const response = await fetch(cacheUrl);
+            const csvText = await response.text();
 
-        const blob = new Blob([updatedSource], { type: 'text/html;charset=utf-8' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'index.html';
-        a.click();
+            Papa.parse(csvText, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    players = results.data.map((row, idx) => ({
+                        id: idx + 1,
+                        no: parseInt(row['등번호']) || 0,
+                        name: (row['이름'] || '').trim(),
+                        grade: (row['구분'] || '').trim(),
+                        pos: (row['포지션'] || '-').trim(),
+                        bt: (row['투타'] || '-').trim(),
+                        birth: (row['생년월일'] || '').trim(),
+                        height: (row['키'] || '').trim(),
+                        weight: (row['몸무게'] || '').trim(),
+                        visible: String(row['노출여부'] || '').toUpperCase().trim() !== 'OFF',
+                        hidePhoto: ['O', 'Y', 'TRUE', '1'].includes(String(row['사진비공개'] || '').toUpperCase().trim()),
+                        hideHeight: ['O', 'Y', 'TRUE', '1'].includes(String(row['키비공개'] || '').toUpperCase().trim()),
+                        hideWeight: ['O', 'Y', 'TRUE', '1'].includes(String(row['몸무게비공개'] || '').toUpperCase().trim())
+                    })).filter(p => p.no && p.name);
+
+                    switchView(currentView);
+                }
+            });
+        } catch (error) {
+            console.error("데이터 로드 에러:", error);
+            document.getElementById('statusNotice').textContent = "구글 시트 데이터를 불러오는 데 실패했습니다.";
+        }
     }
 
-    // 초기 실행: 저장된 보기 모드(리스트형 또는 이미지형)로 동기화하며 최초 화면 표시
-    switchView(currentView);
+    // 초기 실행
+    loadGoogleSheetData();
 </script>
 
 </body>
