@@ -184,7 +184,7 @@
             color: #ffffff;
         }
 
-        /* 관리자 안내 바 */
+        /* 관리자 안내 바 (등급별 색상) */
         .admin-bar {
             display: none;
             border-radius: 8px;
@@ -196,6 +196,8 @@
             margin-bottom: 16px;
         }
         .admin-bar.super { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; }
+        .admin-bar.sub { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+        .admin-bar.general { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
 
         .btn-sheet-link {
             background: #059669;
@@ -476,7 +478,7 @@
         .modal-content {
             background: #ffffff;
             width: 100%;
-            max-width: 380px;
+            max-width: 400px;
             border-radius: 12px;
             padding: 22px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
@@ -541,10 +543,10 @@
         </div>
     </div>
 
-    <!-- 관리자 안내 바 -->
+    <!-- 등급별 관리자 안내 바 -->
     <div id="adminBar" class="admin-bar">
         <span id="adminRoleText" style="font-size: 13px; font-weight: 700;"></span>
-        <button class="btn-sheet-link" onclick="window.open(GOOGLE_SHEET_EDIT_URL, '_blank')">📊 구글 시트 편집창 열기</button>
+        <button id="btnSheetLink" class="btn-sheet-link" style="display: none;" onclick="window.open(GOOGLE_SHEET_EDIT_URL, '_blank')">📊 구글 시트 편집창 열기</button>
     </div>
 
     <!-- 1. 리스트형 -->
@@ -575,12 +577,14 @@
 <!-- 로그인 모달 -->
 <div id="loginModal" class="modal">
     <div class="modal-content">
-        <div class="modal-header">관리자 로그인</div>
+        <div class="modal-header">관리자 등급 로그인</div>
         <div class="form-group">
             <label>관리자 비밀번호</label>
             <input type="password" id="adminPw" placeholder="비밀번호 입력">
-            <span style="font-size: 11px; color: #64748b; margin-top: 4px;">
-                • 최고관리자: 9999 (숨김 선수 및 비공개 실제 데이터 모두 열람 가능)
+            <span style="font-size: 11px; color: #64748b; line-height: 1.5; margin-top: 6px;">
+                • <b>최고관리자 (9999)</b>: 숨김 선수 열람 + 모든 비공개 해제 + 시트 편집<br>
+                • <b>보조관리자 (7777)</b>: 비공개 사진 및 체격 열람 + 시트 편집<br>
+                • <b>일반관리자 (1111)</b>: 선수 비공개 체격(키/몸무게) 열람 전용
             </span>
         </div>
         <div class="modal-btns">
@@ -601,7 +605,7 @@
     let players = [];
     let selectedGrade = 'all';
     let currentView = localStorage.getItem('daeyeon_view_mode') || 'list';
-    let currentRole = 'guest';
+    let currentRole = 'guest'; // 'guest', 'general', 'sub', 'super'
 
     function isStaff(grade) {
         return grade === '감독' || grade === '코치';
@@ -619,6 +623,7 @@
         return `<span class="pos-tag pos-${pos}">${pos}</span>`;
     }
 
+    // 신장/체중 권한별 마스킹 함수
     function formatPhys(p) {
         const h = p.height;
         const w = p.weight;
@@ -627,14 +632,22 @@
         const hHidden = !!p.hideHeight;
         const wHidden = !!p.hideWeight;
 
-        if (currentRole !== 'super') {
+        // 체격 열람 권한: 일반관리자 이상 (general, sub, super) 모두 가능
+        const canViewPhys = (currentRole === 'general' || currentRole === 'sub' || currentRole === 'super');
+
+        if (!canViewPhys) {
+            // 일반 방문자 (guest): 비공개 시 마스킹
             if (hHidden && wHidden) return '<span class="text-private">비공개</span>';
             const hStr = h ? (hHidden ? '<span class="text-private">비공개</span>' : `${h}cm`) : '-';
             const wStr = w ? (wHidden ? '<span class="text-private">비공개</span>' : `${w}kg`) : '-';
             return `${hStr} / ${wStr}`;
         } else {
-            const hStr = h ? `${h}cm${hHidden ? '<span class="admin-private-badge">비공개</span>' : ''}` : '-';
-            const wStr = w ? `${w}kg${wHidden ? '<span class="admin-private-badge">비공개</span>' : ''}` : '-';
+            // 관리자 등급: 실제 수치 노출 (비공개된 항목은 뱃지 표시)
+            const showBadge = (currentRole === 'super' || currentRole === 'sub');
+            const hBadge = (hHidden && showBadge) ? '<span class="admin-private-badge">비공개</span>' : '';
+            const wBadge = (wHidden && showBadge) ? '<span class="admin-private-badge">비공개</span>' : '';
+            const hStr = h ? `${h}cm${hBadge}` : '-';
+            const wStr = w ? `${w}kg${wBadge}` : '-';
             return `${hStr} / ${wStr}`;
         }
     }
@@ -679,8 +692,12 @@
         const cardContainer = document.getElementById('cardContainer');
         const notice = document.getElementById('statusNotice');
 
+        // 사진 비공개 해제 권한: 보조관리자(sub) 및 최고관리자(super)만 가능
+        const canViewPhoto = (currentRole === 'sub' || currentRole === 'super');
+
         const filtered = players.filter(p => {
             const isVisible = (p.visible !== false);
+            // 숨김 선수 열람 권한: 오직 최고관리자(super)만 가능
             if (currentRole !== 'super' && !isVisible) return false;
 
             let matchGrade = false;
@@ -720,14 +737,16 @@
             const playerPath = isStaff(p.grade) ? `staff/${p.no}` : `${p.grade}/${p.no}`;
 
             let photoCell = '';
-            if (p.hidePhoto && currentRole !== 'super') {
+            if (p.hidePhoto && !canViewPhoto) {
+                // 사진 비공개 상태 (일반인, 일반관리자)
                 photoCell = `
                     <div class="table-thumb-wrap" style="background: #f1f5f9;" title="사진 비공개">
                         <span style="font-size: 15px; opacity: 0.6;">🔒</span>
                     </div>
                 `;
             } else {
-                const adminPhotoBadge = (p.hidePhoto && currentRole === 'super') ? `<span class="admin-private-badge" style="position:absolute; bottom:0; left:50%; transform:translateX(-50%); font-size:9px; white-space:nowrap;">비공개</span>` : '';
+                // 사진 열람 가능 (보조/최고관리자 또는 원래 공개된 사진)
+                const adminPhotoBadge = (p.hidePhoto && canViewPhoto) ? `<span class="admin-private-badge" style="position:absolute; bottom:0; left:50%; transform:translateX(-50%); font-size:9px; white-space:nowrap;">비공개</span>` : '';
                 photoCell = `
                     <div class="table-thumb-wrap" style="position: relative;">
                         <img class="table-thumb" src="${photoUrl}" alt="" onerror="handleImgError(this)">
@@ -760,7 +779,8 @@
             const playerPath = isStaff(p.grade) ? `staff/${p.no}` : `${p.grade}/${p.no}`;
 
             let cardPhotoHtml = '';
-            if (p.hidePhoto && currentRole !== 'super') {
+            if (p.hidePhoto && !canViewPhoto) {
+                // 사진 비공개 상태
                 cardPhotoHtml = `
                     <div class="card-photo-box" style="background:#f1f5f9; display:flex; flex-direction:column; align-items:center; justify-content:center;">
                         <span class="card-no-badge">No.${p.no}</span>
@@ -770,7 +790,8 @@
                     </div>
                 `;
             } else {
-                const adminPhotoBadge = (p.hidePhoto && currentRole === 'super') ? `<span style="position:absolute; bottom:8px; left:8px; background:#ef4444; color:#ffffff; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; z-index:3;">🔒 사진 비공개</span>` : '';
+                // 사진 열람 가능 상태
+                const adminPhotoBadge = (p.hidePhoto && canViewPhoto) ? `<span style="position:absolute; bottom:8px; left:8px; background:#ef4444; color:#ffffff; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; z-index:3;">🔒 사진 비공개</span>` : '';
                 cardPhotoHtml = `
                     <div class="card-photo-box">
                         <span class="card-no-badge">No.${p.no}</span>
@@ -817,7 +838,13 @@
         const pw = document.getElementById('adminPw').value.trim();
         if (pw === '9999') {
             currentRole = 'super';
-            alert('최고관리자로 로그인되었습니다. (스프레드시트에서 수정 시 실시간 자동 반영)');
+            alert('👑 최고관리자로 로그인되었습니다.\n(숨김 선수 및 모든 비공개 데이터 열람 가능)');
+        } else if (pw === '7777') {
+            currentRole = 'sub';
+            alert('🛠️ 보조관리자로 로그인되었습니다.\n(비공개 사진 및 체격 스펙 열람 가능)');
+        } else if (pw === '1111') {
+            currentRole = 'general';
+            alert('📋 일반관리자로 로그인되었습니다.\n(선수 비공개 체격 스펙 열람 가능)');
         } else {
             alert('비밀번호가 올바르지 않습니다.');
             return;
@@ -832,17 +859,36 @@
         const adminBar = document.getElementById('adminBar');
         const adminBtn = document.getElementById('adminLoginBtn');
         const roleText = document.getElementById('adminRoleText');
+        const btnSheetLink = document.getElementById('btnSheetLink');
+
+        adminBar.className = 'admin-bar';
 
         if (currentRole === 'super') {
             adminBtn.textContent = '🔓 최고관리자 로그아웃';
             adminBtn.classList.add('logged-in');
-            adminBar.className = 'admin-bar super';
+            adminBar.classList.add('super');
             adminBar.style.display = 'flex';
-            roleText.textContent = '👑 최고관리자 모드 (모든 비공개/숨김 정보 열람 중)';
+            roleText.textContent = '👑 최고관리자 모드 (숨김 선수 & 모든 비공개 열람 중)';
+            btnSheetLink.style.display = 'inline-flex';
+        } else if (currentRole === 'sub') {
+            adminBtn.textContent = '🔓 보조관리자 로그아웃';
+            adminBtn.classList.add('logged-in');
+            adminBar.classList.add('sub');
+            adminBar.style.display = 'flex';
+            roleText.textContent = '🛠️ 보조관리자 모드 (비공개 사진 & 체격 열람 중)';
+            btnSheetLink.style.display = 'inline-flex';
+        } else if (currentRole === 'general') {
+            adminBtn.textContent = '🔓 일반관리자 로그아웃';
+            adminBtn.classList.add('logged-in');
+            adminBar.classList.add('general');
+            adminBar.style.display = 'flex';
+            roleText.textContent = '📋 일반관리자 모드 (체격 스펙 열람 전용)';
+            btnSheetLink.style.display = 'none';
         } else {
             adminBtn.textContent = '🔒 관리자 로그인';
             adminBtn.classList.remove('logged-in');
             adminBar.style.display = 'none';
+            btnSheetLink.style.display = 'none';
         }
     }
 
@@ -850,7 +896,7 @@
         document.getElementById(id).style.display = 'none';
     }
 
-    // 구글 스프레드시트 실시간 데이터 불러오기
+    // 구글 스프레드시트 실시간 데이터 로드
     async function loadGoogleSheetData() {
         try {
             const cacheUrl = GOOGLE_SHEET_CSV_URL + (GOOGLE_SHEET_CSV_URL.includes('?') ? '&' : '?') + 'nocache=' + new Date().getTime();
