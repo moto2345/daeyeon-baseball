@@ -280,6 +280,7 @@
             align-items: center;
             justify-content: center;
             border: 1px solid #cbd5e1;
+            vertical-align: middle;
         }
 
         .table-thumb {
@@ -287,6 +288,7 @@
             height: 100%;
             object-fit: cover;
             object-position: top center;
+            display: block;
         }
 
         .td-name {
@@ -357,7 +359,7 @@
             vertical-align: middle;
         }
 
-        /* 테이블 관리 버튼 한 줄 정렬 Flex 컨테이너 */
+        /* 테이블 관리 버튼 컨테이너 */
         .admin-btn-group {
             display: inline-flex;
             align-items: center;
@@ -440,6 +442,7 @@
             height: 100%;
             object-fit: cover;
             object-position: top center;
+            display: block;
         }
 
         .card-no-badge {
@@ -808,7 +811,14 @@
 </div>
 
 <script>
+    // 기본 실루엣 야구선수 아바타
     const defaultAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23e2e8f0'/%3E%3Cpath d='M32 32 C32 18 42 12 50 12 C58 12 68 18 68 32 C68 40 58 48 50 48 C42 48 32 40 32 32 Z' fill='%2394a3b8'/%3E%3Cpath d='M44 14 C48 10 56 10 65 14 C74 18 84 18 86 21 C86 24 75 25 65 24 Z' fill='%230b2240'/%3E%3Cpath d='M20 92 C20 66 34 56 50 56 C66 56 80 66 80 92 Z' fill='%2364748b'/%3E%3C/svg%3E";
+
+    // 이미지 로드 실패 시 기본 이미지로 교체하는 안전 핸들러 함수
+    function handleImgError(el) {
+        el.onerror = null;
+        el.src = defaultAvatar;
+    }
 
     const initialPlayers = [
         { id: 101, no: 70, name: "감독님", grade: "감독", pos: "총괄/지휘", bt: "우투우타", birth: "1982.05.18", height: 178, weight: 82, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
@@ -879,7 +889,7 @@
         return `<span class="pos-tag pos-${pos}">${pos}</span>`;
     }
 
-    // 신장/체중 포맷 함수 (비공개 마스킹 처리)
+    // 신장/체중 포맷 함수 (비공개 마스킹)
     function formatPhys(p) {
         const h = p.height;
         const w = p.weight;
@@ -894,7 +904,6 @@
             const wStr = w ? (wHidden ? '<span class="text-private">비공개</span>' : `${w}kg`) : '-';
             return `${hStr} / ${wStr}`;
         } else {
-            // 최고관리자에게는 실제 수치와 비공개 표기를 함께 노출
             const hStr = h ? `${h}cm${hHidden ? '<span class="admin-private-badge">비공개</span>' : ''}` : '-';
             const wStr = w ? `${w}kg${wHidden ? '<span class="admin-private-badge">비공개</span>' : ''}` : '-';
             return `${hStr} / ${wStr}`;
@@ -982,15 +991,19 @@
             const hiddenBadge = isHidden ? `<span class="hidden-badge">숨김</span>` : '';
             const playerPath = isStaff(p.grade) ? `staff/${p.no}` : `${p.grade}/${p.no}`;
 
-            // 사진 열 마스킹
+            // 사진 열 렌더링 (비공개 시 🔒 뱃지 표시, 파일 부재 시 기본 이미지 자동 연결)
             let photoCell = '';
             if (p.hidePhoto && currentRole !== 'super') {
-                photoCell = `<span class="text-private">비공개</span>`;
+                photoCell = `
+                    <div class="table-thumb-wrap" style="background: #f1f5f9;" title="사진 비공개">
+                        <span style="font-size: 15px; opacity: 0.6;">🔒</span>
+                    </div>
+                `;
             } else {
-                const adminPhotoBadge = (p.hidePhoto && currentRole === 'super') ? `<span class="admin-private-badge" style="position:absolute; bottom:0; left:50%; transform:translateX(-50%); font-size:9px;">비공개</span>` : '';
+                const adminPhotoBadge = (p.hidePhoto && currentRole === 'super') ? `<span class="admin-private-badge" style="position:absolute; bottom:0; left:50%; transform:translateX(-50%); font-size:9px; white-space:nowrap;">비공개</span>` : '';
                 photoCell = `
                     <div class="table-thumb-wrap" style="position: relative;">
-                        <img class="table-thumb" src="${photoUrl}" alt="" onerror="this.onerror=null; this.src='${defaultAvatar}';">
+                        <img class="table-thumb" src="${photoUrl}" alt="" onerror="handleImgError(this)">
                         ${adminPhotoBadge}
                     </div>
                 `;
@@ -1034,7 +1047,6 @@
             const extraMeta = isStaff(p.grade) ? (p.bt && p.bt !== '-' ? p.bt : '지도자') : (p.bt || '우투우타');
             const playerPath = isStaff(p.grade) ? `staff/${p.no}` : `${p.grade}/${p.no}`;
 
-            // 카드 사진 영역 마스킹
             let cardPhotoHtml = '';
             if (p.hidePhoto && currentRole !== 'super') {
                 cardPhotoHtml = `
@@ -1051,7 +1063,7 @@
                     <div class="card-photo-box">
                         <span class="card-no-badge">No.${p.no}</span>
                         <div class="card-pos">${posBadge}</div>
-                        <img class="card-img" src="${photoUrl}" alt="" onerror="this.onerror=null; this.src='${defaultAvatar}';">
+                        <img class="card-img" src="${photoUrl}" alt="" onerror="handleImgError(this)">
                         ${adminPhotoBadge}
                     </div>
                 `;
@@ -1182,7 +1194,6 @@
         document.getElementById('inpWeight').value = p.weight || '';
         document.getElementById('inpVisible').value = (p.visible !== false) ? 'true' : 'false';
 
-        // 최고관리자 전용 비공개 제어 옵션 불러오기
         document.getElementById('inpHidePhoto').checked = !!p.hidePhoto;
         document.getElementById('inpHideHeight').checked = !!p.hideHeight;
         document.getElementById('inpHideWeight').checked = !!p.hideWeight;
