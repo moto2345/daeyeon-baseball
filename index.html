@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>대연초등학교 야구부 공식 선수단</title>
+    <title>대연초 야구부 명단</title>
     <style>
         :root {
             --kbo-blue: #0b2240;
@@ -29,15 +29,15 @@
             padding-bottom: 70px;
         }
 
-        /* 1. KBO 헤더 */
+        /* 헤더 */
         header {
             background-color: var(--kbo-blue);
             color: white;
             padding: 30px 20px 25px;
             text-align: center;
             border-bottom: 5px solid var(--kbo-red);
-            position: relative;
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            position: relative;
         }
 
         .header-title {
@@ -69,24 +69,20 @@
             transition: 0.2s;
         }
 
-        .admin-toggle-btn:hover {
-            background: rgba(255,255,255,0.25);
-        }
-
+        .admin-toggle-btn:hover { background: rgba(255,255,255,0.25); }
         .admin-toggle-btn.logged-in {
             background: #fee2e2;
             color: var(--kbo-red);
             border-color: #fca5a5;
         }
 
-        /* 메인 레이아웃 */
         .container {
             max-width: 1040px;
             margin: 20px auto 0;
             padding: 0 16px;
         }
 
-        /* 2. 컨트롤 패널 */
+        /* 컨트롤 패널 */
         .control-card {
             background: #ffffff;
             border: 1px solid var(--card-border);
@@ -125,17 +121,13 @@
             transition: 0.15s;
         }
 
-        .filter-btn:hover {
-            background: #f3f4f6;
-        }
-
+        .filter-btn:hover { background: #f3f4f6; }
         .filter-btn.active {
             background: var(--kbo-blue);
             color: #ffffff;
             border-color: var(--kbo-blue);
             font-weight: 700;
         }
-
         .filter-btn.staff-tab.active {
             background: #1e293b;
             border-color: #1e293b;
@@ -155,10 +147,6 @@
             font-size: 13px;
             width: 170px;
             outline: none;
-        }
-
-        .search-box input:focus {
-            border-color: var(--kbo-blue);
         }
 
         .view-switch {
@@ -187,11 +175,9 @@
             color: #ffffff;
         }
 
-        /* 최고관리자 액션 바 */
+        /* 관리자 안내 바 */
         .admin-bar {
             display: none;
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
             border-radius: 8px;
             padding: 10px 14px;
             justify-content: space-between;
@@ -200,6 +186,9 @@
             gap: 8px;
             margin-bottom: 16px;
         }
+        .admin-bar.super { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; }
+        .admin-bar.sub { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+        .admin-bar.general { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
 
         .btn-add {
             background: #2563eb;
@@ -222,6 +211,7 @@
             font-weight: 700;
             cursor: pointer;
         }
+        .btn-config:hover { background: #334155; }
 
         .btn-export {
             background: #059669;
@@ -234,7 +224,7 @@
             cursor: pointer;
         }
 
-        /* 3. [리스트형] KBO 테이블 */
+        /* 리스트형 테이블 */
         .table-wrap {
             background: #ffffff;
             border-radius: 8px;
@@ -248,33 +238,55 @@
             border-collapse: collapse;
             text-align: center;
             font-size: 14px;
-            min-width: 720px;
+            min-width: 820px;
         }
 
         th {
             background-color: #f8fafc;
             color: #475569;
             font-weight: 700;
-            padding: 13px 10px;
+            padding: 12px 8px;
             font-size: 13px;
             border-bottom: 2px solid #e2e8f0;
             white-space: nowrap;
         }
 
         td {
-            padding: 12px 10px;
+            padding: 10px 8px;
             border-bottom: 1px solid #edf2f7;
             vertical-align: middle;
         }
 
-        tr:hover td {
-            background-color: #f8fafc;
+        tr.clickable-row { cursor: pointer; }
+        tr.is-hidden {
+            background-color: #f8fafc !important;
+            opacity: 0.65;
         }
 
         .td-no {
             font-weight: 900;
             color: var(--kbo-blue);
             font-size: 16px;
+            font-family: "Impact", sans-serif;
+        }
+
+        .table-thumb-wrap {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #e2e8f0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #cbd5e1;
+        }
+
+        .table-thumb {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top center;
         }
 
         .td-name {
@@ -283,6 +295,7 @@
             font-size: 15px;
         }
 
+        /* 학년 뱃지 */
         .grade-tag {
             display: inline-block;
             padding: 3px 10px;
@@ -298,6 +311,7 @@
         .grade-2 { background: #f3e8ff; color: #6b21a8; }
         .grade-1 { background: #e0f2fe; color: #0369a1; }
 
+        /* 포지션 뱃지 */
         .pos-tag {
             display: inline-block;
             padding: 2px 7px;
@@ -312,11 +326,22 @@
         .pos-포수 { background: #0f766e; }
         .pos-내야수 { background: #1d4ed8; }
         .pos-외야수 { background: #15803d; }
-        .pos-기타 { background: #64748b; }
+
+        /* 숨김 & 비공개 뱃지 */
+        .hidden-badge {
+            display: inline-block;
+            background: #64748b;
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 4px;
+            margin-left: 4px;
+        }
 
         .text-private {
             color: #94a3b8;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 12px;
         }
 
@@ -328,10 +353,52 @@
             font-weight: 800;
             padding: 1px 4px;
             border-radius: 3px;
-            margin-left: 2px;
+            margin-left: 3px;
+            vertical-align: middle;
         }
 
-        /* 4. [이미지형] 카드 그리드 */
+        /* 테이블 관리 버튼 한 줄 정렬 Flex 컨테이너 */
+        .admin-btn-group {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+
+        .admin-btn-group button {
+            margin: 0 !important;
+            white-space: nowrap;
+            padding: 4px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .btn-table-edit {
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #334155;
+        }
+        .btn-table-edit:hover { background: #f1f5f9; }
+
+        .btn-table-toggle {
+            border: 1px solid #94a3b8;
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+        .btn-table-toggle:hover { background: #e2e8f0; }
+
+        .btn-table-del {
+            border: 1px solid #fca5a5;
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .btn-table-del:hover { background: #fecaca; }
+
+        /* 이미지형 카드 그리드 */
         .roster-grid {
             display: none;
             grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
@@ -346,12 +413,15 @@
             display: flex;
             flex-direction: column;
             box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-            transition: transform 0.15s;
+            transition: transform 0.15s, box-shadow 0.15s;
+            position: relative;
+            cursor: pointer;
         }
 
-        .player-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 14px rgba(0,0,0,0.06);
+        .player-card.is-hidden {
+            opacity: 0.65;
+            border-color: #cbd5e1;
+            background: #f8fafc;
         }
 
         .card-photo-box {
@@ -372,17 +442,18 @@
             object-position: top center;
         }
 
-        .card-no {
+        .card-no-badge {
             position: absolute;
             top: 8px;
             left: 8px;
-            background: rgba(11, 34, 64, 0.9);
+            background: rgba(11, 34, 64, 0.92);
             color: #ffffff;
             font-size: 13px;
             font-weight: 900;
-            padding: 2px 7px;
-            border-radius: 5px;
+            padding: 3px 8px;
+            border-radius: 6px;
             font-family: "Impact", sans-serif;
+            border: 1px solid rgba(255, 255, 255, 0.4);
             z-index: 2;
         }
 
@@ -410,6 +481,16 @@
             font-size: 16px;
             font-weight: 800;
             color: var(--text-title);
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .card-name-no {
+            font-family: "Impact", sans-serif;
+            color: var(--kbo-red);
+            font-size: 15px;
+            font-weight: 900;
         }
 
         .card-meta {
@@ -430,19 +511,24 @@
             border: 1px solid #f1f5f9;
         }
 
-        .btn-table-edit { padding: 4px 8px; border: 1px solid #cbd5e1; background: #ffffff; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; }
-        .btn-table-del { padding: 4px 8px; border: 1px solid #fca5a5; background: #fee2e2; color: #b91c1c; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; margin-left: 4px; }
-
         .card-admin-bar {
             display: none;
             padding: 8px 10px;
             border-top: 1px dashed var(--card-border);
-            gap: 6px;
+            gap: 4px;
             background: #fafafa;
         }
-        .card-admin-bar button { flex: 1; padding: 5px 0; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; }
-        .btn-card-edit { background: #f1f5f9; border: 1px solid #cbd5e1; }
-        .btn-card-del { background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; }
+        .card-admin-bar button {
+            flex: 1;
+            padding: 5px 0;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            white-space: nowrap;
+        }
 
         /* 모달 팝업 */
         .modal {
@@ -472,46 +558,15 @@
         .form-row { display: flex; gap: 8px; }
         .form-group label { font-size: 12px; font-weight: 700; color: #475569; }
         .form-group input, .form-group select { padding: 9px 12px; border: 1px solid var(--card-border); border-radius: 6px; font-size: 14px; outline: none; }
-        
-        /* 비공개 체크박스 영역 */
-        .privacy-box {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 12px;
-            margin-top: 6px;
-        }
-        .privacy-title {
-            font-size: 12px;
-            font-weight: 800;
-            color: var(--kbo-blue);
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .privacy-options {
-            display: flex;
-            gap: 14px;
-            flex-wrap: wrap;
-            font-size: 13px;
-            font-weight: 600;
-            color: #334155;
-        }
-        .privacy-options label {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
-        }
+        .form-group input:disabled, .form-group select:disabled { background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
 
         .modal-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
         .btn-cancel { background: #f1f5f9; border: 1px solid var(--card-border); padding: 8px 14px; border-radius: 6px; font-weight: 700; cursor: pointer; }
         .btn-save { background: var(--kbo-blue); color: #ffffff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; }
 
-        .no-data {
+        .loading-notice {
             text-align: center;
-            padding: 40px;
+            padding: 50px 20px;
             color: var(--text-sub);
             font-size: 14px;
         }
@@ -529,8 +584,8 @@
 <body>
 
 <header>
-    <div class="header-title">대연초등학교 야구부</div>
-    <div class="header-subtitle" id="rosterCountText">2026 OFFICIAL ROSTER</div>
+    <div class="header-title">대연초 야구부 명단</div>
+    <div class="header-subtitle" id="rosterCountText">선수단 데이터를 불러오는 중...</div>
     <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
 </header>
 
@@ -560,48 +615,54 @@
         </div>
     </div>
 
-    <!-- 최고관리자 전용 액션 바 -->
+    <!-- 관리자 권한 안내 바 -->
     <div id="adminBar" class="admin-bar">
-        <span style="font-size: 13px; font-weight: 700; color: #1e40af;">🔧 최고관리자 모드 실행 중</span>
+        <span id="adminRoleText" style="font-size: 13px; font-weight: 700;"></span>
         <div style="display: flex; gap: 6px;">
-            <button class="btn-add" onclick="openPlayerModal()">+ 등록</button>
-            <button class="btn-config" onclick="openBatchModal()">⚙️ 일괄 공개 설정</button>
-            <button class="btn-export" onclick="exportUpdatedHTML()" title="수정된 전체 소스코드를 다운로드">💾 HTML 내보내기</button>
+            <button id="btnAddNew" class="btn-add" style="display: none;" onclick="openPlayerModal(false)">+ 등록</button>
+            <button id="btnConfig" class="btn-config" style="display: none;" onclick="openBatchModal()">⚙️ 일괄 비공개 설정</button>
+            <button id="btnExport" class="btn-export" style="display: none;" onclick="exportUpdatedHTML()" title="수정된 전체 소스코드를 다운로드">💾 HTML 내보내기</button>
         </div>
     </div>
 
-    <!-- 1. 리스트형 (테이블) -->
+    <!-- 1. 리스트형 -->
     <div class="table-wrap" id="listContainer">
         <table>
             <thead>
                 <tr>
                     <th style="width: 60px;">등번호</th>
+                    <th style="width: 65px;">사진</th>
                     <th>성명</th>
                     <th>구분/학년</th>
                     <th>포지션/역할</th>
                     <th>투/타</th>
                     <th>생년월일</th>
                     <th>신장 / 체중</th>
-                    <th id="thAdmin" style="display: none; width: 110px;">관리</th>
+                    <th id="thAdmin" style="display: none; width: 180px; min-width: 180px;">관리</th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
         </table>
     </div>
 
-    <!-- 2. 이미지형 (카드 그리드) -->
+    <!-- 2. 이미지형 -->
     <div class="roster-grid" id="cardContainer"></div>
 
-    <div id="noDataNotice" class="no-data" style="display: none;">검색 조건에 맞는 명단이 없습니다.</div>
+    <div id="statusNotice" class="loading-notice">선수 명단을 불러오고 있습니다...</div>
 </div>
 
 <!-- 로그인 모달 -->
 <div id="loginModal" class="modal">
-    <div class="modal-content" style="max-width: 360px;">
-        <div class="modal-header">최고관리자 로그인</div>
+    <div class="modal-content" style="max-width: 380px;">
+        <div class="modal-header">관리자 접속 로그인</div>
         <div class="form-group">
             <label>관리자 비밀번호</label>
-            <input type="password" id="adminPw" placeholder="기본 비밀번호: 1234">
+            <input type="password" id="adminPw" placeholder="비밀번호 입력">
+            <span style="font-size: 11px; color: #64748b; margin-top: 4px;">
+                • 최고관리자: 9999 (전체 권한, 표시 ON/OFF 및 비공개 설정)<br>
+                • 부관리자: 7777 (선수 모든 정보 수정)<br>
+                • 일반관리자: 1111 (포지션, 투타, 생일, 체격만 수정)
+            </span>
         </div>
         <div class="modal-btns">
             <button class="btn-cancel" onclick="closeModal('loginModal')">취소</button>
@@ -610,16 +671,42 @@
     </div>
 </div>
 
-<!-- 등록 / 수정 모달 -->
+<!-- 지도자 / 선수 정보 수정 모달 -->
 <div id="playerModal" class="modal">
     <div class="modal-content">
-        <div class="modal-header" id="playerModalTitle">명단 정보 등록</div>
+        <div class="modal-header" id="playerModalTitle">명단 정보 수정</div>
         <input type="hidden" id="editPlayerId">
         
+        <!-- 최고관리자 전용: 명단 표시 상태 -->
+        <div class="form-group" id="groupVisibility" style="display: none; background: #fef2f2; padding: 10px; border-radius: 8px; border: 1px solid #fecaca;">
+            <label style="color: #991b1b; font-weight: 800;">🔒 명단 노출 상태 (최고관리자 전용)</label>
+            <select id="inpVisible" style="font-weight: 700;">
+                <option value="true">✅ 화면에 정상 표시 (ON)</option>
+                <option value="false">🚫 명단에서 숨김 처리 (OFF - 일반 방문자에게 안 보임)</option>
+            </select>
+        </div>
+
+        <!-- 최고관리자 전용: 사진/신장/체중 비공개 옵션 -->
+        <div class="form-group" id="groupPrivacy" style="display: none; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
+            <label style="color: var(--kbo-blue); font-weight: 800; margin-bottom: 6px;">🔒 항목별 비공개 설정 (최고관리자 전용)</label>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; font-weight: 600; color: #334155;">
+                <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                    <input type="checkbox" id="inpHidePhoto"> 사진 비공개
+                </label>
+                <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                    <input type="checkbox" id="inpHideHeight"> 신장(키) 비공개
+                </label>
+                <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                    <input type="checkbox" id="inpHideWeight"> 체중(몸무게) 비공개
+                </label>
+            </div>
+            <span style="font-size: 11px; color: #94a3b8; margin-top: 4px;">* 체크 시 일반 방문자에게 해당 항목이 '비공개'로 마스킹됩니다.</span>
+        </div>
+
         <div class="form-row">
             <div class="form-group" style="flex: 1;">
                 <label>등번호</label>
-                <input type="number" id="inpNo" required placeholder="예: 70">
+                <input type="number" id="inpNo" required placeholder="예: 2">
             </div>
             <div class="form-group" style="flex: 2;">
                 <label>이름</label>
@@ -679,35 +766,18 @@
 
         <div class="form-group">
             <label>생년월일</label>
-            <input type="text" id="inpBirth" placeholder="예: 2014.05.12">
+            <input type="text" id="inpBirth" placeholder="예: 2015.05.15">
         </div>
 
         <div class="form-row">
             <div class="form-group" style="flex: 1;">
                 <label>신장 (키 cm)</label>
-                <input type="number" id="inpHeight" placeholder="예: 152">
+                <input type="number" id="inpHeight" placeholder="예: 153">
             </div>
             <div class="form-group" style="flex: 1;">
                 <label>체중 (몸무게 kg)</label>
-                <input type="number" id="inpWeight" placeholder="예: 45">
+                <input type="number" id="inpWeight" placeholder="예: 46">
             </div>
-        </div>
-
-        <div class="form-group">
-            <label>프로필 사진</label>
-            <input type="file" id="inpPhotoFile" accept="image/*" onchange="processImageFile(event)">
-            <input type="hidden" id="inpPhotoBase64">
-        </div>
-
-        <!-- 개인정보 비공개 옵션 체크박스 -->
-        <div class="privacy-box">
-            <div class="privacy-title">🔒 일반 접속자 대상 비공개 설정</div>
-            <div class="privacy-options">
-                <label><input type="checkbox" id="inpHidePhoto"> 사진 비공개</label>
-                <label><input type="checkbox" id="inpHideHeight"> 신장(키) 비공개</label>
-                <label><input type="checkbox" id="inpHideWeight"> 체중(몸무게) 비공개</label>
-            </div>
-            <p style="font-size: 11px; color: #94a3b8; margin-top: 6px;">* 체크된 항목은 일반 사용자에게 '비공개'로 표시됩니다.</p>
         </div>
 
         <div class="modal-btns">
@@ -717,7 +787,7 @@
     </div>
 </div>
 
-<!-- 일괄 공개/비공개 설정 모달 -->
+<!-- 일괄 비공개 설정 모달 -->
 <div id="batchModal" class="modal">
     <div class="modal-content" style="max-width: 380px;">
         <div class="modal-header">일괄 공개/비공개 제어</div>
@@ -740,58 +810,57 @@
 <script>
     const defaultAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23e2e8f0'/%3E%3Cpath d='M32 32 C32 18 42 12 50 12 C58 12 68 18 68 32 C68 40 58 48 50 48 C42 48 32 40 32 32 Z' fill='%2394a3b8'/%3E%3Cpath d='M44 14 C48 10 56 10 65 14 C74 18 84 18 86 21 C86 24 75 25 65 24 Z' fill='%230b2240'/%3E%3Cpath d='M20 92 C20 66 34 56 50 56 C66 56 80 66 80 92 Z' fill='%2364748b'/%3E%3C/svg%3E";
 
-    // 코칭스태프 2인 + 38명 선수단 초기 데이터
     const initialPlayers = [
-        { id: 101, no: 70, name: "감독님", grade: "감독", pos: "총괄/지휘", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 102, no: 71, name: "코치님", grade: "코치", pos: "수석코치", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 101, no: 70, name: "감독님", grade: "감독", pos: "총괄/지휘", bt: "우투우타", birth: "1982.05.18", height: 178, weight: 82, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 102, no: 71, name: "코치님", grade: "코치", pos: "수석코치", bt: "우투좌타", birth: "1989.11.04", height: 183, weight: 85, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
 
-        { id: 1, no: 2, name: "오승환", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 2, no: 3, name: "마성민", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 3, no: 4, name: "김주원", grade: "4", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 4, no: 5, name: "박도현", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 5, no: 6, name: "이지윤", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 6, no: 7, name: "여승우", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 7, no: 8, name: "김민준", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 8, no: 9, name: "강건승", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 9, no: 10, name: "김재백", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 10, no: 11, name: "김범서", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 11, no: 12, name: "조정린", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 12, no: 13, name: "박세훈", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 13, no: 14, name: "강태원", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 14, no: 15, name: "김민준", grade: "3", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 15, no: 16, name: "정서현", grade: "3", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 16, no: 17, name: "박태이", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 17, no: 18, name: "염성우", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 18, no: 19, name: "오지환", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 19, no: 20, name: "박시후", grade: "4", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 20, no: 21, name: "남시윤", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 21, no: 22, name: "이시완", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 22, no: 23, name: "손지완", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 23, no: 24, name: "이하성", grade: "4", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 24, no: 25, name: "최진혁", grade: "2", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 25, no: 27, name: "김서준", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 26, no: 28, name: "고에이든", grade: "4", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 27, no: 29, name: "고준서", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 28, no: 30, name: "김승원", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 29, no: 31, name: "김도현", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 30, no: 32, name: "하승후", grade: "3", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 31, no: 33, name: "이주원", grade: "3", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 32, no: 35, name: "김수현", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 33, no: 36, name: "이하준", grade: "4", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 34, no: 37, name: "강도헌", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 35, no: 38, name: "하승민", grade: "6", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 36, no: 39, name: "이든", grade: "4", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 37, no: 44, name: "김민찬", grade: "3", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false },
-        { id: 38, no: 47, name: "류태영", grade: "5", pos: "-", bt: "-", birth: "", height: "", weight: "", photo: "", hidePhoto: false, hideHeight: false, hideWeight: false }
+        { id: 1, no: 2, name: "오승환", grade: "5", pos: "투수", bt: "우투우타", birth: "2015.05.15", height: 153, weight: 46, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 2, no: 3, name: "마성민", grade: "6", pos: "포수", bt: "우투우타", birth: "2014.04.18", height: 162, weight: 54, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 3, no: 4, name: "김주원", grade: "4", pos: "내야수", bt: "우투좌타", birth: "2016.03.14", height: 142, weight: 37, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 4, no: 5, name: "박도현", grade: "5", pos: "외야수", bt: "우투우타", birth: "2015.03.20", height: 150, weight: 43, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 5, no: 6, name: "이지윤", grade: "6", pos: "내야수", bt: "우투우타", birth: "2014.06.22", height: 158, weight: 48, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 6, no: 7, name: "여승우", grade: "6", pos: "외야수", bt: "좌투좌타", birth: "2014.03.11", height: 160, weight: 50, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 7, no: 8, name: "김민준", grade: "5", pos: "내야수", bt: "우투우타", birth: "2015.08.14", height: 148, weight: 41, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 8, no: 9, name: "강건승", grade: "6", pos: "투수", bt: "우투우타", birth: "2014.08.05", height: 165, weight: 56, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 9, no: 10, name: "김재백", grade: "5", pos: "내야수", bt: "우투좌타", birth: "2015.01.29", height: 152, weight: 45, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 10, no: 11, name: "김범서", grade: "6", pos: "투수", bt: "좌투좌타", birth: "2014.02.14", height: 163, weight: 52, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 11, no: 12, name: "조정린", grade: "6", pos: "포수", bt: "우투우타", birth: "2014.09.30", height: 164, weight: 58, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 12, no: 13, name: "박세훈", grade: "5", pos: "외야수", bt: "좌투좌타", birth: "2015.06.17", height: 151, weight: 44, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 13, no: 14, name: "강태원", grade: "5", pos: "내야수", bt: "우투우타", birth: "2015.10.05", height: 154, weight: 47, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 14, no: 15, name: "김민준", grade: "3", pos: "외야수", bt: "우투우타", birth: "2017.04.10", height: 135, weight: 31, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 15, no: 16, name: "정서현", grade: "3", pos: "내야수", bt: "우투우타", birth: "2017.07.25", height: 133, weight: 29, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 16, no: 17, name: "박태이", grade: "6", pos: "투수", bt: "우투우타", birth: "2014.05.27", height: 166, weight: 55, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 17, no: 18, name: "염성우", grade: "5", pos: "내야수", bt: "우투우타", birth: "2015.04.23", height: 149, weight: 42, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 18, no: 19, name: "오지환", grade: "6", pos: "내야수", bt: "우투좌타", birth: "2014.11.12", height: 159, weight: 49, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 19, no: 20, name: "박시후", grade: "4", pos: "외야수", bt: "우투우타", birth: "2016.06.09", height: 140, weight: 35, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 20, no: 21, name: "남시윤", grade: "5", pos: "투수", bt: "좌투좌타", birth: "2015.07.08", height: 155, weight: 46, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 21, no: 22, name: "이시완", grade: "6", pos: "내야수", bt: "우투우타", birth: "2014.07.03", height: 161, weight: 51, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 22, no: 23, name: "손지완", grade: "5", pos: "외야수", bt: "우투우타", birth: "2015.11.30", height: 147, weight: 40, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 23, no: 24, name: "이하성", grade: "4", pos: "내야수", bt: "우투우타", birth: "2016.09.18", height: 143, weight: 38, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 24, no: 25, name: "최진혁", grade: "2", pos: "내야수", bt: "우투우타", birth: "2018.06.12", height: 128, weight: 26, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 25, no: 27, name: "김서준", grade: "6", pos: "외야수", bt: "우투우타", birth: "2014.01.25", height: 157, weight: 47, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 26, no: 28, name: "고에이든", grade: "4", pos: "외야수", bt: "좌투좌타", birth: "2016.01.22", height: 141, weight: 36, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 27, no: 29, name: "고준서", grade: "5", pos: "투수", bt: "우투우타", birth: "2015.09.12", height: 156, weight: 48, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 28, no: 30, name: "김승원", grade: "5", pos: "내야수", bt: "우투우타", birth: "2015.02.04", height: 150, weight: 43, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 29, no: 31, name: "김도현", grade: "6", pos: "외야수", bt: "우투우타", birth: "2014.10.08", height: 162, weight: 53, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 30, no: 32, name: "하승후", grade: "3", pos: "외야수", bt: "좌투좌타", birth: "2017.02.16", height: 136, weight: 32, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 31, no: 33, name: "이주원", grade: "3", pos: "내야수", bt: "우투좌타", birth: "2017.10.03", height: 134, weight: 30, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 32, no: 35, name: "김수현", grade: "6", pos: "투수", bt: "우투좌타", birth: "2014.12.19", height: 167, weight: 57, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 33, no: 36, name: "이하준", grade: "4", pos: "내야수", bt: "우투우타", birth: "2016.07.31", height: 139, weight: 34, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 34, no: 37, name: "강도헌", grade: "5", pos: "외야수", bt: "우투좌타", birth: "2015.12.15", height: 149, weight: 42, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 35, no: 38, name: "하승민", grade: "6", pos: "내야수", bt: "우투우타", birth: "2014.04.02", height: 160, weight: 50, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 36, no: 39, name: "이든", grade: "4", pos: "외야수", bt: "우투우타", birth: "2016.11.05", height: 144, weight: 39, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 37, no: 44, name: "김민찬", grade: "3", pos: "내야수", bt: "우투우타", birth: "2017.05.28", height: 132, weight: 28, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false },
+        { id: 38, no: 47, name: "류태영", grade: "5", pos: "투수", bt: "우투우타", birth: "2015.08.27", height: 153, weight: 45, visible: true, hidePhoto: false, hideHeight: false, hideWeight: false }
     ];
 
-    let players = JSON.parse(localStorage.getItem('daeyeon_players_v5')) || initialPlayers;
+    let players = JSON.parse(localStorage.getItem('daeyeon_players_auth_v2')) || initialPlayers;
     let selectedGrade = 'all';
     let currentView = 'list';
-    let isAdmin = false;
+    let currentRole = 'guest';
 
     function saveToStorage() {
-        localStorage.setItem('daeyeon_players_v5', JSON.stringify(players));
+        localStorage.setItem('daeyeon_players_auth_v2', JSON.stringify(players));
     }
 
     function isStaff(grade) {
@@ -799,9 +868,7 @@
     }
 
     function getGradeBadge(grade) {
-        if (isStaff(grade)) {
-            return `<span class="grade-tag grade-staff">${grade}</span>`;
-        }
+        if (isStaff(grade)) return `<span class="grade-tag grade-staff">${grade}</span>`;
         return `<span class="grade-tag grade-${grade}">${grade}학년</span>`;
     }
 
@@ -812,7 +879,7 @@
         return `<span class="pos-tag pos-${pos}">${pos}</span>`;
     }
 
-    // 신장/체중 텍스트 렌더링 (비공개 처리 지원)
+    // 신장/체중 포맷 함수 (비공개 마스킹 처리)
     function formatPhys(p) {
         const h = p.height;
         const w = p.weight;
@@ -821,13 +888,13 @@
         const hHidden = !!p.hideHeight;
         const wHidden = !!p.hideWeight;
 
-        if (!isAdmin) {
+        if (currentRole !== 'super') {
             if (hHidden && wHidden) return '<span class="text-private">비공개</span>';
             const hStr = h ? (hHidden ? '<span class="text-private">비공개</span>' : `${h}cm`) : '-';
             const wStr = w ? (wHidden ? '<span class="text-private">비공개</span>' : `${w}kg`) : '-';
             return `${hStr} / ${wStr}`;
         } else {
-            // 관리자 모드: 실제 수치 + 비공개 표시
+            // 최고관리자에게는 실제 수치와 비공개 표기를 함께 노출
             const hStr = h ? `${h}cm${hHidden ? '<span class="admin-private-badge">비공개</span>' : ''}` : '-';
             const wStr = w ? `${w}kg${wHidden ? '<span class="admin-private-badge">비공개</span>' : ''}` : '-';
             return `${hStr} / ${wStr}`;
@@ -862,29 +929,31 @@
         render();
     }
 
+    function goToPlayer(path) {
+        window.location.href = `player.html?path=${encodeURIComponent(path)}`;
+    }
+
     function render() {
         const query = document.getElementById('searchInput').value.trim().toLowerCase();
         const tableBody = document.getElementById('tableBody');
         const cardContainer = document.getElementById('cardContainer');
+        const notice = document.getElementById('statusNotice');
         const thAdmin = document.getElementById('thAdmin');
-        const noData = document.getElementById('noDataNotice');
 
-        thAdmin.style.display = isAdmin ? 'table-cell' : 'none';
+        thAdmin.style.display = (currentRole !== 'guest') ? 'table-cell' : 'none';
 
         const filtered = players.filter(p => {
+            const isVisible = (p.visible !== false);
+            if (currentRole !== 'super' && !isVisible) return false;
+
             let matchGrade = false;
-            if (selectedGrade === 'all') {
-                matchGrade = true;
-            } else if (selectedGrade === 'staff') {
-                matchGrade = isStaff(p.grade);
-            } else {
-                matchGrade = (p.grade.toString() === selectedGrade);
-            }
+            if (selectedGrade === 'all') matchGrade = true;
+            else if (selectedGrade === 'staff') matchGrade = isStaff(p.grade);
+            else matchGrade = (p.grade.toString() === selectedGrade);
 
             const matchSearch = p.name.toLowerCase().includes(query) || 
                                 p.no.toString().includes(query) || 
-                                (p.pos && p.pos.includes(query)) ||
-                                (p.grade && p.grade.includes(query));
+                                (p.pos && p.pos.includes(query));
             return matchGrade && matchSearch;
         }).sort((a, b) => {
             const rankA = a.grade === '감독' ? 1 : (a.grade === '코치' ? 2 : 3);
@@ -893,155 +962,137 @@
             return a.no - b.no;
         });
 
-        const staffCount = players.filter(p => isStaff(p.grade)).length;
-        const studentCount = players.length - staffCount;
-        document.getElementById('rosterCountText').textContent = `2026 OFFICIAL ROSTER (코칭스태프 ${staffCount}명 · 등록선수 ${studentCount}명)`;
+        const activeStaff = players.filter(p => isStaff(p.grade) && (currentRole === 'super' || p.visible !== false)).length;
+        const activeStudent = players.filter(p => !isStaff(p.grade) && (currentRole === 'super' || p.visible !== false)).length;
+        document.getElementById('rosterCountText').textContent = `2026 OFFICIAL ROSTER (코칭스태프 ${activeStaff}명 · 등록선수 ${activeStudent}명)`;
 
         if (filtered.length === 0) {
             tableBody.innerHTML = '';
             cardContainer.innerHTML = '';
-            noData.style.display = 'block';
+            notice.textContent = '조건에 맞는 명단이 없습니다.';
+            notice.style.display = 'block';
             return;
         }
-        noData.style.display = 'none';
+        notice.style.display = 'none';
 
-        // 1. 리스트형 렌더링
+        // 1. [리스트형] 렌더링
         tableBody.innerHTML = filtered.map(p => {
-            const posBadge = getPosBadge(p.pos, p.grade);
-            const gradeBadge = getGradeBadge(p.grade);
-            const physText = formatPhys(p);
-            const birthText = p.birth || '-';
-            const adminCol = isAdmin ? `
-                <td>
-                    <button class="btn-table-edit" onclick="editPlayer(${p.id})">수정</button>
-                    <button class="btn-table-del" onclick="deletePlayer(${p.id})">삭제</button>
-                </td>
-            ` : '';
+            const photoUrl = `data/photos/${p.no}.jpg`;
+            const isHidden = (p.visible === false);
+            const hiddenBadge = isHidden ? `<span class="hidden-badge">숨김</span>` : '';
+            const playerPath = isStaff(p.grade) ? `staff/${p.no}` : `${p.grade}/${p.no}`;
+
+            // 사진 열 마스킹
+            let photoCell = '';
+            if (p.hidePhoto && currentRole !== 'super') {
+                photoCell = `<span class="text-private">비공개</span>`;
+            } else {
+                const adminPhotoBadge = (p.hidePhoto && currentRole === 'super') ? `<span class="admin-private-badge" style="position:absolute; bottom:0; left:50%; transform:translateX(-50%); font-size:9px;">비공개</span>` : '';
+                photoCell = `
+                    <div class="table-thumb-wrap" style="position: relative;">
+                        <img class="table-thumb" src="${photoUrl}" alt="" onerror="this.onerror=null; this.src='${defaultAvatar}';">
+                        ${adminPhotoBadge}
+                    </div>
+                `;
+            }
+
+            let adminActions = '';
+            if (currentRole !== 'guest') {
+                const editBtn = `<button class="btn-table-edit" onclick="event.stopPropagation(); editPlayer(${p.id})">수정</button>`;
+                let extraBtn = '';
+                if (currentRole === 'super') {
+                    const toggleText = isHidden ? '표시 ON' : '숨김 OFF';
+                    extraBtn = `
+                        <button class="btn-table-toggle" onclick="event.stopPropagation(); quickToggleVisibility(${p.id})">${toggleText}</button>
+                        <button class="btn-table-del" onclick="event.stopPropagation(); deletePlayer(${p.id})">삭제</button>
+                    `;
+                }
+                adminActions = `<td><div class="admin-btn-group">${editBtn}${extraBtn}</div></td>`;
+            }
 
             return `
-                <tr>
+                <tr class="clickable-row ${isHidden ? 'is-hidden' : ''}" onclick="goToPlayer('${playerPath}')">
                     <td class="td-no">${p.no}</td>
-                    <td class="td-name">${p.name}</td>
-                    <td>${gradeBadge}</td>
-                    <td>${posBadge}</td>
+                    <td>${photoCell}</td>
+                    <td class="td-name">${p.name}${hiddenBadge}</td>
+                    <td>${getGradeBadge(p.grade)}</td>
+                    <td>${getPosBadge(p.pos, p.grade)}</td>
                     <td style="color: #64748b;">${p.bt || '-'}</td>
-                    <td style="color: #475569; font-size: 13px;">${birthText}</td>
-                    <td style="color: #475569; font-size: 13px;">${physText}</td>
-                    ${adminCol}
+                    <td style="color: #475569; font-size: 13px;">${p.birth || '-'}</td>
+                    <td style="color: #475569; font-size: 13px;">${formatPhys(p)}</td>
+                    ${adminActions}
                 </tr>
             `;
         }).join('');
 
-        // 2. 이미지형 렌더링
+        // 2. [이미지형] 렌더링
         cardContainer.innerHTML = filtered.map(p => {
+            const photoUrl = `data/photos/${p.no}.jpg`;
+            const isHidden = (p.visible === false);
+            const hiddenBadge = isHidden ? `<span class="hidden-badge">숨김</span>` : '';
             const posBadge = (p.pos && p.pos !== '-') ? getPosBadge(p.pos, p.grade) : '';
-            const gradeBadge = getGradeBadge(p.grade);
-            const birthText = p.birth || '-';
             const extraMeta = isStaff(p.grade) ? (p.bt && p.bt !== '-' ? p.bt : '지도자') : (p.bt || '우투우타');
+            const playerPath = isStaff(p.grade) ? `staff/${p.no}` : `${p.grade}/${p.no}`;
 
-            // 사진 영역 비공개 로직
-            const isPhotoHidden = !!p.hidePhoto;
-            let photoAreaHtml = '';
-
-            if (!isAdmin && isPhotoHidden) {
-                // 일반 사용자 화면: 사진 비공개 마스킹
-                photoAreaHtml = `
-                    <div class="card-photo-box" style="background:#e2e8f0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-                        <span class="card-no">${p.no}</span>
+            // 카드 사진 영역 마스킹
+            let cardPhotoHtml = '';
+            if (p.hidePhoto && currentRole !== 'super') {
+                cardPhotoHtml = `
+                    <div class="card-photo-box" style="background:#f1f5f9; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                        <span class="card-no-badge">No.${p.no}</span>
                         <div class="card-pos">${posBadge}</div>
                         <div style="font-size:32px; opacity:0.35;">👤</div>
                         <span style="margin-top:6px; font-size:11px; font-weight:800; color:#64748b; background:rgba(255,255,255,0.9); padding:3px 8px; border-radius:12px; border:1px solid #cbd5e1;">🔒 사진 비공개</span>
                     </div>
                 `;
             } else {
-                // 관리자 모드 또는 공개 상태
-                const imgSrc = p.photo || defaultAvatar;
-                const adminBadge = (isAdmin && isPhotoHidden) ? `<span style="position:absolute; bottom:8px; left:8px; background:#ef4444; color:#ffffff; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; z-index:3;">🔒 사진 비공개</span>` : '';
-                photoAreaHtml = `
+                const adminPhotoBadge = (p.hidePhoto && currentRole === 'super') ? `<span style="position:absolute; bottom:8px; left:8px; background:#ef4444; color:#ffffff; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; z-index:3;">🔒 사진 비공개</span>` : '';
+                cardPhotoHtml = `
                     <div class="card-photo-box">
-                        <span class="card-no">${p.no}</span>
+                        <span class="card-no-badge">No.${p.no}</span>
                         <div class="card-pos">${posBadge}</div>
-                        <img class="card-img" src="${imgSrc}" alt="${p.name}" onerror="this.src='${defaultAvatar}';">
-                        ${adminBadge}
+                        <img class="card-img" src="${photoUrl}" alt="" onerror="this.onerror=null; this.src='${defaultAvatar}';">
+                        ${adminPhotoBadge}
                     </div>
                 `;
             }
 
-            // 카드 신장/체중 비공개 로직
-            let physCardText = '';
-            if (!isAdmin) {
-                if (p.hideHeight && p.hideWeight) {
-                    physCardText = '비공개';
-                } else {
-                    const hText = p.height ? (p.hideHeight ? '비공개' : `${p.height}cm`) : '-';
-                    const wText = p.weight ? (p.hideWeight ? '비공개' : `${p.weight}kg`) : '-';
-                    physCardText = `${hText} / ${wText}`;
+            let cardAdminHtml = '';
+            if (currentRole !== 'guest') {
+                let cardBtns = `<button onclick="event.stopPropagation(); editPlayer(${p.id})">수정</button>`;
+                if (currentRole === 'super') {
+                    const toggleLabel = isHidden ? '노출 ON' : '숨김 OFF';
+                    cardBtns += `<button onclick="event.stopPropagation(); quickToggleVisibility(${p.id})">${toggleLabel}</button>`;
+                    cardBtns += `<button style="color: #dc2626;" onclick="event.stopPropagation(); deletePlayer(${p.id})">삭제</button>`;
                 }
-            } else {
-                const hText = p.height ? `${p.height}cm${p.hideHeight ? '(비공개)' : ''}` : '-';
-                const wText = p.weight ? `${p.weight}kg${p.hideWeight ? '(비공개)' : ''}` : '-';
-                physCardText = `${hText} / ${wText}`;
+                cardAdminHtml = `<div class="card-admin-bar" style="display: flex;">${cardBtns}</div>`;
             }
 
             return `
-                <div class="player-card">
-                    ${photoAreaHtml}
+                <div class="player-card ${isHidden ? 'is-hidden' : ''}" onclick="goToPlayer('${playerPath}')">
+                    ${cardPhotoHtml}
                     <div class="card-info">
                         <div class="card-name-row">
-                            <span class="card-name">${p.name}</span>
-                            ${gradeBadge}
+                            <span class="card-name"><span class="card-name-no">No.${p.no}</span> ${p.name}${hiddenBadge}</span>
+                            ${getGradeBadge(p.grade)}
                         </div>
                         <div class="card-meta">${extraMeta}</div>
                         <div class="card-extra">
-                            <div>🎂 ${birthText}</div>
-                            <div>📏 ${physCardText}</div>
+                            <div>🎂 ${p.birth || '-'}</div>
+                            <div>📏 ${formatPhys(p)}</div>
                         </div>
                     </div>
-                    <div class="card-admin-bar" style="display: ${isAdmin ? 'flex' : 'none'};">
-                        <button class="btn-card-edit" onclick="editPlayer(${p.id})">수정</button>
-                        <button class="btn-card-del" onclick="deletePlayer(${p.id})">삭제</button>
-                    </div>
+                    ${cardAdminHtml}
                 </div>
             `;
         }).join('');
     }
 
-    function processImageFile(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const img = new Image();
-            img.onload = function() {
-                const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 380;
-                let width = img.width;
-                let height = img.height;
-
-                if (width > MAX_WIDTH) {
-                    height = Math.round((height * MAX_WIDTH) / width);
-                    width = MAX_WIDTH;
-                }
-
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-                document.getElementById('inpPhotoBase64').value = canvas.toDataURL('image/jpeg', 0.85);
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
-
     function openAdminModal() {
-        if (isAdmin) {
-            if (confirm('최고관리자 모드를 로그아웃 하시겠습니까?')) {
-                isAdmin = false;
-                document.getElementById('adminLoginBtn').textContent = '🔒 관리자 로그인';
-                document.getElementById('adminLoginBtn').classList.remove('logged-in');
-                document.getElementById('adminBar').style.display = 'none';
+        if (currentRole !== 'guest') {
+            if (confirm('관리자 모드를 로그아웃 하시겠습니까?')) {
+                currentRole = 'guest';
+                updateAdminUI();
                 render();
             }
         } else {
@@ -1051,27 +1102,75 @@
     }
 
     function handleLogin() {
-        const pw = document.getElementById('adminPw').value;
-        if (pw === '1234') {
-            isAdmin = true;
-            closeModal('loginModal');
-            document.getElementById('adminLoginBtn').textContent = '🔓 관리자 로그아웃';
-            document.getElementById('adminLoginBtn').classList.add('logged-in');
-            document.getElementById('adminBar').style.display = 'flex';
-            render();
+        const pw = document.getElementById('adminPw').value.trim();
+        if (pw === '9999') {
+            currentRole = 'super';
+            alert('최고관리자로 로그인되었습니다. (전체 제어, 표시 ON/OFF 및 비공개 설정 가능)');
+        } else if (pw === '7777') {
+            currentRole = 'sub';
+            alert('부관리자로 로그인되었습니다. (선수 전체 정보 수정 가능)');
+        } else if (pw === '1111') {
+            currentRole = 'general';
+            alert('일반관리자로 로그인되었습니다. (포지션/투타/생일/체격 수정 가능)');
         } else {
-            alert('비밀번호가 올바르지 않습니다. (기본 번호: 1234)');
+            alert('비밀번호가 올바르지 않습니다.');
+            return;
         }
+
+        closeModal('loginModal');
+        updateAdminUI();
+        render();
     }
 
-    function openPlayerModal(isEdit = false) {
-        document.getElementById('playerModalTitle').textContent = isEdit ? '명단 정보 수정' : '새 지도자 / 선수 등록';
-        document.getElementById('playerModal').style.display = 'flex';
+    function updateAdminUI() {
+        const adminBar = document.getElementById('adminBar');
+        const adminBtn = document.getElementById('adminLoginBtn');
+        const roleText = document.getElementById('adminRoleText');
+        const btnAddNew = document.getElementById('btnAddNew');
+        const btnConfig = document.getElementById('btnConfig');
+        const btnExport = document.getElementById('btnExport');
+
+        adminBar.className = 'admin-bar';
+
+        if (currentRole === 'super') {
+            adminBtn.textContent = '🔓 최고관리자 로그아웃';
+            adminBtn.classList.add('logged-in');
+            adminBar.classList.add('super');
+            adminBar.style.display = 'flex';
+            roleText.textContent = '👑 최고관리자 모드 실행 중 (전체 제어, 노출/비공개 옵션 관리)';
+            btnAddNew.style.display = 'inline-block';
+            btnConfig.style.display = 'inline-block';
+            btnExport.style.display = 'inline-block';
+        } else if (currentRole === 'sub') {
+            adminBtn.textContent = '🔓 부관리자 로그아웃';
+            adminBtn.classList.add('logged-in');
+            adminBar.classList.add('sub');
+            adminBar.style.display = 'flex';
+            roleText.textContent = '🛠️ 부관리자 모드 실행 중 (선수 모든 정보 수정 가능)';
+            btnAddNew.style.display = 'none';
+            btnConfig.style.display = 'none';
+            btnExport.style.display = 'none';
+        } else if (currentRole === 'general') {
+            adminBtn.textContent = '🔓 일반관리자 로그아웃';
+            adminBtn.classList.add('logged-in');
+            adminBar.classList.add('general');
+            adminBar.style.display = 'flex';
+            roleText.textContent = '📋 일반관리자 모드 실행 중 (포지션·투타·생일·체격만 수정)';
+            btnAddNew.style.display = 'none';
+            btnConfig.style.display = 'none';
+            btnExport.style.display = 'none';
+        } else {
+            adminBtn.textContent = '🔒 관리자 로그인';
+            adminBtn.classList.remove('logged-in');
+            adminBar.style.display = 'none';
+        }
     }
 
     function editPlayer(id) {
         const p = players.find(x => x.id === id);
         if (!p) return;
+
+        document.getElementById('playerModalTitle').textContent = `[No.${p.no} ${p.name}] 정보 수정`;
         document.getElementById('editPlayerId').value = p.id;
         document.getElementById('inpNo').value = p.no;
         document.getElementById('inpName').value = p.name;
@@ -1081,15 +1180,59 @@
         document.getElementById('inpBirth').value = p.birth || '';
         document.getElementById('inpHeight').value = p.height || '';
         document.getElementById('inpWeight').value = p.weight || '';
-        document.getElementById('inpPhotoBase64').value = p.photo || '';
-        document.getElementById('inpPhotoFile').value = '';
-        
-        // 비공개 설정 불러오기
+        document.getElementById('inpVisible').value = (p.visible !== false) ? 'true' : 'false';
+
+        // 최고관리자 전용 비공개 제어 옵션 불러오기
         document.getElementById('inpHidePhoto').checked = !!p.hidePhoto;
         document.getElementById('inpHideHeight').checked = !!p.hideHeight;
         document.getElementById('inpHideWeight').checked = !!p.hideWeight;
 
-        openPlayerModal(true);
+        document.getElementById('groupVisibility').style.display = (currentRole === 'super') ? 'flex' : 'none';
+        document.getElementById('groupPrivacy').style.display = (currentRole === 'super') ? 'flex' : 'none';
+
+        if (currentRole === 'general') {
+            document.getElementById('inpNo').disabled = true;
+            document.getElementById('inpName').disabled = true;
+            document.getElementById('inpGrade').disabled = true;
+        } else {
+            document.getElementById('inpNo').disabled = false;
+            document.getElementById('inpName').disabled = false;
+            document.getElementById('inpGrade').disabled = false;
+        }
+
+        document.getElementById('inpPos').disabled = false;
+        document.getElementById('inpBt').disabled = false;
+        document.getElementById('inpBirth').disabled = false;
+        document.getElementById('inpHeight').disabled = false;
+        document.getElementById('inpWeight').disabled = false;
+
+        document.getElementById('playerModal').style.display = 'flex';
+    }
+
+    function openPlayerModal(isEdit) {
+        if (currentRole !== 'super') {
+            alert('신규 등록 권한이 없습니다.');
+            return;
+        }
+        document.getElementById('playerModalTitle').textContent = '새 지도자 / 선수 등록';
+        document.getElementById('editPlayerId').value = '';
+        document.getElementById('inpNo').value = '';
+        document.getElementById('inpName').value = '';
+        document.getElementById('inpBirth').value = '';
+        document.getElementById('inpHeight').value = '';
+        document.getElementById('inpWeight').value = '';
+        document.getElementById('groupVisibility').style.display = 'flex';
+        document.getElementById('groupPrivacy').style.display = 'flex';
+        document.getElementById('inpVisible').value = 'true';
+        document.getElementById('inpHidePhoto').checked = false;
+        document.getElementById('inpHideHeight').checked = false;
+        document.getElementById('inpHideWeight').checked = false;
+
+        document.getElementById('inpNo').disabled = false;
+        document.getElementById('inpName').disabled = false;
+        document.getElementById('inpGrade').disabled = false;
+
+        document.getElementById('playerModal').style.display = 'flex';
     }
 
     function savePlayer() {
@@ -1102,33 +1245,31 @@
         const birth = document.getElementById('inpBirth').value.trim();
         const height = document.getElementById('inpHeight').value.trim();
         const weight = document.getElementById('inpWeight').value.trim();
-        const photo = document.getElementById('inpPhotoBase64').value;
-        
+        const visible = (document.getElementById('inpVisible').value === 'true');
+
         const hidePhoto = document.getElementById('inpHidePhoto').checked;
         const hideHeight = document.getElementById('inpHideHeight').checked;
         const hideWeight = document.getElementById('inpHideWeight').checked;
 
-        if (!no || !name) {
-            alert('등번호와 성명을 입력해 주세요.');
+        if (!idVal && (!no || !name)) {
+            alert('등번호와 성명을 정확히 입력해 주세요.');
             return;
         }
 
         if (idVal) {
             const idx = players.findIndex(x => x.id == idVal);
             if (idx !== -1) {
-                players[idx] = { 
-                    ...players[idx], 
-                    no, name, grade, pos, bt, birth, height, weight,
-                    hidePhoto, hideHeight, hideWeight,
-                    photo: photo || players[idx].photo 
-                };
+                if (currentRole === 'general') {
+                    players[idx] = { ...players[idx], pos, bt, birth, height, weight };
+                } else if (currentRole === 'sub') {
+                    players[idx] = { ...players[idx], no, name, grade, pos, bt, birth, height, weight };
+                } else if (currentRole === 'super') {
+                    players[idx] = { ...players[idx], no, name, grade, pos, bt, birth, height, weight, visible, hidePhoto, hideHeight, hideWeight };
+                }
             }
         } else {
             const newId = players.length > 0 ? Math.max(...players.map(p => p.id)) + 1 : 1;
-            players.push({ 
-                id: newId, no, name, grade, pos, bt, birth, height, weight, photo,
-                hidePhoto, hideHeight, hideWeight 
-            });
+            players.push({ id: newId, no, name, grade, pos, bt, birth, height, weight, visible: true, hidePhoto, hideHeight, hideWeight });
         }
 
         saveToStorage();
@@ -1136,15 +1277,29 @@
         render();
     }
 
+    function quickToggleVisibility(id) {
+        if (currentRole !== 'super') return;
+        const idx = players.findIndex(p => p.id === id);
+        if (idx !== -1) {
+            const current = (players[idx].visible !== false);
+            players[idx].visible = !current;
+            saveToStorage();
+            render();
+        }
+    }
+
     function deletePlayer(id) {
-        if (confirm('해당 항목을 명단에서 완전히 삭제하시겠습니까?')) {
+        if (currentRole !== 'super') {
+            alert('삭제 권한은 최고관리자에게만 있습니다.');
+            return;
+        }
+        if (confirm('해당 선수를 명단에서 완전히 삭제하시겠습니까?')) {
             players = players.filter(p => p.id !== id);
             saveToStorage();
             render();
         }
     }
 
-    // 일괄 설정 모달
     function openBatchModal() {
         document.getElementById('batchModal').style.display = 'flex';
     }
@@ -1169,22 +1324,13 @@
 
     function closeModal(id) {
         document.getElementById(id).style.display = 'none';
-        if (id === 'playerModal') {
-            document.getElementById('editPlayerId').value = '';
-            document.getElementById('inpNo').value = '';
-            document.getElementById('inpName').value = '';
-            document.getElementById('inpBirth').value = '';
-            document.getElementById('inpHeight').value = '';
-            document.getElementById('inpWeight').value = '';
-            document.getElementById('inpPhotoBase64').value = '';
-            document.getElementById('inpPhotoFile').value = '';
-            document.getElementById('inpHidePhoto').checked = false;
-            document.getElementById('inpHideHeight').checked = false;
-            document.getElementById('inpHideWeight').checked = false;
-        }
     }
 
     function exportUpdatedHTML() {
+        if (currentRole !== 'super') {
+            alert('최고관리자만 전체 소스코드를 내보낼 수 있습니다.');
+            return;
+        }
         const fullSource = document.documentElement.outerHTML;
         const jsonStr = JSON.stringify(players, null, 8);
         const regex = /const initialPlayers = \[[\s\S]*?\];/;
