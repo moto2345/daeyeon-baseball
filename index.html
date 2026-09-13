@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- 구글 스프레드시트 연동 설정 (CSV 주소 & 편집창 주소) -->
+    <!-- 구글 스프레드시트 연동 설정 -->
     <script>
         const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw2YtYByfiPWXbRfqkzmZ6yzaZVfJHO0f9zAmCiLnwlMvVXCt9lv4AmQAz4_vSjzPy0APtl0hwYNmW/pub?output=csv";
         const GOOGLE_SHEET_EDIT_URL = "https://docs.google.com/spreadsheets/d/1ljpHkiJL_H1NN5rwTaQOL5QYeev32QvaBTKzxSPgNVA/edit?gid=1653839889#gid=1653839889";
@@ -184,7 +184,7 @@
             color: #ffffff;
         }
 
-        /* 관리자 안내 바 (등급별 색상) */
+        /* 관리자 안내 바 */
         .admin-bar {
             display: none;
             border-radius: 8px;
@@ -304,21 +304,29 @@
         .grade-2 { background: #f3e8ff; color: #6b21a8; }
         .grade-1 { background: #e0f2fe; color: #0369a1; }
 
-        /* 포지션 뱃지 */
+        /* ====================================================
+           [개선] 포지션 뱃지 - 글자 증발 방지 및 전용 색상 셋업
+           ==================================================== */
         .pos-tag {
             display: inline-block;
             padding: 2px 7px;
             border-radius: 4px;
             font-size: 11px;
             font-weight: 700;
-            color: #ffffff;
+            color: #ffffff !important;
+            background: #64748b; /* 매칭되지 않는 어떤 단어가 들어와도 글씨가 흰색에 묻히지 않도록 기본 배경 적용 */
+            white-space: nowrap;
         }
-        .pos-staff-leader { background: #b45309; }
-        .pos-staff-coach { background: #475569; }
-        .pos-투수 { background: #c2410c; }
-        .pos-포수 { background: #0f766e; }
-        .pos-내야수 { background: #1d4ed8; }
-        .pos-외야수 { background: #15803d; }
+
+        .pos-manager  { background: #b45309; } /* 감독/총괄 (브라운) */
+        .pos-coach    { background: #475569; } /* 코칭스태프 전원 (슬레이트) */
+        .pos-pitcher  { background: #c2410c; } /* 투수 (오렌지 레드) */
+        .pos-catcher  { background: #0f766e; } /* 포수 (틸 그린) */
+        .pos-infield  { background: #1d4ed8; } /* 내야수 (로열 블루) */
+        .pos-outfield { background: #15803d; } /* 외야수 (포레스트 그린) */
+        .pos-dh       { background: #7c3aed; } /* 지명타자 (퍼플) */
+        .pos-etc      { background: #6366f1; } /* 기타/후보 (인디고) */
+        .pos-none     { background: #94a3b8; } /* 미정/정보없음 (연회색) */
 
         .hidden-badge {
             display: inline-block;
@@ -349,7 +357,7 @@
             vertical-align: middle;
         }
 
-        /* 이미지형 카드 그리드 */
+        /* 이미지형 카드 그리드 (KBO 프로야구 표준 4:5 비율 적용) */
         .roster-grid {
             display: none;
             grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
@@ -605,7 +613,7 @@
     let players = [];
     let selectedGrade = 'all';
     let currentView = localStorage.getItem('daeyeon_view_mode') || 'list';
-    let currentRole = 'guest'; // 'guest', 'general', 'sub', 'super'
+    let currentRole = 'guest';
 
     function isStaff(grade) {
         return grade === '감독' || grade === '코치';
@@ -616,11 +624,45 @@
         return `<span class="grade-tag grade-${grade}">${grade}학년</span>`;
     }
 
+    // [개선] 스마트 포지션 뱃지 생성 함수 (단어 자동 분석 & 무조건 배경색 보장)
     function getPosBadge(pos, grade) {
-        if (!pos || pos === '-') return '-';
-        if (grade === '감독') return `<span class="pos-tag pos-staff-leader">${pos}</span>`;
-        if (grade === '코치') return `<span class="pos-tag pos-staff-coach">${pos}</span>`;
-        return `<span class="pos-tag pos-${pos}">${pos}</span>`;
+        if (!pos || pos === '-' || pos === '정보없음' || pos === '미정') {
+            return '<span class="pos-tag pos-none">미정</span>';
+        }
+
+        const p = String(pos).trim();
+
+        // 1. 감독 / 총괄
+        if (grade === '감독' || p.includes('감독') || p.includes('총괄')) {
+            return `<span class="pos-tag pos-manager">${p}</span>`;
+        }
+        // 2. 코칭스태프 (수석코치, 투수코치, 야수코치, 타격코치, 배터리코치 등)
+        if (grade === '코치' || p.includes('코치')) {
+            return `<span class="pos-tag pos-coach">${p}</span>`;
+        }
+        // 3. 투수
+        if (p.includes('투수')) {
+            return `<span class="pos-tag pos-pitcher">${p}</span>`;
+        }
+        // 4. 포수
+        if (p.includes('포수')) {
+            return `<span class="pos-tag pos-catcher">${p}</span>`;
+        }
+        // 5. 내야수 (1루수, 2루수, 3루수, 유격수, 1루, 2루, 3루, 유격, 내야 등)
+        if (p.includes('내야') || p.includes('1루') || p.includes('2루') || p.includes('3루') || p.includes('유격')) {
+            return `<span class="pos-tag pos-infield">${p}</span>`;
+        }
+        // 6. 외야수 (좌익수, 중견수, 우익수, 좌익, 중견, 우익, 외야 등)
+        if (p.includes('외야') || p.includes('좌익') || p.includes('중견') || p.includes('우익')) {
+            return `<span class="pos-tag pos-outfield">${p}</span>`;
+        }
+        // 7. 지명타자 / DH
+        if (p.includes('지명') || p.toUpperCase().includes('DH')) {
+            return `<span class="pos-tag pos-dh">${p}</span>`;
+        }
+
+        // 8. 그 외 어떤 텍스트가 들어와도 글자가 흰색에 묻히지 않는 기본 뱃지
+        return `<span class="pos-tag pos-etc">${p}</span>`;
     }
 
     // 신장/체중 권한별 마스킹 함수
@@ -632,17 +674,14 @@
         const hHidden = !!p.hideHeight;
         const wHidden = !!p.hideWeight;
 
-        // 체격 열람 권한: 일반관리자 이상 (general, sub, super) 모두 가능
         const canViewPhys = (currentRole === 'general' || currentRole === 'sub' || currentRole === 'super');
 
         if (!canViewPhys) {
-            // 일반 방문자 (guest): 비공개 시 마스킹
             if (hHidden && wHidden) return '<span class="text-private">비공개</span>';
             const hStr = h ? (hHidden ? '<span class="text-private">비공개</span>' : `${h}cm`) : '-';
             const wStr = w ? (wHidden ? '<span class="text-private">비공개</span>' : `${w}kg`) : '-';
             return `${hStr} / ${wStr}`;
         } else {
-            // 관리자 등급: 실제 수치 노출 (비공개된 항목은 뱃지 표시)
             const showBadge = (currentRole === 'super' || currentRole === 'sub');
             const hBadge = (hHidden && showBadge) ? '<span class="admin-private-badge">비공개</span>' : '';
             const wBadge = (wHidden && showBadge) ? '<span class="admin-private-badge">비공개</span>' : '';
@@ -692,12 +731,10 @@
         const cardContainer = document.getElementById('cardContainer');
         const notice = document.getElementById('statusNotice');
 
-        // 사진 비공개 해제 권한: 보조관리자(sub) 및 최고관리자(super)만 가능
         const canViewPhoto = (currentRole === 'sub' || currentRole === 'super');
 
         const filtered = players.filter(p => {
             const isVisible = (p.visible !== false);
-            // 숨김 선수 열람 권한: 오직 최고관리자(super)만 가능
             if (currentRole !== 'super' && !isVisible) return false;
 
             let matchGrade = false;
@@ -738,14 +775,12 @@
 
             let photoCell = '';
             if (p.hidePhoto && !canViewPhoto) {
-                // 사진 비공개 상태 (일반인, 일반관리자)
                 photoCell = `
                     <div class="table-thumb-wrap" style="background: #f1f5f9;" title="사진 비공개">
                         <span style="font-size: 15px; opacity: 0.6;">🔒</span>
                     </div>
                 `;
             } else {
-                // 사진 열람 가능 (보조/최고관리자 또는 원래 공개된 사진)
                 const adminPhotoBadge = (p.hidePhoto && canViewPhoto) ? `<span class="admin-private-badge" style="position:absolute; bottom:0; left:50%; transform:translateX(-50%); font-size:9px; white-space:nowrap;">비공개</span>` : '';
                 photoCell = `
                     <div class="table-thumb-wrap" style="position: relative;">
@@ -774,13 +809,14 @@
             const photoUrl = `data/photos/${p.no}.jpg`;
             const isHidden = (p.visible === false);
             const hiddenBadge = isHidden ? `<span class="hidden-badge">숨김</span>` : '';
-            const posBadge = (p.pos && p.pos !== '-') ? getPosBadge(p.pos, p.grade) : '';
+            
+            // 미정이거나 정보없음일 때는 카드 우상단에 뱃지를 띄우지 않고 깔끔하게 처리
+            const posBadge = (p.pos && p.pos !== '-' && p.pos !== '정보없음' && p.pos !== '미정') ? getPosBadge(p.pos, p.grade) : '';
             const extraMeta = isStaff(p.grade) ? (p.bt && p.bt !== '-' ? p.bt : '지도자') : (p.bt || '우투우타');
             const playerPath = isStaff(p.grade) ? `staff/${p.no}` : `${p.grade}/${p.no}`;
 
             let cardPhotoHtml = '';
             if (p.hidePhoto && !canViewPhoto) {
-                // 사진 비공개 상태
                 cardPhotoHtml = `
                     <div class="card-photo-box" style="background:#f1f5f9; display:flex; flex-direction:column; align-items:center; justify-content:center;">
                         <span class="card-no-badge">No.${p.no}</span>
@@ -790,7 +826,6 @@
                     </div>
                 `;
             } else {
-                // 사진 열람 가능 상태
                 const adminPhotoBadge = (p.hidePhoto && canViewPhoto) ? `<span style="position:absolute; bottom:8px; left:8px; background:#ef4444; color:#ffffff; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; z-index:3;">🔒 사진 비공개</span>` : '';
                 cardPhotoHtml = `
                     <div class="card-photo-box">
