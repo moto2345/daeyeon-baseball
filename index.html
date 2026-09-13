@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- 구글 스프레드시트 연동 설정 -->
+    <!-- 구글 스프레드시트 연동 설정 (CSV 주소 & 편집창 주소) -->
     <script>
         const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw2YtYByfiPWXbRfqkzmZ6yzaZVfJHO0f9zAmCiLnwlMvVXCt9lv4AmQAz4_vSjzPy0APtl0hwYNmW/pub?output=csv";
         const GOOGLE_SHEET_EDIT_URL = "https://docs.google.com/spreadsheets/d/1ljpHkiJL_H1NN5rwTaQOL5QYeev32QvaBTKzxSPgNVA/edit?gid=1653839889#gid=1653839889";
@@ -304,9 +304,7 @@
         .grade-2 { background: #f3e8ff; color: #6b21a8; }
         .grade-1 { background: #e0f2fe; color: #0369a1; }
 
-        /* ====================================================
-           [개선] 포지션 뱃지 - 글자 증발 방지 및 전용 색상 셋업
-           ==================================================== */
+        /* 포지션 뱃지 */
         .pos-tag {
             display: inline-block;
             padding: 2px 7px;
@@ -314,19 +312,38 @@
             font-size: 11px;
             font-weight: 700;
             color: #ffffff !important;
-            background: #64748b; /* 매칭되지 않는 어떤 단어가 들어와도 글씨가 흰색에 묻히지 않도록 기본 배경 적용 */
+            background: #64748b;
             white-space: nowrap;
         }
+        .pos-manager  { background: #b45309; }
+        .pos-coach    { background: #475569; }
+        .pos-pitcher  { background: #c2410c; }
+        .pos-catcher  { background: #0f766e; }
+        .pos-infield  { background: #1d4ed8; }
+        .pos-outfield { background: #15803d; }
+        .pos-dh       { background: #7c3aed; }
+        .pos-etc      { background: #6366f1; }
+        .pos-none     { background: #94a3b8; }
 
-        .pos-manager  { background: #b45309; } /* 감독/총괄 (브라운) */
-        .pos-coach    { background: #475569; } /* 코칭스태프 전원 (슬레이트) */
-        .pos-pitcher  { background: #c2410c; } /* 투수 (오렌지 레드) */
-        .pos-catcher  { background: #0f766e; } /* 포수 (틸 그린) */
-        .pos-infield  { background: #1d4ed8; } /* 내야수 (로열 블루) */
-        .pos-outfield { background: #15803d; } /* 외야수 (포레스트 그린) */
-        .pos-dh       { background: #7c3aed; } /* 지명타자 (퍼플) */
-        .pos-etc      { background: #6366f1; } /* 기타/후보 (인디고) */
-        .pos-none     { background: #94a3b8; } /* 미정/정보없음 (연회색) */
+        /* ====================================================
+           [신규 추가] 투/타 전용 컬러 뱃지 스타일
+           ==================================================== */
+        .bt-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+            border: 1px solid transparent;
+        }
+        .bt-rr { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; } /* 우투우타 (블루) */
+        .bt-rl { background: #ecfdf5; color: #047857; border-color: #a7f3d0; } /* 우투좌타 (에메랄드) */
+        .bt-ll { background: #fef2f2; color: #b91c1c; border-color: #fecaca; } /* 좌투좌타 (레드) */
+        .bt-lr { background: #fefce8; color: #a16207; border-color: #fef08a; } /* 좌투우타 (골드) */
+        .bt-staff { background: #f8fafc; color: #475569; border-color: #cbd5e1; } /* 지도자 */
+        .bt-none { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; } /* 정보없음/미정 */
+        .bt-etc { background: #f3e8ff; color: #6b21a8; border-color: #e9d5ff; } /* 기타 */
 
         .hidden-badge {
             display: inline-block;
@@ -357,7 +374,7 @@
             vertical-align: middle;
         }
 
-        /* 이미지형 카드 그리드 (KBO 프로야구 표준 4:5 비율 적용) */
+        /* 이미지형 카드 그리드 (4:5 비율) */
         .roster-grid {
             display: none;
             grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
@@ -385,7 +402,7 @@
 
         .card-photo-box {
             width: 100%;
-            aspect-ratio: 4 / 5; /* 프로야구 표준 4:5 비율 */
+            aspect-ratio: 4 / 5;
             background: #e2e8f0;
             position: relative;
             overflow: hidden;
@@ -454,8 +471,9 @@
         }
 
         .card-meta {
-            font-size: 12px;
-            color: var(--text-sub);
+            margin: 2px 0;
+            display: flex;
+            align-items: center;
         }
 
         .card-extra {
@@ -464,7 +482,7 @@
             background: #f8fafc;
             border-radius: 6px;
             padding: 5px 6px;
-            margin-top: 4px;
+            margin-top: 2px;
             display: flex;
             flex-direction: column;
             gap: 2px;
@@ -624,7 +642,7 @@
         return `<span class="grade-tag grade-${grade}">${grade}학년</span>`;
     }
 
-    // [개선] 스마트 포지션 뱃지 생성 함수 (단어 자동 분석 & 무조건 배경색 보장)
+    // 스마트 포지션 뱃지 생성
     function getPosBadge(pos, grade) {
         if (!pos || pos === '-' || pos === '정보없음' || pos === '미정') {
             return '<span class="pos-tag pos-none">미정</span>';
@@ -632,37 +650,57 @@
 
         const p = String(pos).trim();
 
-        // 1. 감독 / 총괄
         if (grade === '감독' || p.includes('감독') || p.includes('총괄')) {
             return `<span class="pos-tag pos-manager">${p}</span>`;
         }
-        // 2. 코칭스태프 (수석코치, 투수코치, 야수코치, 타격코치, 배터리코치 등)
         if (grade === '코치' || p.includes('코치')) {
             return `<span class="pos-tag pos-coach">${p}</span>`;
         }
-        // 3. 투수
         if (p.includes('투수')) {
             return `<span class="pos-tag pos-pitcher">${p}</span>`;
         }
-        // 4. 포수
         if (p.includes('포수')) {
             return `<span class="pos-tag pos-catcher">${p}</span>`;
         }
-        // 5. 내야수 (1루수, 2루수, 3루수, 유격수, 1루, 2루, 3루, 유격, 내야 등)
         if (p.includes('내야') || p.includes('1루') || p.includes('2루') || p.includes('3루') || p.includes('유격')) {
             return `<span class="pos-tag pos-infield">${p}</span>`;
         }
-        // 6. 외야수 (좌익수, 중견수, 우익수, 좌익, 중견, 우익, 외야 등)
         if (p.includes('외야') || p.includes('좌익') || p.includes('중견') || p.includes('우익')) {
             return `<span class="pos-tag pos-outfield">${p}</span>`;
         }
-        // 7. 지명타자 / DH
         if (p.includes('지명') || p.toUpperCase().includes('DH')) {
             return `<span class="pos-tag pos-dh">${p}</span>`;
         }
 
-        // 8. 그 외 어떤 텍스트가 들어와도 글자가 흰색에 묻히지 않는 기본 뱃지
         return `<span class="pos-tag pos-etc">${p}</span>`;
+    }
+
+    // [신규] 스마트 투/타 뱃지 생성 함수
+    function getBtBadge(bt, grade) {
+        const val = String(bt || '').trim();
+
+        if (isStaff(grade) && (!val || val === '-' || val === '정보없음')) {
+            return `<span class="bt-tag bt-staff">지도자</span>`;
+        }
+
+        if (!val || val === '-' || val === '정보없음' || val === '미정') {
+            return `<span class="bt-tag bt-none">정보없음</span>`;
+        }
+
+        if (val.includes('우투우타') || val === '우우') {
+            return `<span class="bt-tag bt-rr">우투우타</span>`;
+        }
+        if (val.includes('우투좌타') || val === '우좌') {
+            return `<span class="bt-tag bt-rl">우투좌타</span>`;
+        }
+        if (val.includes('좌투좌타') || val === '좌좌') {
+            return `<span class="bt-tag bt-ll">좌투좌타</span>`;
+        }
+        if (val.includes('좌투우타') || val === '좌우') {
+            return `<span class="bt-tag bt-lr">좌투우타</span>`;
+        }
+
+        return `<span class="bt-tag bt-etc">${val}</span>`;
     }
 
     // 신장/체중 권한별 마스킹 함수
@@ -744,7 +782,8 @@
 
             const matchSearch = p.name.toLowerCase().includes(query) || 
                                 p.no.toString().includes(query) || 
-                                (p.pos && p.pos.includes(query));
+                                (p.pos && p.pos.includes(query)) ||
+                                (p.bt && p.bt.includes(query));
             return matchGrade && matchSearch;
         }).sort((a, b) => {
             const rankA = a.grade === '감독' ? 1 : (a.grade === '코치' ? 2 : 3);
@@ -797,7 +836,7 @@
                     <td class="td-name">${p.name}${hiddenBadge}</td>
                     <td>${getGradeBadge(p.grade)}</td>
                     <td>${getPosBadge(p.pos, p.grade)}</td>
-                    <td style="color: #64748b;">${p.bt || '-'}</td>
+                    <td>${getBtBadge(p.bt, p.grade)}</td>
                     <td style="color: #475569; font-size: 13px;">${p.birth || '-'}</td>
                     <td style="color: #475569; font-size: 13px;">${formatPhys(p)}</td>
                 </tr>
@@ -810,9 +849,7 @@
             const isHidden = (p.visible === false);
             const hiddenBadge = isHidden ? `<span class="hidden-badge">숨김</span>` : '';
             
-            // 미정이거나 정보없음일 때는 카드 우상단에 뱃지를 띄우지 않고 깔끔하게 처리
             const posBadge = (p.pos && p.pos !== '-' && p.pos !== '정보없음' && p.pos !== '미정') ? getPosBadge(p.pos, p.grade) : '';
-            const extraMeta = isStaff(p.grade) ? (p.bt && p.bt !== '-' ? p.bt : '지도자') : (p.bt || '우투우타');
             const playerPath = isStaff(p.grade) ? `staff/${p.no}` : `${p.grade}/${p.no}`;
 
             let cardPhotoHtml = '';
@@ -845,7 +882,9 @@
                             <span class="card-name"><span class="card-name-no">No.${p.no}</span> ${p.name}${hiddenBadge}</span>
                             ${getGradeBadge(p.grade)}
                         </div>
-                        <div class="card-meta">${extraMeta}</div>
+                        <div class="card-meta">
+                            ${getBtBadge(p.bt, p.grade)}
+                        </div>
                         <div class="card-extra">
                             <div>🎂 ${p.birth || '-'}</div>
                             <div>📏 ${formatPhys(p)}</div>
