@@ -79,7 +79,7 @@
         }
 
         .container {
-            max-width: 600px;
+            max-width: 540px;
             margin: 24px auto 0;
             padding: 0 16px;
         }
@@ -98,7 +98,7 @@
         /* 사진 영역 */
         .profile-photo-wrap {
             width: 100%;
-            height: 320px;
+            aspect-ratio: 4 / 5;
             background: #e2e8f0;
             position: relative;
             display: flex;
@@ -115,28 +115,31 @@
             display: block;
         }
 
+        /* [개선] 등번호 뱃지 가독성 수정 (Impact 제거) */
         .profile-no-badge {
             position: absolute;
             top: 14px;
             left: 14px;
-            background: rgba(11, 34, 64, 0.95);
+            background: rgba(11, 34, 64, 0.92);
             color: #ffffff;
-            font-size: 18px;
-            font-weight: 900;
+            font-size: 16px;
+            font-weight: 800;
             padding: 4px 12px;
             border-radius: 8px;
-            font-family: "Impact", sans-serif;
+            letter-spacing: 0.5px;
             border: 1px solid rgba(255, 255, 255, 0.4);
             box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+            z-index: 2;
         }
 
         .profile-pos-badge {
             position: absolute;
             top: 14px;
             right: 14px;
+            z-index: 2;
         }
 
-        /* 뱃지 스타일 */
+        /* 학년 뱃지 */
         .grade-tag {
             display: inline-block;
             padding: 3px 10px;
@@ -152,28 +155,33 @@
         .grade-2 { background: #f3e8ff; color: #6b21a8; }
         .grade-1 { background: #e0f2fe; color: #0369a1; }
 
+        /* [개선] 스마트 포지션 뱃지 전용 색상 */
         .pos-tag {
             display: inline-block;
             padding: 4px 10px;
             border-radius: 6px;
             font-size: 12px;
             font-weight: 800;
-            color: #ffffff;
+            color: #ffffff !important;
+            background: #64748b;
+            white-space: nowrap;
         }
-        .pos-staff-leader { background: #b45309; }
-        .pos-staff-coach { background: #475569; }
-        .pos-투수 { background: #c2410c; }
-        .pos-포수 { background: #0f766e; }
-        .pos-내야수 { background: #1d4ed8; }
-        .pos-외야수 { background: #15803d; }
-        .pos-기타 { background: #64748b; }
+        .pos-manager  { background: #b45309; }
+        .pos-coach    { background: #475569; }
+        .pos-pitcher  { background: #c2410c; }
+        .pos-catcher  { background: #0f766e; }
+        .pos-infield  { background: #1d4ed8; }
+        .pos-outfield { background: #15803d; }
+        .pos-dh       { background: #7c3aed; }
+        .pos-etc      { background: #6366f1; }
+        .pos-none     { background: #94a3b8; }
 
         /* 정보 영역 */
         .profile-body {
             padding: 24px 20px;
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 16px;
         }
 
         .name-row {
@@ -191,11 +199,11 @@
             letter-spacing: -0.5px;
         }
 
-        /* 상세 스펙 테이블 */
+        /* 상세 스펙 리스트 */
         .spec-list {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
         }
 
         .spec-item {
@@ -271,11 +279,37 @@
         return `<span class="grade-tag grade-${grade}">${grade}학년</span>`;
     }
 
+    // 스마트 포지션 뱃지
     function getPosBadge(pos, grade) {
-        if (!pos || pos === '-') return '';
-        if (grade === '감독') return `<span class="pos-tag pos-staff-leader">${pos}</span>`;
-        if (grade === '코치') return `<span class="pos-tag pos-staff-coach">${pos}</span>`;
-        return `<span class="pos-tag pos-${pos}">${pos}</span>`;
+        if (!pos || pos === '-' || pos === '정보없음' || pos === '미정') {
+            return '<span class="pos-tag pos-none">미정</span>';
+        }
+
+        const p = String(pos).trim();
+        if (grade === '감독' || p.includes('감독') || p.includes('총괄')) return `<span class="pos-tag pos-manager">${p}</span>`;
+        if (grade === '코치' || p.includes('코치')) return `<span class="pos-tag pos-coach">${p}</span>`;
+        if (p.includes('투수')) return `<span class="pos-tag pos-pitcher">${p}</span>`;
+        if (p.includes('포수')) return `<span class="pos-tag pos-catcher">${p}</span>`;
+        if (p.includes('내야') || p.includes('1루') || p.includes('2루') || p.includes('3루') || p.includes('유격')) return `<span class="pos-tag pos-infield">${p}</span>`;
+        if (p.includes('외야') || p.includes('좌익') || p.includes('중견') || p.includes('우익')) return `<span class="pos-tag pos-outfield">${p}</span>`;
+        if (p.includes('지명') || p.toUpperCase().includes('DH')) return `<span class="pos-tag pos-dh">${p}</span>`;
+        return `<span class="pos-tag pos-etc">${p}</span>`;
+    }
+
+    // ON/OFF 판단 함수 (OFF 또는 비공개일 때만 비공개 처리)
+    function isOff(val) {
+        if (!val) return false;
+        const v = String(val).toUpperCase().trim();
+        return v === 'OFF' || v === '비공개';
+    }
+
+    function getColVal(row, ...keys) {
+        for (let k of keys) {
+            if (row[k] !== undefined && row[k] !== null && String(row[k]).trim() !== '') {
+                return String(row[k]).trim();
+            }
+        }
+        return '';
     }
 
     // URL 파라미터에서 등번호 추출 (예: ?path=5/2 -> 2, ?path=staff/70 -> 70, ?no=2 -> 2)
@@ -309,20 +343,28 @@
                 header: true,
                 skipEmptyLines: true,
                 complete: function(results) {
-                    const players = results.data.map(row => ({
-                        no: parseInt(row['등번호']) || 0,
-                        name: (row['이름'] || '').trim(),
-                        grade: (row['구분'] || '').trim(),
-                        pos: (row['포지션'] || '-').trim(),
-                        bt: (row['투타'] || '-').trim(),
-                        birth: (row['생년월일'] || '').trim(),
-                        height: (row['키'] || '').trim(),
-                        weight: (row['몸무게'] || '').trim(),
-                        visible: String(row['노출여부'] || '').toUpperCase().trim() !== 'OFF',
-                        hidePhoto: ['O', 'Y', 'TRUE', '1'].includes(String(row['사진비공개'] || '').toUpperCase().trim()),
-                        hideHeight: ['O', 'Y', 'TRUE', '1'].includes(String(row['키비공개'] || '').toUpperCase().trim()),
-                        hideWeight: ['O', 'Y', 'TRUE', '1'].includes(String(row['몸무게비공개'] || '').toUpperCase().trim())
-                    })).filter(p => p.no && p.name);
+                    const players = results.data.map(row => {
+                        const photoFlag = getColVal(row, '사진공개', '사진노출', '사진비공개', '사진ON/OFF');
+                        const birthFlag = getColVal(row, '생년월일공개', '생년월일노출', '생일공개', '생년월일비공개');
+                        const heightFlag = getColVal(row, '키공개', '키노출', '키비공개');
+                        const weightFlag = getColVal(row, '몸무게공개', '몸무게노출', '몸무게비공개');
+
+                        return {
+                            no: parseInt(row['등번호']) || 0,
+                            name: (row['이름'] || '').trim(),
+                            grade: (row['구분'] || '').trim(),
+                            pos: (row['포지션'] || '-').trim(),
+                            bt: (row['투타'] || '-').trim(),
+                            birth: (row['생년월일'] || '').trim(),
+                            height: (row['키'] || '').trim(),
+                            weight: (row['몸무게'] || '').trim(),
+                            visible: String(row['노출여부'] || '').toUpperCase().trim() !== 'OFF',
+                            hidePhoto: isOff(photoFlag),
+                            hideBirth: isOff(birthFlag),
+                            hideHeight: isOff(heightFlag),
+                            hideWeight: isOff(weightFlag)
+                        };
+                    }).filter(p => p.no && p.name);
 
                     const p = players.find(item => item.no === targetNo);
 
@@ -349,12 +391,19 @@
                         `;
                     }
 
-                    // 체격 (신장/체중)
+                    // 생년월일 (ON/OFF)
+                    const birthValue = p.birth ? (p.hideBirth ? '<span class="text-private">비공개</span>' : p.birth) : '-';
+
+                    // 체격 (신장/체중 ON/OFF)
                     let physValue = '-';
                     if (p.height || p.weight) {
-                        const hText = p.height ? (p.hideHeight ? '<span class="text-private">비공개</span>' : `${p.height}cm`) : '-';
-                        const wText = p.weight ? (p.hideWeight ? '<span class="text-private">비공개</span>' : `${p.weight}kg`) : '-';
-                        physValue = `${hText} / ${wText}`;
+                        if (p.hideHeight && p.hideWeight) {
+                            physValue = '<span class="text-private">비공개</span>';
+                        } else {
+                            const hText = p.height ? (p.hideHeight ? '<span class="text-private">비공개</span>' : `${p.height}cm`) : '-';
+                            const wText = p.weight ? (p.hideWeight ? '<span class="text-private">비공개</span>' : `${p.weight}kg`) : '-';
+                            physValue = `${hText} / ${wText}`;
+                        }
                     }
 
                     card.innerHTML = `
@@ -380,7 +429,7 @@
                                 </div>
                                 <div class="spec-item">
                                     <span class="spec-label">🎂 생년월일</span>
-                                    <span class="spec-value">${p.birth || '-'}</span>
+                                    <span class="spec-value">${birthValue}</span>
                                 </div>
                                 <div class="spec-item">
                                     <span class="spec-label">📏 체격 (신장/체중)</span>
