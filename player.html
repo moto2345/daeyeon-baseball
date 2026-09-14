@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>선수 프로필 | 대연초 야구부</title>
-    <!-- 구글 시트 CSV 연동 주소 -->
+    <!-- 구글 연동 설정 (CSV 주소, 편집창 주소, 유니폼 API) -->
     <script>
         const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw2YtYByfiPWXbRfqkzmZ6yzaZVfJHO0f9zAmCiLnwlMvVXCt9lv4AmQAz4_vSjzPy0APtl0hwYNmW/pub?output=csv";
+        const GOOGLE_SHEET_EDIT_URL = "https://docs.google.com/spreadsheets/d/1ljpHkiJL_H1NN5rwTaQOL5QYeev32QvaBTKzxSPgNVA/edit?gid=1653839889#gid=1653839889";
+        const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
     </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>대연초 야구부 명단</title>
+    <!-- CSV 파싱 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <style>
@@ -32,82 +36,313 @@
         body {
             background-color: var(--bg-gray);
             color: var(--text-title);
-            padding-bottom: 60px;
+            padding-bottom: 70px;
         }
 
-        /* 상단 헤더 */
+        /* 헤더 */
         header {
             background-color: var(--kbo-blue);
             color: white;
-            padding: 20px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 4px solid var(--kbo-red);
+            padding: 26px 16px 22px;
+            text-align: center;
+            border-bottom: 5px solid var(--kbo-red);
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            position: relative;
         }
 
-        .header-left {
+        .header-title {
+            font-size: 26px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+        }
+
+        .header-subtitle {
+            font-size: 13px;
+            color: #cbd5e1;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .header-actions {
+            position: absolute;
+            top: 14px;
+            right: 14px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
         }
 
-        .btn-back {
+        .btn-uniform-cta {
+            background: #f59e0b;
+            color: #ffffff;
+            border: 1px solid #d97706;
+            padding: 6px 13px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .btn-uniform-cta:hover { background: #d97706; }
+
+        .admin-toggle-btn {
             background: rgba(255,255,255,0.12);
             border: 1px solid rgba(255,255,255,0.25);
             color: #ffffff;
             padding: 6px 12px;
             border-radius: 6px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 700;
-            text-decoration: none;
-            display: inline-flex;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .admin-toggle-btn:hover { background: rgba(255,255,255,0.25); }
+        .admin-toggle-btn.logged-in {
+            background: #fee2e2;
+            color: var(--kbo-red);
+            border-color: #fca5a5;
+        }
+
+        .container {
+            max-width: 1040px;
+            margin: 20px auto 0;
+            padding: 0 16px;
+        }
+
+        /* 컨트롤 패널 */
+        .control-card {
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 16px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .control-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .grade-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .filter-btn {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            color: #4b5563;
+            padding: 6px 13px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .filter-btn:hover { background: #f3f4f6; }
+        .filter-btn.active {
+            background: var(--kbo-blue);
+            color: #ffffff;
+            border-color: var(--kbo-blue);
+            font-weight: 700;
+        }
+        .filter-btn.staff-tab.active {
+            background: #1e293b;
+            border-color: #1e293b;
+        }
+
+        .control-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .search-box input {
+            padding: 7px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 13px;
+            width: 170px;
+            outline: none;
+        }
+
+        .view-switch {
+            display: flex;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .view-btn {
+            background: #ffffff;
+            border: none;
+            padding: 7px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #6b7280;
+            cursor: pointer;
+            display: flex;
             align-items: center;
             gap: 4px;
             transition: 0.15s;
         }
 
-        .btn-back:hover {
-            background: rgba(255,255,255,0.25);
+        .view-btn.active {
+            background: var(--kbo-sub-blue);
+            color: #ffffff;
         }
 
-        .header-title {
-            font-size: 18px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
+        /* 관리자 안내 바 */
+        .admin-bar {
+            display: none;
+            border-radius: 8px;
+            padding: 10px 14px;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .admin-bar.super { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; }
+        .admin-bar.dev   { background: #ede9fe; border: 1px solid #c4b5fd; color: #5b21b6; }
+        .admin-bar.sub   { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+        .admin-bar.general { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+
+        .admin-bar-btns {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
-        .container {
-            max-width: 540px;
-            margin: 24px auto 0;
-            padding: 0 16px;
+        .btn-sheet-link {
+            background: #059669;
+            color: white;
+            border: none;
+            padding: 7px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-sheet-link:hover { background: #047857; }
+
+        .btn-toggle-uniform {
+            background: #334155;
+            color: white;
+            border: none;
+            padding: 7px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
         }
 
-        /* 프로필 카드 */
-        .profile-card {
+        .btn-orders-view {
+            background: #7c3aed;
+            color: white;
+            border: none;
+            padding: 7px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-manage-pw {
+            background: #0284c7;
+            color: white;
+            border: none;
+            padding: 7px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn-manage-pw:hover { background: #0369a1; }
+
+        /* 리스트형 메인 명단 테이블 */
+        .table-wrap {
             background: #ffffff;
-            border-radius: 16px;
+            border-radius: 8px;
             border: 1px solid var(--card-border);
-            overflow: hidden;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-            display: flex;
-            flex-direction: column;
+            overflow-x: auto;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
         }
 
-        /* 사진 영역 */
-        .profile-photo-wrap {
+        #listContainer table {
             width: 100%;
-            aspect-ratio: 4 / 5;
+            border-collapse: collapse;
+            text-align: center;
+            font-size: 14px;
+            min-width: 820px;
+        }
+
+        #listContainer th {
+            background-color: #f8fafc;
+            color: #475569;
+            font-weight: 700;
+            padding: 12px 8px;
+            font-size: 13px;
+            border-bottom: 2px solid #e2e8f0;
+            white-space: nowrap;
+        }
+
+        #listContainer td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #edf2f7;
+            vertical-align: middle;
+        }
+
+        tr.clickable-row { cursor: pointer; }
+        tr.is-hidden {
+            background-color: #f8fafc !important;
+            opacity: 0.65;
+        }
+
+        .td-no {
+            font-weight: 800;
+            color: var(--kbo-blue);
+            font-size: 16px;
+            letter-spacing: -0.2px;
+        }
+
+        .table-thumb-wrap {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            overflow: hidden;
             background: #e2e8f0;
-            position: relative;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            border: 1px solid #cbd5e1;
+            vertical-align: middle;
         }
 
-        .profile-img {
+        .table-thumb {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -115,31 +350,13 @@
             display: block;
         }
 
-        /* [개선] 등번호 뱃지 가독성 수정 (Impact 제거) */
-        .profile-no-badge {
-            position: absolute;
-            top: 14px;
-            left: 14px;
-            background: rgba(11, 34, 64, 0.92);
-            color: #ffffff;
-            font-size: 16px;
+        .td-name {
             font-weight: 800;
-            padding: 4px 12px;
-            border-radius: 8px;
-            letter-spacing: 0.5px;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-            z-index: 2;
+            color: #111827;
+            font-size: 15px;
         }
 
-        .profile-pos-badge {
-            position: absolute;
-            top: 14px;
-            right: 14px;
-            z-index: 2;
-        }
-
-        /* 학년 뱃지 */
+        /* 뱃지 스타일 */
         .grade-tag {
             display: inline-block;
             padding: 3px 10px;
@@ -155,13 +372,12 @@
         .grade-2 { background: #f3e8ff; color: #6b21a8; }
         .grade-1 { background: #e0f2fe; color: #0369a1; }
 
-        /* [개선] 스마트 포지션 뱃지 전용 색상 */
         .pos-tag {
             display: inline-block;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
             color: #ffffff !important;
             background: #64748b;
             white-space: nowrap;
@@ -176,90 +392,583 @@
         .pos-etc      { background: #6366f1; }
         .pos-none     { background: #94a3b8; }
 
-        /* 정보 영역 */
-        .profile-body {
-            padding: 24px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .name-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding-bottom: 14px;
-            border-bottom: 1px solid var(--card-border);
-        }
-
-        .player-name {
-            font-size: 24px;
-            font-weight: 900;
-            color: var(--text-title);
-            letter-spacing: -0.5px;
-        }
-
-        /* 상세 스펙 리스트 */
-        .spec-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .spec-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 14px;
-            padding: 10px 14px;
-            background: #f8fafc;
-            border-radius: 8px;
-            border: 1px solid #edf2f7;
-        }
-
-        .spec-label {
+        .bt-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
             font-weight: 700;
-            color: var(--text-sub);
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            white-space: nowrap;
+            border: 1px solid transparent;
         }
+        .bt-rr { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+        .bt-rl { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+        .bt-ll { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+        .bt-lr { background: #fefce8; color: #a16207; border-color: #fef08a; }
+        .bt-staff { background: #f8fafc; color: #475569; border-color: #cbd5e1; }
+        .bt-none { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; }
+        .bt-etc { background: #f3e8ff; color: #6b21a8; border-color: #e9d5ff; }
 
-        .spec-value {
-            font-weight: 800;
-            color: var(--text-title);
+        .hidden-badge {
+            display: inline-block;
+            background: #64748b;
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 4px;
+            margin-left: 4px;
         }
 
         .text-private {
             color: #94a3b8;
             font-weight: 700;
+            font-size: 12px;
         }
 
-        /* 로딩 & 에러 안내 */
-        .status-box {
+        .admin-private-badge {
+            display: inline-block;
+            background: #fee2e2;
+            color: #ef4444;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 1px 4px;
+            border-radius: 3px;
+            margin-left: 3px;
+            vertical-align: middle;
+        }
+
+        /* 이미지형 카드 그리드 */
+        .roster-grid {
+            display: none;
+            grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+            gap: 14px;
+        }
+
+        .player-card {
             background: #ffffff;
-            border-radius: 12px;
-            padding: 40px 20px;
-            text-align: center;
-            color: var(--text-sub);
-            font-size: 15px;
-            font-weight: 600;
             border: 1px solid var(--card-border);
+            border-radius: 14px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            transition: transform 0.15s, box-shadow 0.15s;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .player-card.is-hidden {
+            opacity: 0.65;
+            border-color: #cbd5e1;
+            background: #f8fafc;
+        }
+
+        .card-photo-box {
+            width: 100%;
+            aspect-ratio: 4 / 5;
+            background: #e2e8f0;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top center;
+            display: block;
+        }
+
+        .card-no-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(11, 34, 64, 0.92);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.4px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            z-index: 2;
+        }
+
+        .card-pos {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            z-index: 2;
+        }
+
+        .card-info {
+            padding: 12px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .card-name-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-name {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text-title);
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .card-name-no {
+            color: var(--kbo-red);
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: -0.2px;
+        }
+
+        .card-meta {
+            margin: 2px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-extra {
+            font-size: 11px;
+            color: #64748b;
+            background: #f8fafc;
+            border-radius: 6px;
+            padding: 5px 6px;
+            margin-top: 2px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            border: 1px solid #f1f5f9;
+        }
+
+        /* 모달 팝업 기본 */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal-content {
+            background: #ffffff;
+            width: 100%;
+            max-width: 440px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 14px;
+            padding: 22px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            box-sizing: border-box;
+        }
+
+        .modal-header { font-size: 18px; font-weight: 800; margin-bottom: 14px; }
+        .form-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 5px; }
+        .form-group label { font-size: 12px; font-weight: 700; color: #475569; }
+        .form-group input, .form-group select, .form-group textarea { padding: 9px 12px; border: 1px solid var(--card-border); border-radius: 6px; font-size: 14px; outline: none; }
+        .modal-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+        .btn-cancel { background: #f1f5f9; border: 1px solid var(--card-border); padding: 8px 14px; border-radius: 6px; font-weight: 700; cursor: pointer; }
+        .btn-save { background: var(--kbo-blue); color: #ffffff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; }
+
+        /* 유니폼 선택 품목 행 */
+        .uniform-item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 6px;
+            border-bottom: 1px solid #f1f5f9;
+            gap: 8px;
+            font-size: 13px;
+        }
+        .uniform-item-row:last-child { border-bottom: none; }
+        .uniform-item-name {
+            flex: 1.2;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        .uniform-item-size, .uniform-item-qty {
+            padding: 5px 8px !important;
+            font-size: 12px !important;
+            border-radius: 4px !important;
+        }
+        .uniform-item-size { flex: 1.1; }
+        .uniform-item-qty { width: 62px; }
+
+        /* 접수 현황 카드 */
+        .order-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            border-left: 4px solid var(--kbo-blue);
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .order-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .order-player-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--kbo-blue);
+        }
+
+        .order-date-text {
+            font-size: 11px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .order-parent-bar {
+            font-size: 13px;
+            color: #334155;
+            background: #f8fafc;
+            padding: 7px 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #f1f5f9;
+            box-sizing: border-box;
+            flex-wrap: wrap;
+        }
+
+        .order-parent-bar a {
+            color: #1d4ed8;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .order-table {
+            width: 100% !important;
+            min-width: unset !important;
+            max-width: 100% !important;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 8px;
+            table-layout: auto;
+            box-sizing: border-box;
+        }
+
+        .order-table th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 700;
+            padding: 7px 8px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .order-table td {
+            padding: 7px 8px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #1e293b;
+            font-size: 12px;
+        }
+
+        .order-table tr:last-child td { border-bottom: none; }
+
+        .size-badge {
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #bfdbfe;
+            display: inline-block;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        .qty-badge {
+            background: #fef3c7;
+            color: #92400e;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #fde68a;
+            display: inline-block;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        .order-notes-box {
+            font-size: 12px;
+            color: #854d0e;
+            background: #fefce8;
+            border: 1px solid #fef08a;
+            padding: 7px 10px;
+            border-radius: 6px;
+            margin-top: 8px;
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+        }
+
+        .loading-notice {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-sub);
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            header { padding: 20px 12px 18px; }
+            .header-title { font-size: 21px; }
+            .header-actions { position: static; margin-top: 12px; justify-content: center; }
+            .control-top { flex-direction: column; align-items: stretch; }
+            .control-right { justify-content: space-between; }
+            .search-box input { width: 140px; }
+            .roster-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
         }
     </style>
 </head>
 <body>
 
 <header>
-    <div class="header-left">
-        <a href="index.html" class="btn-back">← 목록으로</a>
-        <div class="header-title">선수 상세 프로필</div>
+    <div class="header-title">대연초 야구부 명단</div>
+    <div class="header-subtitle" id="rosterCountText">선수단 데이터를 불러오는 중...</div>
+    
+    <div class="header-actions">
+        <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
+        <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
     </div>
 </header>
 
 <div class="container">
-    <div id="statusNotice" class="status-box">선수 정보를 불러오고 있습니다...</div>
-    <div id="profileCard" class="profile-card" style="display: none;"></div>
+    <div class="control-card">
+        <div class="control-top">
+            <div class="grade-filters" id="gradeFilters">
+                <button class="filter-btn active" onclick="setGrade('all', this)">전체</button>
+                <button class="filter-btn staff-tab" onclick="setGrade('staff', this)">코칭스태프</button>
+                <button class="filter-btn" onclick="setGrade('6', this)">6학년</button>
+                <button class="filter-btn" onclick="setGrade('5', this)">5학년</button>
+                <button class="filter-btn" onclick="setGrade('4', this)">4학년</button>
+                <button class="filter-btn" onclick="setGrade('3', this)">3학년</button>
+                <button class="filter-btn" onclick="setGrade('2', this)">2학년</button>
+                <button class="filter-btn" onclick="setGrade('1', this)">1학년</button>
+            </div>
+
+            <div class="control-right">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="이름 / 등번호 검색" oninput="render()">
+                </div>
+                <div class="view-switch">
+                    <button class="view-btn" id="btnListView" onclick="switchView('list')">☰ 리스트형</button>
+                    <button class="view-btn" id="btnCardView" onclick="switchView('card')">▦ 이미지형</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 등급별 관리자 안내 바 -->
+    <div id="adminBar" class="admin-bar">
+        <span id="adminRoleText" style="font-size: 13px; font-weight: 700;"></span>
+        <div class="admin-bar-btns">
+            <button id="btnToggleUniform" class="btn-toggle-uniform" style="display: none;" onclick="toggleUniformFeature()">👕 접수기능: ON</button>
+            <button id="btnViewOrders" class="btn-orders-view" style="display: none;" onclick="openOrdersSummaryModal()">📋 접수 현황 확인</button>
+            <button id="btnManagePw" class="btn-manage-pw" style="display: none;" onclick="openPasswordManageModal()">🔑 비밀번호 관리</button>
+            <button id="btnSheetLink" class="btn-sheet-link" style="display: none;" onclick="window.open(GOOGLE_SHEET_EDIT_URL, '_blank')">📊 구글 시트 편집창 열기</button>
+        </div>
+    </div>
+
+    <!-- 1. 리스트형 -->
+    <div class="table-wrap" id="listContainer">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 60px;">등번호</th>
+                    <th style="width: 65px;">사진</th>
+                    <th>성명</th>
+                    <th>구분/학년</th>
+                    <th>포지션/역할</th>
+                    <th>투/타</th>
+                    <th>생년월일</th>
+                    <th>신장 / 체중</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <!-- 2. 이미지형 -->
+    <div class="roster-grid" id="cardContainer"></div>
+
+    <div id="statusNotice" class="loading-notice">선수 명단을 실시간으로 불러오고 있습니다...</div>
+</div>
+
+<!-- 1. 관리자 로그인 모달 (비밀번호 노출 완전 제거) -->
+<div id="loginModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">관리자 등급 로그인</div>
+        <div class="form-group">
+            <label>관리자 비밀번호</label>
+            <input type="password" id="adminPw" placeholder="비밀번호 입력">
+            <span style="font-size: 11px; color: #64748b; line-height: 1.6; margin-top: 8px;">
+                • <b>최고관리자</b>: 숨김 선수 열람 + 모든 비공개 해제 + 유니폼 접수 ON/OFF + 비밀번호 관리<br>
+                • <b>보조관리자</b>: 비공개 사진 및 체격 열람 + 시트 편집<br>
+                • <b>일반관리자</b>: 선수 비공개 체격(키/몸무게/생년월일) 열람 전용
+            </span>
+        </div>
+        <div class="modal-btns">
+            <button class="btn-cancel" onclick="closeModal('loginModal')">취소</button>
+            <button class="btn-save" onclick="handleLogin()">로그인</button>
+        </div>
+    </div>
+</div>
+
+<!-- 2. 유니폼 주문 신청 모달 -->
+<div id="uniformModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">👕 유니폼 및 의류 주문 접수</div>
+        <p style="font-size: 12px; color: #64748b; margin-bottom: 14px; line-height: 1.4;">
+            신청할 선수를 선택하신 후, 필요한 의류 항목에 체크하고 사이즈와 수량을 선택해 주세요.
+        </p>
+
+        <div class="form-group">
+            <label>대상 선수 선택 *</label>
+            <select id="ordPlayerSelect" style="font-weight: 700; color: var(--kbo-blue);"></select>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+            <div class="form-group" style="flex: 1;">
+                <label>신청 학부모 성함 *</label>
+                <input type="text" id="ordParentName" placeholder="예: 김나현">
+            </div>
+            <div class="form-group" style="flex: 1.3;">
+                <label>보호자 연락처 *</label>
+                <input type="tel" id="ordParentPhone" placeholder="예: 010-7163-3164">
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 4px;">
+            <label>유니폼 품목 및 사이즈 선택 *</label>
+            <div style="background: #f8fafc; border: 1px solid var(--card-border); border-radius: 8px; padding: 6px 10px;">
+                
+                <div class="uniform-item-row" data-name="하복 상의">
+                    <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 하복 상의</label>
+                    <select class="uniform-item-size" disabled>
+                        <option value="130호">130호</option><option value="140호">140호</option><option value="150호">150호</option>
+                        <option value="160호" selected>160호</option><option value="85(S)">85(S)</option><option value="90(M)">90(M)</option>
+                        <option value="95(L)">95(L)</option><option value="100(XL)">100(XL)</option>
+                    </select>
+                    <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
+                </div>
+
+                <div class="uniform-item-row" data-name="하복 하의">
+                    <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 하복 하의</label>
+                    <select class="uniform-item-size" disabled>
+                        <option value="24인치">24인치</option><option value="26인치">26인치</option><option value="28인치" selected>28인치</option>
+                        <option value="30인치">30인치</option><option value="32인치">32인치</option><option value="34인치">34인치</option>
+                    </select>
+                    <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
+                </div>
+
+                <div class="uniform-item-row" data-name="동복 (기모)">
+                    <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 동복 (기모)</label>
+                    <select class="uniform-item-size" disabled>
+                        <option value="140호">140호</option><option value="150호">150호</option><option value="160호" selected>160호</option>
+                        <option value="85(S)">85(S)</option><option value="90(M)">90(M)</option><option value="95(L)">95(L)</option><option value="100(XL)">100(XL)</option>
+                    </select>
+                    <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
+                </div>
+
+                <div class="uniform-item-row" data-name="바람막이">
+                    <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 바람막이</label>
+                    <select class="uniform-item-size" disabled>
+                        <option value="140호">140호</option><option value="150호">150호</option><option value="160호" selected>160호</option>
+                        <option value="85(S)">85(S)</option><option value="90(M)">90(M)</option><option value="95(L)">95(L)</option><option value="100(XL)">100(XL)</option>
+                    </select>
+                    <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
+                </div>
+
+                <div class="uniform-item-row" data-name="풀오버 (반집업)">
+                    <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 풀오버 (반집업)</label>
+                    <select class="uniform-item-size" disabled>
+                        <option value="140호">140호</option><option value="150호">150호</option><option value="160호" selected>160호</option>
+                        <option value="85(S)">85(S)</option><option value="90(M)">90(M)</option><option value="95(L)">95(L)</option><option value="100(XL)">100(XL)</option>
+                    </select>
+                    <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
+                </div>
+
+                <div class="uniform-item-row" data-name="동계 점퍼 (돕바)">
+                    <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 동계 점퍼 (돕바)</label>
+                    <select class="uniform-item-size" disabled>
+                        <option value="140호">140호</option><option value="150호">150호</option><option value="160호" selected>160호</option>
+                        <option value="85(S)">85(S)</option><option value="90(M)">90(M)</option><option value="95(L)">95(L)</option><option value="100(XL)">100(XL)</option>
+                    </select>
+                    <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>기타 요청사항 (수선, 배번 패치 등)</label>
+            <textarea id="ordNotes" rows="2" placeholder="요청 사항이 있으실 경우 기재해 주세요."></textarea>
+        </div>
+
+        <div class="modal-btns">
+            <button class="btn-cancel" onclick="closeModal('uniformModal')">취소</button>
+            <button class="btn-save" id="btnSubmitOrder" style="background: #f59e0b;" onclick="submitUniformOrder()">신청서 제출</button>
+        </div>
+    </div>
+</div>
+
+<!-- 3. 관리자 전용 접수 현황 모달 -->
+<div id="ordersModal" class="modal">
+    <div class="modal-content" style="max-width: 500px; width: 95%;">
+        <div class="modal-header" id="ordersModalTitle">📋 유니폼 주문 접수 현황</div>
+        <div id="ordersListContent" style="max-height: 440px; overflow-y: auto; overflow-x: hidden; width: 100%; box-sizing: border-box;"></div>
+        <div class="modal-btns" style="justify-content: space-between; margin-top: 14px;">
+            <button class="btn-sheet-link" onclick="window.open(GOOGLE_SHEET_EDIT_URL, '_blank')">📊 구글 시트에서 전체 확인</button>
+            <button class="btn-save" onclick="closeModal('ordersModal')">닫기</button>
+        </div>
+    </div>
+</div>
+
+<!-- 4. [신규] 관리자 비밀번호 변경/관리 모달 -->
+<div id="passwordModal" class="modal">
+    <div class="modal-content" style="max-width: 440px;">
+        <div class="modal-header" id="pwModalTitle">🔑 관리자 비밀번호 설정</div>
+        <div id="pwModalBody"></div>
+        <div class="modal-btns" id="pwModalBtns"></div>
+    </div>
 </div>
 
 <script>
@@ -270,8 +979,50 @@
         el.src = defaultAvatar;
     }
 
+    let players = [];
+    let selectedGrade = 'all';
+    let currentView = localStorage.getItem('daeyeon_view_mode') || 'list';
+    let currentRole = 'guest'; // 'guest', 'general', 'sub', 'super', 'dev'
+
+    let isUniformActive = localStorage.getItem('daeyeon_uniform_active') !== 'false';
+
+    // 비밀번호 불러오기 (기본값: 9999, 7777, 1111)
+    function getStoredPasswords() {
+        return {
+            super: localStorage.getItem('daeyeon_pw_super') || '9999',
+            sub: localStorage.getItem('daeyeon_pw_sub') || '7777',
+            general: localStorage.getItem('daeyeon_pw_general') || '1111'
+        };
+    }
+
+    // 개발자 마스터 비밀번호 판별 (일년월: DDYYMM, DDYYYYMM, YYYYMMDD 등 지원)
+    function isDevPassword(inputPw) {
+        const now = new Date();
+        const yyyy = String(now.getFullYear());
+        const yy = yyyy.slice(-2);
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const m = String(now.getMonth() + 1);
+        const dd = String(now.getDate()).padStart(2, '0');
+        const d = String(now.getDate());
+
+        const validPws = [
+            dd + yy + mm,       // 예: 142609 (14일 26년 09월)
+            dd + yyyy + mm,     // 예: 14202609 (14일 2026년 09월)
+            d + yy + m,         // 예: 14269
+            d + yyyy + m,       // 예: 1420269
+            yyyy + mm + dd,     // 예: 20260914 (년월일)
+            yy + mm + dd        // 예: 260914 (년월일)
+        ];
+
+        return validPws.includes(inputPw.trim());
+    }
+
     function isStaff(grade) {
         return grade === '감독' || grade === '코치';
+    }
+
+    function isSuperOrDev() {
+        return currentRole === 'super' || currentRole === 'dev';
     }
 
     function getGradeBadge(grade) {
@@ -279,7 +1030,6 @@
         return `<span class="grade-tag grade-${grade}">${grade}학년</span>`;
     }
 
-    // 스마트 포지션 뱃지
     function getPosBadge(pos, grade) {
         if (!pos || pos === '-' || pos === '정보없음' || pos === '미정') {
             return '<span class="pos-tag pos-none">미정</span>';
@@ -296,7 +1046,736 @@
         return `<span class="pos-tag pos-etc">${p}</span>`;
     }
 
-    // ON/OFF 판단 함수 (OFF 또는 비공개일 때만 비공개 처리)
+    function getBtBadge(bt, grade) {
+        const val = String(bt || '').trim();
+        if (isStaff(grade) && (!val || val === '-' || val === '정보없음')) return `<span class="bt-tag bt-staff">지도자</span>`;
+        if (!val || val === '-' || val === '정보없음' || val === '미정') return `<span class="bt-tag bt-none">정보없음</span>`;
+        if (val.includes('우투우타') || val === '우우') return `<span class="bt-tag bt-rr">우투우타</span>`;
+        if (val.includes('우투좌타') || val === '우좌') return `<span class="bt-tag bt-rl">우투좌타</span>`;
+        if (val.includes('좌투좌타') || val === '좌좌') return `<span class="bt-tag bt-ll">좌투좌타</span>`;
+        if (val.includes('좌투우타') || val === '좌우') return `<span class="bt-tag bt-lr">좌투우타</span>`;
+        return `<span class="bt-tag bt-etc">${val}</span>`;
+    }
+
+    function formatBirth(p) {
+        if (!p.birth || p.birth === '-') return '-';
+
+        const bHidden = !!p.hideBirth;
+        const canViewBirth = (currentRole !== 'guest');
+
+        if (!canViewBirth) {
+            if (bHidden) return '<span class="text-private">비공개</span>';
+            return p.birth;
+        } else {
+            const showBadge = (currentRole === 'super' || currentRole === 'sub' || currentRole === 'dev');
+            const bBadge = (bHidden && showBadge) ? '<span class="admin-private-badge">비공개</span>' : '';
+            return `${p.birth}${bBadge}`;
+        }
+    }
+
+    function formatPhys(p) {
+        const h = p.height;
+        const w = p.weight;
+        if (!h && !w) return '-';
+
+        const hHidden = !!p.hideHeight;
+        const wHidden = !!p.hideWeight;
+        const canViewPhys = (currentRole !== 'guest');
+
+        if (!canViewPhys) {
+            if (hHidden && wHidden) return '<span class="text-private">비공개</span>';
+            const hStr = h ? (hHidden ? '<span class="text-private">비공개</span>' : `${h}cm`) : '-';
+            const wStr = w ? (wHidden ? '<span class="text-private">비공개</span>' : `${w}kg`) : '-';
+            return `${hStr} / ${wStr}`;
+        } else {
+            const showBadge = (currentRole === 'super' || currentRole === 'sub' || currentRole === 'dev');
+            const hBadge = (hHidden && showBadge) ? '<span class="admin-private-badge">비공개</span>' : '';
+            const wBadge = (wHidden && showBadge) ? '<span class="admin-private-badge">비공개</span>' : '';
+            const hStr = h ? `${h}cm${hBadge}` : '-';
+            const wStr = w ? `${w}kg${wBadge}` : '-';
+            return `${hStr} / ${wStr}`;
+        }
+    }
+
+    function switchView(view) {
+        currentView = view;
+        localStorage.setItem('daeyeon_view_mode', view);
+
+        const btnList = document.getElementById('btnListView');
+        const btnCard = document.getElementById('btnCardView');
+        const listContainer = document.getElementById('listContainer');
+        const cardContainer = document.getElementById('cardContainer');
+
+        if (view === 'list') {
+            btnList.classList.add('active');
+            btnCard.classList.remove('active');
+            listContainer.style.display = 'block';
+            cardContainer.style.display = 'none';
+        } else {
+            btnList.classList.remove('active');
+            btnCard.classList.add('active');
+            listContainer.style.display = 'none';
+            cardContainer.style.display = 'grid';
+        }
+        render();
+    }
+
+    function setGrade(grade, btn) {
+        selectedGrade = grade;
+        document.querySelectorAll('#gradeFilters .filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        render();
+    }
+
+    function goToPlayer(path) {
+        window.location.href = `player.html?path=${encodeURIComponent(path)}`;
+    }
+
+    function updateUniformButtonVisibility() {
+        const cta = document.getElementById('btnUniformCTA');
+        if (isUniformActive) {
+            cta.style.display = 'inline-flex';
+            cta.style.background = '#f59e0b';
+            cta.textContent = '👕 유니폼 주문 접수';
+        } else {
+            if (isSuperOrDev()) {
+                cta.style.display = 'inline-flex';
+                cta.style.background = '#64748b';
+                cta.textContent = '👕 유니폼 (현재 마감됨)';
+            } else {
+                cta.style.display = 'none';
+            }
+        }
+    }
+
+    function render() {
+        const query = document.getElementById('searchInput').value.trim().toLowerCase();
+        const tableBody = document.getElementById('tableBody');
+        const cardContainer = document.getElementById('cardContainer');
+        const notice = document.getElementById('statusNotice');
+
+        updateUniformButtonVisibility();
+
+        const canViewPhoto = (currentRole === 'sub' || isSuperOrDev());
+
+        const filtered = players.filter(p => {
+            const isVisible = (p.visible !== false);
+            if (!isSuperOrDev() && !isVisible) return false;
+
+            let matchGrade = false;
+            if (selectedGrade === 'all') matchGrade = true;
+            else if (selectedGrade === 'staff') matchGrade = isStaff(p.grade);
+            else matchGrade = (p.grade.toString() === selectedGrade);
+
+            const matchSearch = p.name.toLowerCase().includes(query) || 
+                                p.no.toString().includes(query) || 
+                                (p.pos && p.pos.includes(query)) ||
+                                (p.bt && p.bt.includes(query));
+            return matchGrade && matchSearch;
+        }).sort((a, b) => {
+            const rankA = a.grade === '감독' ? 1 : (a.grade === '코치' ? 2 : 3);
+            const rankB = b.grade === '감독' ? 1 : (b.grade === '코치' ? 2 : 3);
+            if (rankA !== rankB) return rankA - rankB;
+            return a.no - b.no;
+        });
+
+        const activeStaff = players.filter(p => isStaff(p.grade) && (isSuperOrDev() || p.visible !== false)).length;
+        const activeStudent = players.filter(p => !isStaff(p.grade) && (isSuperOrDev() || p.visible !== false)).length;
+        document.getElementById('rosterCountText').textContent = `2026 OFFICIAL ROSTER (코칭스태프 ${activeStaff}명 · 등록선수 ${activeStudent}명)`;
+
+        if (filtered.length === 0) {
+            tableBody.innerHTML = '';
+            cardContainer.innerHTML = '';
+            notice.textContent = '조건에 맞는 명단이 없습니다.';
+            notice.style.display = 'block';
+            return;
+        }
+        notice.style.display = 'none';
+
+        // 1. 리스트형 메인 명단 테이블
+        tableBody.innerHTML = filtered.map(p => {
+            const photoUrl = `data/photos/${p.no}.jpg`;
+            const isHidden = (p.visible === false);
+            const hiddenBadge = isHidden ? `<span class="hidden-badge">숨김</span>` : '';
+            const playerPath = isStaff(p.grade) ? `staff/${p.no}` : `${p.grade}/${p.no}`;
+
+            let photoCell = '';
+            if (p.hidePhoto && !canViewPhoto) {
+                photoCell = `
+                    <div class="table-thumb-wrap" style="background: #f1f5f9;" title="사진 비공개">
+                        <span style="font-size: 15px; opacity: 0.6;">🔒</span>
+                    </div>
+                `;
+            } else {
+                const adminPhotoBadge = (p.hidePhoto && canViewPhoto) ? `<span class="admin-private-badge" style="position:absolute; bottom:0; left:50%; transform:translateX(-50%); font-size:9px; white-space:nowrap;">비공개</span>` : '';
+                photoCell = `
+                    <div class="table-thumb-wrap" style="position: relative;">
+                        <img class="table-thumb" src="${photoUrl}" alt="" onerror="handleImgError(this)">
+                        ${adminPhotoBadge}
+                    </div>
+                `;
+            }
+
+            return `
+                <tr class="clickable-row ${isHidden ? 'is-hidden' : ''}" onclick="goToPlayer('${playerPath}')">
+                    <td class="td-no">${p.no}</td>
+                    <td>${photoCell}</td>
+                    <td class="td-name">${p.name}${hiddenBadge}</td>
+                    <td>${getGradeBadge(p.grade)}</td>
+                    <td>${getPosBadge(p.pos, p.grade)}</td>
+                    <td>${getBtBadge(p.bt, p.grade)}</td>
+                    <td style="color: #475569; font-size: 13px;">${formatBirth(p)}</td>
+                    <td style="color: #475569; font-size: 13px;">${formatPhys(p)}</td>
+                </tr>
+            `;
+        }).join('');
+
+        // 2. 이미지형 그리드
+        cardContainer.innerHTML = filtered.map(p => {
+            const photoUrl = `data/photos/${p.no}.jpg`;
+            const isHidden = (p.visible === false);
+            const hiddenBadge = isHidden ? `<span class="hidden-badge">숨김</span>` : '';
+            const posBadge = (p.pos && p.pos !== '-' && p.pos !== '정보없음' && p.pos !== '미정') ? getPosBadge(p.pos, p.grade) : '';
+            const playerPath = isStaff(p.grade) ? `staff/${p.no}` : `${p.grade}/${p.no}`;
+
+            let cardPhotoHtml = '';
+            if (p.hidePhoto && !canViewPhoto) {
+                cardPhotoHtml = `
+                    <div class="card-photo-box" style="background:#f1f5f9; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                        <span class="card-no-badge">No.${p.no}</span>
+                        <div class="card-pos">${posBadge}</div>
+                        <div style="font-size:32px; opacity:0.35;">👤</div>
+                        <span style="margin-top:6px; font-size:11px; font-weight:800; color:#64748b; background:rgba(255,255,255,0.9); padding:3px 8px; border-radius:12px; border:1px solid #cbd5e1;">🔒 사진 비공개</span>
+                    </div>
+                `;
+            } else {
+                const adminPhotoBadge = (p.hidePhoto && canViewPhoto) ? `<span style="position:absolute; bottom:8px; left:8px; background:#ef4444; color:#ffffff; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; z-index:3;">🔒 사진 비공개</span>` : '';
+                cardPhotoHtml = `
+                    <div class="card-photo-box">
+                        <span class="card-no-badge">No.${p.no}</span>
+                        <div class="card-pos">${posBadge}</div>
+                        <img class="card-img" src="${photoUrl}" alt="" onerror="handleImgError(this)">
+                        ${adminPhotoBadge}
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="player-card ${isHidden ? 'is-hidden' : ''}" onclick="goToPlayer('${playerPath}')">
+                    ${cardPhotoHtml}
+                    <div class="card-info">
+                        <div class="card-name-row">
+                            <span class="card-name"><span class="card-name-no">No.${p.no}</span> ${p.name}${hiddenBadge}</span>
+                            ${getGradeBadge(p.grade)}
+                        </div>
+                        <div class="card-meta">${getBtBadge(p.bt, p.grade)}</div>
+                        <div class="card-extra">
+                            <div>🎂 ${formatBirth(p)}</div>
+                            <div>📏 ${formatPhys(p)}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // 관리자 로그인 제어
+    function openAdminModal() {
+        if (currentRole !== 'guest') {
+            if (confirm('관리자 모드를 로그아웃 하시겠습니까?')) {
+                currentRole = 'guest';
+                updateAdminUI();
+                render();
+            }
+        } else {
+            document.getElementById('adminPw').value = '';
+            document.getElementById('loginModal').style.display = 'flex';
+        }
+    }
+
+    function handleLogin() {
+        const pw = document.getElementById('adminPw').value.trim();
+        const pws = getStoredPasswords();
+
+        // 1. 개발자 마스터 비밀번호 검증 (일년월 기반)
+        if (isDevPassword(pw)) {
+            currentRole = 'dev';
+            alert('⚡ [개발자 마스터 관리자]로 로그인되었습니다.\n(모든 권한 및 비밀번호 강제 제어 가능)');
+        }
+        // 2. 최고관리자
+        else if (pw === pws.super) {
+            currentRole = 'super';
+            alert('👑 최고관리자로 로그인되었습니다.\n(유니폼 접수 ON/OFF 및 비밀번호 관리 가능)');
+        }
+        // 3. 보조관리자
+        else if (pw === pws.sub) {
+            currentRole = 'sub';
+            alert('🛠️ 보조관리자로 로그인되었습니다.');
+        }
+        // 4. 일반관리자
+        else if (pw === pws.general) {
+            currentRole = 'general';
+            alert('📋 일반관리자로 로그인되었습니다.');
+        } else {
+            alert('비밀번호가 올바르지 않습니다.');
+            return;
+        }
+
+        closeModal('loginModal');
+        updateAdminUI();
+        render();
+    }
+
+    function updateAdminUI() {
+        const adminBar = document.getElementById('adminBar');
+        const adminBtn = document.getElementById('adminLoginBtn');
+        const roleText = document.getElementById('adminRoleText');
+        const btnSheetLink = document.getElementById('btnSheetLink');
+        const btnToggleUniform = document.getElementById('btnToggleUniform');
+        const btnViewOrders = document.getElementById('btnViewOrders');
+        const btnManagePw = document.getElementById('btnManagePw');
+
+        adminBar.className = 'admin-bar';
+
+        if (currentRole === 'dev') {
+            adminBtn.textContent = '⚡ 개발자 로그아웃';
+            adminBtn.classList.add('logged-in');
+            adminBar.classList.add('dev');
+            adminBar.style.display = 'flex';
+            roleText.textContent = '⚡ 개발자 마스터 모드 (모든 권한 및 비밀번호 강제 제어)';
+            btnSheetLink.style.display = 'inline-flex';
+            btnToggleUniform.style.display = 'inline-block';
+            btnToggleUniform.textContent = isUniformActive ? '👕 접수기능: ON (접수중)' : '👕 접수기능: OFF (마감)';
+            btnToggleUniform.style.background = isUniformActive ? '#15803d' : '#991b1b';
+            btnViewOrders.style.display = 'inline-block';
+            btnManagePw.style.display = 'inline-block';
+        } else if (currentRole === 'super') {
+            adminBtn.textContent = '🔓 최고관리자 로그아웃';
+            adminBtn.classList.add('logged-in');
+            adminBar.classList.add('super');
+            adminBar.style.display = 'flex';
+            roleText.textContent = '👑 최고관리자 모드 실행 중';
+            btnSheetLink.style.display = 'inline-flex';
+            btnToggleUniform.style.display = 'inline-block';
+            btnToggleUniform.textContent = isUniformActive ? '👕 접수기능: ON (접수중)' : '👕 접수기능: OFF (마감)';
+            btnToggleUniform.style.background = isUniformActive ? '#15803d' : '#991b1b';
+            btnViewOrders.style.display = 'inline-block';
+            btnManagePw.style.display = 'inline-block';
+        } else if (currentRole === 'sub') {
+            adminBtn.textContent = '🔓 보조관리자 로그아웃';
+            adminBtn.classList.add('logged-in');
+            adminBar.classList.add('sub');
+            adminBar.style.display = 'flex';
+            roleText.textContent = '🛠️ 보조관리자 모드';
+            btnSheetLink.style.display = 'inline-flex';
+            btnToggleUniform.style.display = 'none';
+            btnViewOrders.style.display = 'none';
+            btnManagePw.style.display = 'none';
+        } else if (currentRole === 'general') {
+            adminBtn.textContent = '🔓 일반관리자 로그아웃';
+            adminBtn.classList.add('logged-in');
+            adminBar.classList.add('general');
+            adminBar.style.display = 'flex';
+            roleText.textContent = '📋 일반관리자 모드';
+            btnSheetLink.style.display = 'none';
+            btnToggleUniform.style.display = 'none';
+            btnViewOrders.style.display = 'none';
+            btnManagePw.style.display = 'none';
+        } else {
+            adminBtn.textContent = '🔒 관리자 로그인';
+            adminBtn.classList.remove('logged-in');
+            adminBar.style.display = 'none';
+            btnToggleUniform.style.display = 'none';
+            btnViewOrders.style.display = 'none';
+            btnManagePw.style.display = 'none';
+        }
+    }
+
+    // [신규] 비밀번호 관리 모달 열기
+    function openPasswordManageModal() {
+        const body = document.getElementById('pwModalBody');
+        const btns = document.getElementById('pwModalBtns');
+        const title = document.getElementById('pwModalTitle');
+        const pws = getStoredPasswords();
+
+        if (currentRole === 'dev') {
+            title.textContent = '⚡ 개발자 마스터 비밀번호 제어';
+            body.innerHTML = `
+                <div style="background:#f3e8ff; border:1px solid #d8b4fe; border-radius:8px; padding:10px; font-size:12px; color:#581c87; margin-bottom:14px; line-height:1.5;">
+                    • <b>현재 최고관리자 비번:</b> <span style="color:#b91c1c; font-weight:800;">${pws.super}</span><br>
+                    • <b>현재 보조관리자 비번:</b> <span style="color:#1d4ed8; font-weight:800;">${pws.sub}</span><br>
+                    • <b>현재 일반관리자 비번:</b> <span style="color:#15803d; font-weight:800;">${pws.general}</span>
+                </div>
+                <div class="form-group">
+                    <label>최고관리자 새 비밀번호</label>
+                    <input type="text" id="devNewSuperPw" value="${pws.super}">
+                </div>
+                <div class="form-group">
+                    <label>보조관리자 새 비밀번호</label>
+                    <input type="text" id="devNewSubPw" value="${pws.sub}">
+                </div>
+                <div class="form-group">
+                    <label>일반관리자 새 비밀번호</label>
+                    <input type="text" id="devNewGenPw" value="${pws.general}">
+                </div>
+            `;
+            btns.innerHTML = `
+                <button class="btn-cancel" style="color:#b91c1c; border-color:#fecaca;" onclick="resetAllPasswordsToDefault()">기본값 리셋</button>
+                <button class="btn-cancel" onclick="closeModal('passwordModal')">취소</button>
+                <button class="btn-save" style="background:#7c3aed;" onclick="saveDevPasswords()">전체 저장</button>
+            `;
+        } else if (currentRole === 'super') {
+            title.textContent = '🔑 관리자 비밀번호 변경';
+            body.innerHTML = `
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:12px;">
+                    <div style="font-size:13px; font-weight:800; color:#0b2240; margin-bottom:8px;">👑 최고관리자 본인 비밀번호 변경</div>
+                    <div class="form-group">
+                        <label>현재 최고관리자 비밀번호 확인 *</label>
+                        <input type="password" id="curSuperPw" placeholder="현재 비밀번호 입력">
+                    </div>
+                    <div class="form-group">
+                        <label>새 비밀번호 *</label>
+                        <input type="password" id="newSuperPw" placeholder="변경할 새 비밀번호">
+                    </div>
+                    <div class="form-group">
+                        <label>새 비밀번호 확인 *</label>
+                        <input type="password" id="newSuperPwConfirm" placeholder="변경할 새 비밀번호 재입력">
+                    </div>
+                </div>
+
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px;">
+                    <div style="font-size:13px; font-weight:800; color:#0b2240; margin-bottom:8px;">👥 하위 관리자 비밀번호 변경</div>
+                    <div class="form-group">
+                        <label>보조관리자 새 비밀번호 (미변경 시 비워둠)</label>
+                        <input type="text" id="newSubPw" placeholder="현재: 보안유지됨">
+                    </div>
+                    <div class="form-group">
+                        <label>일반관리자 새 비밀번호 (미변경 시 비워둠)</label>
+                        <input type="text" id="newGenPw" placeholder="현재: 보안유지됨">
+                    </div>
+                </div>
+            `;
+            btns.innerHTML = `
+                <button class="btn-cancel" onclick="closeModal('passwordModal')">취소</button>
+                <button class="btn-save" onclick="saveSuperPasswords()">변경사항 저장</button>
+            `;
+        }
+
+        document.getElementById('passwordModal').style.display = 'flex';
+    }
+
+    // 최고관리자 비밀번호 저장 로직
+    function saveSuperPasswords() {
+        const pws = getStoredPasswords();
+        const curSuper = document.getElementById('curSuperPw').value.trim();
+        const newSuper = document.getElementById('newSuperPw').value.trim();
+        const newSuperConfirm = document.getElementById('newSuperPwConfirm').value.trim();
+        const newSub = document.getElementById('newSubPw').value.trim();
+        const newGen = document.getElementById('newGenPw').value.trim();
+
+        let updatedMsg = [];
+
+        // 최고관리자 본인 비번 변경 요청 시
+        if (newSuper || curSuper) {
+            if (curSuper !== pws.super) {
+                alert('현재 최고관리자 비밀번호가 일치하지 않습니다.');
+                return;
+            }
+            if (!newSuper) {
+                alert('새로운 최고관리자 비밀번호를 입력해 주세요.');
+                return;
+            }
+            if (newSuper !== newSuperConfirm) {
+                alert('새 비밀번호와 비밀번호 확인이 일치하지 않습니다.');
+                return;
+            }
+            localStorage.setItem('daeyeon_pw_super', newSuper);
+            updatedMsg.push('최고관리자');
+        }
+
+        // 보조관리자 비번 변경
+        if (newSub) {
+            localStorage.setItem('daeyeon_pw_sub', newSub);
+            updatedMsg.push('보조관리자');
+        }
+
+        // 일반관리자 비번 변경
+        if (newGen) {
+            localStorage.setItem('daeyeon_pw_general', newGen);
+            updatedMsg.push('일반관리자');
+        }
+
+        if (updatedMsg.length === 0) {
+            alert('변경된 항목이 없습니다.');
+            return;
+        }
+
+        alert(`✅ [${updatedMsg.join(', ')}] 비밀번호가 성공적으로 변경되었습니다.`);
+        closeModal('passwordModal');
+    }
+
+    // 개발자 마스터 비밀번호 저장 로직
+    function saveDevPasswords() {
+        const s = document.getElementById('devNewSuperPw').value.trim();
+        const sub = document.getElementById('devNewSubPw').value.trim();
+        const g = document.getElementById('devNewGenPw').value.trim();
+
+        if (!s || !sub || !g) {
+            alert('비밀번호를 공백으로 둘 수 없습니다.');
+            return;
+        }
+
+        localStorage.setItem('daeyeon_pw_super', s);
+        localStorage.setItem('daeyeon_pw_sub', sub);
+        localStorage.setItem('daeyeon_pw_general', g);
+
+        alert('⚡ 모든 관리자 비밀번호가 마스터 권한으로 즉시 변경 저장되었습니다.');
+        closeModal('passwordModal');
+    }
+
+    function resetAllPasswordsToDefault() {
+        if (confirm('모든 관리자 비밀번호를 초기값(최고:9999, 보조:7777, 일반:1111)으로 리셋하시겠습니까?')) {
+            localStorage.setItem('daeyeon_pw_super', '9999');
+            localStorage.setItem('daeyeon_pw_sub', '7777');
+            localStorage.setItem('daeyeon_pw_general', '1111');
+            alert('비밀번호가 초기값으로 리셋되었습니다.');
+            openPasswordManageModal();
+        }
+    }
+
+    function toggleUniformFeature() {
+        if (!isSuperOrDev()) return;
+        isUniformActive = !isUniformActive;
+        localStorage.setItem('daeyeon_uniform_active', isUniformActive ? 'true' : 'false');
+        alert(`유니폼 접수 기능이 [${isUniformActive ? 'ON (활성화)' : 'OFF (마감/비활성화)'}] 되었습니다.`);
+        updateAdminUI();
+        render();
+    }
+
+    function openUniformModal() {
+        if (!isUniformActive && !isSuperOrDev()) {
+            alert('현재는 유니폼 접수 기간이 아닙니다.');
+            return;
+        }
+
+        const select = document.getElementById('ordPlayerSelect');
+        select.innerHTML = '<option value="">-- 선수를 선택해 주세요 --</option>';
+        players.filter(p => !isStaff(p.grade)).forEach(p => {
+            select.innerHTML += `<option value="No.${p.no} ${p.name} (${p.grade}학년)">No.${p.no} ${p.name} (${p.grade}학년)</option>`;
+        });
+
+        document.getElementById('ordParentName').value = '';
+        document.getElementById('ordParentPhone').value = '';
+        document.getElementById('ordNotes').value = '';
+        document.querySelectorAll('.chk-item').forEach(c => {
+            c.checked = false;
+            toggleRowInputs(c);
+        });
+
+        document.getElementById('uniformModal').style.display = 'flex';
+    }
+
+    function toggleRowInputs(chk) {
+        const row = chk.closest('.uniform-item-row');
+        const sizeSelect = row.querySelector('.uniform-item-size');
+        const qtySelect = row.querySelector('.uniform-item-qty');
+        sizeSelect.disabled = !chk.checked;
+        qtySelect.disabled = !chk.checked;
+    }
+
+    async function submitUniformOrder() {
+        const player = document.getElementById('ordPlayerSelect').value;
+        const parentName = document.getElementById('ordParentName').value.trim();
+        const parentPhone = document.getElementById('ordParentPhone').value.trim();
+        const notes = document.getElementById('ordNotes').value.trim();
+
+        if (!player) {
+            alert('대상 선수를 선택해 주세요.');
+            return;
+        }
+        if (!parentName) {
+            alert('신청 학부모 성함을 입력해 주세요.');
+            return;
+        }
+        if (!parentPhone) {
+            alert('보호자 연락처를 입력해 주세요.');
+            return;
+        }
+
+        const itemsMap = {
+            "하복 상의": "-",
+            "하복 하의": "-",
+            "동복 (기모)": "-",
+            "바람막이": "-",
+            "풀오버 (반집업)": "-",
+            "동계 점퍼 (돕바)": "-"
+        };
+        let checkedCount = 0;
+
+        document.querySelectorAll('.uniform-item-row').forEach(row => {
+            const chk = row.querySelector('.chk-item');
+            const name = row.getAttribute('data-name');
+            if (chk && chk.checked && name) {
+                const size = row.querySelector('.uniform-item-size').value;
+                const qty = row.querySelector('.uniform-item-qty').value;
+                itemsMap[name] = `${size} (${qty})`;
+                checkedCount++;
+            }
+        });
+
+        if (checkedCount === 0) {
+            alert('최소 1개 이상의 유니폼 품목을 선택해 주세요.');
+            return;
+        }
+
+        const orderData = {
+            id: Date.now(),
+            date: new Date().toLocaleString(),
+            player: player,
+            parentName: parentName,
+            parentPhone: parentPhone,
+            items: itemsMap,
+            notes: notes || '-'
+        };
+
+        const submitBtn = document.getElementById('btnSubmitOrder');
+        submitBtn.disabled = true;
+        submitBtn.textContent = '구글 시트로 접수 중...';
+
+        try {
+            if (GOOGLE_SCRIPT_UNIFORM_API_URL && GOOGLE_SCRIPT_UNIFORM_API_URL.trim() !== "") {
+                await fetch(GOOGLE_SCRIPT_UNIFORM_API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                });
+            }
+
+            const orders = JSON.parse(localStorage.getItem('daeyeon_uniform_orders') || '[]');
+            orders.unshift(orderData);
+            localStorage.setItem('daeyeon_uniform_orders', JSON.stringify(orders));
+
+            alert(`✅ 유니폼 주문 신청이 구글 스프레드시트에 정상 접수되었습니다!\n\n• 대상: ${player}\n• 보호자: ${parentName} (${parentPhone})\n• 신청 품목: ${checkedCount}종`);
+            closeModal('uniformModal');
+        } catch (err) {
+            console.error(err);
+            alert('접수 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '신청서 제출';
+        }
+    }
+
+    function parseValueToSizeQty(val) {
+        if (!val || val === '-') return null;
+        const str = String(val).trim();
+        const match = str.match(/^(.*?)\s*[\(\/]\s*(.*?)\s*[\)]?$/);
+        if (match) {
+            return { size: match[1].trim(), qty: match[2].trim() };
+        }
+        return { size: str, qty: '1벌' };
+    }
+
+    async function openOrdersSummaryModal() {
+        const content = document.getElementById('ordersListContent');
+        const title = document.getElementById('ordersModalTitle');
+        content.innerHTML = '<div style="text-align:center; padding:40px 10px; color:#64748b; font-size:13px;">구글 시트에서 최신 접수 내역을 확인하는 중...</div>';
+        document.getElementById('ordersModal').style.display = 'flex';
+
+        let orders = [];
+
+        if (GOOGLE_SCRIPT_UNIFORM_API_URL && GOOGLE_SCRIPT_UNIFORM_API_URL.trim() !== "") {
+            try {
+                const res = await fetch(GOOGLE_SCRIPT_UNIFORM_API_URL + '?nocache=' + Date.now());
+                const json = await res.json();
+                if (json && json.orders && json.orders.length > 0) {
+                    orders = json.orders.reverse();
+                }
+            } catch (e) {
+                console.warn("시트 조회 실패, 로컬 백업 로드:", e);
+            }
+        }
+
+        if (orders.length === 0) {
+            orders = JSON.parse(localStorage.getItem('daeyeon_uniform_orders') || '[]');
+        }
+
+        title.textContent = `📋 유니폼 주문 접수 현황 (총 ${orders.length}건)`;
+
+        if (orders.length === 0) {
+            content.innerHTML = '<div style="text-align:center; padding:50px 20px; color:#94a3b8; font-weight:600;">현재 접수된 주문 내역이 없습니다.</div>';
+            return;
+        }
+
+        content.innerHTML = orders.map((o, idx) => {
+            const pName = o.parentName || (o.parent ? o.parent.split(' ')[0] : '보호자');
+            const pPhone = o.parentPhone || (o.parent ? o.parent.replace(pName, '').trim() : '-');
+            const rawTel = pPhone.replace(/[^0-9]/g, '');
+            const phoneLink = rawTel ? `<a href="tel:${rawTel}">${pPhone}</a>` : pPhone;
+
+            const activeItems = [];
+            if (typeof o.items === 'object' && !Array.isArray(o.items)) {
+                for (let k in o.items) {
+                    const parsed = parseValueToSizeQty(o.items[k]);
+                    if (parsed) activeItems.push({ name: k, size: parsed.size, qty: parsed.qty });
+                }
+            } else if (Array.isArray(o.items)) {
+                o.items.forEach(it => {
+                    if (typeof it === 'object') activeItems.push({ name: it.name, size: it.size, qty: it.qty });
+                });
+            }
+
+            const hasNotes = o.notes && o.notes !== '-' && o.notes !== '';
+            const notesHtml = hasNotes ? `
+                <div class="order-notes-box">
+                    <span>📝</span>
+                    <div><b>요청사항:</b> ${o.notes}</div>
+                </div>
+            ` : '';
+
+            return `
+                <div class="order-card">
+                    <div class="order-card-header">
+                        <span class="order-player-title">#${idx+1}. ${o.player}</span>
+                        <span class="order-date-text">${o.date}</span>
+                    </div>
+
+                    <div class="order-parent-bar">
+                        <span>👤 <b>${pName}</b></span>
+                        <span style="color:#cbd5e1;">|</span>
+                        <span>📞 ${phoneLink}</span>
+                    </div>
+
+                    <table class="order-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align: left; padding-left: 10px;">신청 품목</th>
+                                <th style="width: 75px;">사이즈</th>
+                                <th style="width: 60px;">수량</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${activeItems.length > 0 ? activeItems.map(it => `
+                                <tr>
+                                    <td style="text-align: left; padding-left: 10px; font-weight: 700;">⚾ ${it.name}</td>
+                                    <td><span class="size-badge">${it.size}</span></td>
+                                    <td><span class="qty-badge">${it.qty}</span></td>
+                                </tr>
+                            `).join('') : `<tr><td colspan="3" style="color:#94a3b8;">신청 품목 없음</td></tr>`}
+                        </tbody>
+                    </table>
+
+                    ${notesHtml}
+                </div>
+            `;
+        }).join('');
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+
     function isOff(val) {
         if (!val) return false;
         const v = String(val).toUpperCase().trim();
@@ -312,28 +1791,7 @@
         return '';
     }
 
-    // URL 파라미터에서 등번호 추출 (예: ?path=5/2 -> 2, ?path=staff/70 -> 70, ?no=2 -> 2)
-    function getTargetNumber() {
-        const urlParams = new URLSearchParams(window.location.search);
-        let target = urlParams.get('no');
-        const path = urlParams.get('path');
-        if (path) {
-            const parts = path.split('/');
-            target = parts[parts.length - 1];
-        }
-        return target ? parseInt(target, 10) : null;
-    }
-
-    async function loadPlayerDetail() {
-        const targetNo = getTargetNumber();
-        const notice = document.getElementById('statusNotice');
-        const card = document.getElementById('profileCard');
-
-        if (!targetNo) {
-            notice.textContent = "선수 정보가 지정되지 않았습니다.";
-            return;
-        }
-
+    async function loadGoogleSheetData() {
         try {
             const cacheUrl = GOOGLE_SHEET_CSV_URL + (GOOGLE_SHEET_CSV_URL.includes('?') ? '&' : '?') + 'nocache=' + new Date().getTime();
             const response = await fetch(cacheUrl);
@@ -343,13 +1801,14 @@
                 header: true,
                 skipEmptyLines: true,
                 complete: function(results) {
-                    const players = results.data.map(row => {
+                    players = results.data.map((row, idx) => {
                         const photoFlag = getColVal(row, '사진공개', '사진노출', '사진비공개', '사진ON/OFF');
                         const birthFlag = getColVal(row, '생년월일공개', '생년월일노출', '생일공개', '생년월일비공개');
                         const heightFlag = getColVal(row, '키공개', '키노출', '키비공개');
                         const weightFlag = getColVal(row, '몸무게공개', '몸무게노출', '몸무게비공개');
 
                         return {
+                            id: idx + 1,
                             no: parseInt(row['등번호']) || 0,
                             name: (row['이름'] || '').trim(),
                             grade: (row['구분'] || '').trim(),
@@ -366,95 +1825,16 @@
                         };
                     }).filter(p => p.no && p.name);
 
-                    const p = players.find(item => item.no === targetNo);
-
-                    if (!p) {
-                        notice.textContent = `등번호 ${targetNo}번 선수 정보를 찾을 수 없습니다.`;
-                        return;
-                    }
-
-                    // 사진 영역
-                    const photoUrl = `data/photos/${p.no}.jpg`;
-                    let photoHtml = '';
-                    if (p.hidePhoto) {
-                        photoHtml = `
-                            <div class="profile-photo-wrap" style="background:#f1f5f9; flex-direction:column;">
-                                <div style="font-size: 52px; opacity: 0.35;">👤</div>
-                                <span style="margin-top:10px; font-size:13px; font-weight:800; color:#64748b; background:rgba(255,255,255,0.9); padding:4px 12px; border-radius:14px; border:1px solid #cbd5e1;">🔒 사진 비공개</span>
-                            </div>
-                        `;
-                    } else {
-                        photoHtml = `
-                            <div class="profile-photo-wrap">
-                                <img class="profile-img" src="${photoUrl}" alt="${p.name}" onerror="handleImgError(this)">
-                            </div>
-                        `;
-                    }
-
-                    // 생년월일 (ON/OFF)
-                    const birthValue = p.birth ? (p.hideBirth ? '<span class="text-private">비공개</span>' : p.birth) : '-';
-
-                    // 체격 (신장/체중 ON/OFF)
-                    let physValue = '-';
-                    if (p.height || p.weight) {
-                        if (p.hideHeight && p.hideWeight) {
-                            physValue = '<span class="text-private">비공개</span>';
-                        } else {
-                            const hText = p.height ? (p.hideHeight ? '<span class="text-private">비공개</span>' : `${p.height}cm`) : '-';
-                            const wText = p.weight ? (p.hideWeight ? '<span class="text-private">비공개</span>' : `${p.weight}kg`) : '-';
-                            physValue = `${hText} / ${wText}`;
-                        }
-                    }
-
-                    card.innerHTML = `
-                        <div style="position: relative;">
-                            ${photoHtml}
-                            <span class="profile-no-badge">No.${p.no}</span>
-                            <div class="profile-pos-badge">${getPosBadge(p.pos, p.grade)}</div>
-                        </div>
-                        <div class="profile-body">
-                            <div class="name-row">
-                                <div class="player-name">${p.name}</div>
-                                <div>${getGradeBadge(p.grade)}</div>
-                            </div>
-
-                            <div class="spec-list">
-                                <div class="spec-item">
-                                    <span class="spec-label">⚾ 포지션 / 역할</span>
-                                    <span class="spec-value">${p.pos}</span>
-                                </div>
-                                <div class="spec-item">
-                                    <span class="spec-label">🧤 투 / 타</span>
-                                    <span class="spec-value">${p.bt || '-'}</span>
-                                </div>
-                                <div class="spec-item">
-                                    <span class="spec-label">🎂 생년월일</span>
-                                    <span class="spec-value">${birthValue}</span>
-                                </div>
-                                <div class="spec-item">
-                                    <span class="spec-label">📏 체격 (신장/체중)</span>
-                                    <span class="spec-value">${physValue}</span>
-                                </div>
-                                <div class="spec-item">
-                                    <span class="spec-label">🏫 소속</span>
-                                    <span class="spec-value">대연초등학교 야구부</span>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-
-                    notice.style.display = 'none';
-                    card.style.display = 'flex';
-                    document.title = `No.${p.no} ${p.name} | 대연초 야구부`;
+                    switchView(currentView);
                 }
             });
         } catch (error) {
             console.error("데이터 로드 에러:", error);
-            notice.textContent = "선수 정보를 불러오는 데 실패했습니다.";
+            document.getElementById('statusNotice').textContent = "구글 시트 데이터를 불러오는 데 실패했습니다.";
         }
     }
 
-    loadPlayerDetail();
+    loadGoogleSheetData();
 </script>
 
 </body>
