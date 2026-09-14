@@ -5,8 +5,6 @@
     <script>
         const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw2YtYByfiPWXbRfqkzmZ6yzaZVfJHO0f9zAmCiLnwlMvVXCt9lv4AmQAz4_vSjzPy0APtl0hwYNmW/pub?output=csv";
         const GOOGLE_SHEET_EDIT_URL = "https://docs.google.com/spreadsheets/d/1ljpHkiJL_H1NN5rwTaQOL5QYeev32QvaBTKzxSPgNVA/edit?gid=1653839889#gid=1653839889";
-        
-        // ★ 실시간 유니폼 접수 Google Apps Script API URL 적용 완료 ★
         const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
     </script>
 
@@ -542,7 +540,7 @@
             border: 1px solid #f1f5f9;
         }
 
-        /* 모달 팝업 기본 */
+        /* 모달 팝업 공통 */
         .modal {
             display: none;
             position: fixed;
@@ -574,7 +572,7 @@
         .btn-cancel { background: #f1f5f9; border: 1px solid var(--card-border); padding: 8px 14px; border-radius: 6px; font-weight: 700; cursor: pointer; }
         .btn-save { background: var(--kbo-blue); color: #ffffff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; }
 
-        /* 유니폼 선택 행 */
+        /* 유니폼 선택 품목 행 */
         .uniform-item-row {
             display: flex;
             align-items: center;
@@ -601,7 +599,7 @@
         .uniform-item-size { flex: 1.1; }
         .uniform-item-qty { width: 62px; }
 
-        /* 접수 현황 - 가로 스크롤 완벽 제거 및 컴팩트 뷰 */
+        /* 접수 현황 카드 */
         .order-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
@@ -646,9 +644,10 @@
             margin-bottom: 10px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             border: 1px solid #f1f5f9;
             box-sizing: border-box;
+            flex-wrap: wrap;
         }
 
         .order-parent-bar a {
@@ -839,7 +838,7 @@
     </div>
 </div>
 
-<!-- 2. 유니폼 주문 신청 모달 -->
+<!-- 2. 유니폼 주문 신청 모달 (성함/연락처 분리 완료) -->
 <div id="uniformModal" class="modal">
     <div class="modal-content" style="max-width: 500px;">
         <div class="modal-header">👕 유니폼 및 의류 주문 접수</div>
@@ -852,17 +851,24 @@
             <select id="ordPlayerSelect" style="font-weight: 700; color: var(--kbo-blue);"></select>
         </div>
 
-        <div class="form-group">
-            <label>신청 학부모 성함 및 연락처 *</label>
-            <input type="text" id="ordParentInfo" placeholder="예: 김나현 (010-7163-3164)">
+        <!-- [개선] 학부모 성함 및 연락처 입력칸 분리 -->
+        <div style="display: flex; gap: 8px;">
+            <div class="form-group" style="flex: 1;">
+                <label>신청 학부모 성함 *</label>
+                <input type="text" id="ordParentName" placeholder="예: 김나현">
+            </div>
+            <div class="form-group" style="flex: 1.3;">
+                <label>보호자 연락처 *</label>
+                <input type="tel" id="ordParentPhone" placeholder="예: 010-7163-3164">
+            </div>
         </div>
 
-        <div class="form-group" style="margin-top: 6px;">
+        <div class="form-group" style="margin-top: 4px;">
             <label>유니폼 품목 및 사이즈 선택 *</label>
             <div style="background: #f8fafc; border: 1px solid var(--card-border); border-radius: 8px; padding: 6px 10px;">
                 
                 <!-- 하복 상의 -->
-                <div class="uniform-item-row">
+                <div class="uniform-item-row" data-name="하복 상의">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 하복 상의</label>
                     <select class="uniform-item-size" disabled>
                         <option value="130호">130호</option><option value="140호">140호</option><option value="150호">150호</option>
@@ -873,7 +879,7 @@
                 </div>
 
                 <!-- 하복 하의 -->
-                <div class="uniform-item-row">
+                <div class="uniform-item-row" data-name="하복 하의">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 하복 하의</label>
                     <select class="uniform-item-size" disabled>
                         <option value="24인치">24인치</option><option value="26인치">26인치</option><option value="28인치" selected>28인치</option>
@@ -883,7 +889,7 @@
                 </div>
 
                 <!-- 동복 상·하의 -->
-                <div class="uniform-item-row">
+                <div class="uniform-item-row" data-name="동복 (기모)">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 동복 (기모)</label>
                     <select class="uniform-item-size" disabled>
                         <option value="140호">140호</option><option value="150호">150호</option><option value="160호" selected>160호</option>
@@ -893,7 +899,7 @@
                 </div>
 
                 <!-- 바람막이 -->
-                <div class="uniform-item-row">
+                <div class="uniform-item-row" data-name="바람막이">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 바람막이</label>
                     <select class="uniform-item-size" disabled>
                         <option value="140호">140호</option><option value="150호">150호</option><option value="160호" selected>160호</option>
@@ -903,7 +909,7 @@
                 </div>
 
                 <!-- 풀오버 (반집업) -->
-                <div class="uniform-item-row">
+                <div class="uniform-item-row" data-name="풀오버 (반집업)">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 풀오버 (반집업)</label>
                     <select class="uniform-item-size" disabled>
                         <option value="140호">140호</option><option value="150호">150호</option><option value="160호" selected>160호</option>
@@ -913,7 +919,7 @@
                 </div>
 
                 <!-- 동계 점퍼 (돕바) -->
-                <div class="uniform-item-row">
+                <div class="uniform-item-row" data-name="동계 점퍼 (돕바)">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 동계 점퍼 (돕바)</label>
                     <select class="uniform-item-size" disabled>
                         <option value="140호">140호</option><option value="150호">150호</option><option value="160호" selected>160호</option>
@@ -937,7 +943,7 @@
     </div>
 </div>
 
-<!-- 3. 관리자 전용 접수 현황 모달 (가로 스크롤 없음) -->
+<!-- 3. 관리자 전용 접수 현황 모달 -->
 <div id="ordersModal" class="modal">
     <div class="modal-content" style="max-width: 500px; width: 95%;">
         <div class="modal-header" id="ordersModalTitle">📋 유니폼 주문 접수 현황</div>
@@ -1119,7 +1125,7 @@
         }
         notice.style.display = 'none';
 
-        // 1. 리스트형 메인 명단 테이블
+        // 리스트형 표
         tableBody.innerHTML = filtered.map(p => {
             const photoUrl = `data/photos/${p.no}.jpg`;
             const isHidden = (p.visible === false);
@@ -1157,7 +1163,7 @@
             `;
         }).join('');
 
-        // 2. 이미지형 그리드
+        // 이미지형 그리드
         cardContainer.innerHTML = filtered.map(p => {
             const photoUrl = `data/photos/${p.no}.jpg`;
             const isHidden = (p.visible === false);
@@ -1312,7 +1318,8 @@
             select.innerHTML += `<option value="No.${p.no} ${p.name} (${p.grade}학년)">No.${p.no} ${p.name} (${p.grade}학년)</option>`;
         });
 
-        document.getElementById('ordParentInfo').value = '';
+        document.getElementById('ordParentName').value = '';
+        document.getElementById('ordParentPhone').value = '';
         document.getElementById('ordNotes').value = '';
         document.querySelectorAll('.chk-item').forEach(c => {
             c.checked = false;
@@ -1330,33 +1337,48 @@
         qtySelect.disabled = !chk.checked;
     }
 
-    // ★ 실시간 구글 시트 전송 함수 ★
+    // ★ [개선] 분리된 성함, 연락처 및 유니폼 항목별 구조화 전송 ★
     async function submitUniformOrder() {
         const player = document.getElementById('ordPlayerSelect').value;
-        const parentInfo = document.getElementById('ordParentInfo').value.trim();
+        const parentName = document.getElementById('ordParentName').value.trim();
+        const parentPhone = document.getElementById('ordParentPhone').value.trim();
         const notes = document.getElementById('ordNotes').value.trim();
 
         if (!player) {
             alert('대상 선수를 선택해 주세요.');
             return;
         }
-        if (!parentInfo) {
-            alert('신청 학부모 성함 및 연락처를 입력해 주세요.');
+        if (!parentName) {
+            alert('신청 학부모 성함을 입력해 주세요.');
+            return;
+        }
+        if (!parentPhone) {
+            alert('보호자 연락처를 입력해 주세요.');
             return;
         }
 
-        const selectedItems = [];
+        const itemsMap = {
+            "하복 상의": "-",
+            "하복 하의": "-",
+            "동복 (기모)": "-",
+            "바람막이": "-",
+            "풀오버 (반집업)": "-",
+            "동계 점퍼 (돕바)": "-"
+        };
+        let checkedCount = 0;
+
         document.querySelectorAll('.uniform-item-row').forEach(row => {
             const chk = row.querySelector('.chk-item');
-            if (chk.checked) {
-                const name = row.querySelector('.uniform-item-name').innerText.trim();
+            const name = row.getAttribute('data-name');
+            if (chk && chk.checked && name) {
                 const size = row.querySelector('.uniform-item-size').value;
                 const qty = row.querySelector('.uniform-item-qty').value;
-                selectedItems.push({ name, size, qty });
+                itemsMap[name] = `${size} (${qty})`;
+                checkedCount++;
             }
         });
 
-        if (selectedItems.length === 0) {
+        if (checkedCount === 0) {
             alert('최소 1개 이상의 유니폼 품목을 선택해 주세요.');
             return;
         }
@@ -1365,8 +1387,9 @@
             id: Date.now(),
             date: new Date().toLocaleString(),
             player: player,
-            parent: parentInfo,
-            items: selectedItems,
+            parentName: parentName,
+            parentPhone: parentPhone,
+            items: itemsMap,
             notes: notes || '-'
         };
 
@@ -1384,43 +1407,33 @@
                 });
             }
 
-            // 로컬 백업 저장
             const orders = JSON.parse(localStorage.getItem('daeyeon_uniform_orders') || '[]');
             orders.unshift(orderData);
             localStorage.setItem('daeyeon_uniform_orders', JSON.stringify(orders));
 
-            alert(`✅ 유니폼 주문 신청이 구글 스프레드시트에 정상 접수되었습니다!\n\n• 대상: ${player}\n• 신청 품목 수: ${selectedItems.length}종\n• 신청자: ${parentInfo}`);
+            alert(`✅ 유니폼 주문 신청이 구글 스프레드시트에 정상 접수되었습니다!\n\n• 대상: ${player}\n• 보호자: ${parentName} (${parentPhone})\n• 신청 품목: ${checkedCount}종`);
             closeModal('uniformModal');
         } catch (err) {
             console.error(err);
-            alert('접수 처리 중 통신 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+            alert('접수 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = '신청서 제출';
         }
     }
 
-    function parseOrderItem(item) {
-        if (typeof item === 'object' && item !== null && item.name) {
-            return {
-                name: item.name,
-                size: item.size || '-',
-                qty: item.qty || '1벌'
-            };
-        }
-        const str = String(item).trim();
-        const match = str.match(/^(.*?)\s*\((.*?)\s*\/\s*(.*?)\)$/);
+    // 값 파싱 헬퍼
+    function parseValueToSizeQty(val) {
+        if (!val || val === '-') return null;
+        const str = String(val).trim();
+        const match = str.match(/^(.*?)\s*[\(\/]\s*(.*?)\s*[\)]?$/);
         if (match) {
-            return {
-                name: match[1].trim(),
-                size: match[2].trim(),
-                qty: match[3].trim()
-            };
+            return { size: match[1].trim(), qty: match[2].trim() };
         }
-        return { name: str, size: '-', qty: '-' };
+        return { size: str, qty: '1벌' };
     }
 
-    // ★ 실시간 구글 시트 데이터 로드 및 모달 팝업 렌더링 ★
+    // ★ [개선] 분리된 데이터 기반의 접수 현황 렌더링 ★
     async function openOrdersSummaryModal() {
         const content = document.getElementById('ordersListContent');
         const title = document.getElementById('ordersModalTitle');
@@ -1453,18 +1466,22 @@
         }
 
         content.innerHTML = orders.map((o, idx) => {
-            let itemsArray = [];
-            if (typeof o.items === 'string') {
-                itemsArray = o.items.split('|').map(s => parseOrderItem(s.trim()));
-            } else if (Array.isArray(o.items)) {
-                itemsArray = o.items.map(raw => parseOrderItem(raw));
-            }
+            const pName = o.parentName || (o.parent ? o.parent.split(' ')[0] : '보호자');
+            const pPhone = o.parentPhone || (o.parent ? o.parent.replace(pName, '').trim() : '-');
+            const rawTel = pPhone.replace(/[^0-9]/g, '');
+            const phoneLink = rawTel ? `<a href="tel:${rawTel}">${pPhone}</a>` : pPhone;
 
-            const telMatch = String(o.parent || '').match(/(01[016789]-?\d{3,4}-?\d{4})/);
-            let parentDisplay = o.parent || '-';
-            if (telMatch) {
-                const rawTel = telMatch[1].replace(/-/g, '');
-                parentDisplay = parentDisplay.replace(telMatch[1], `<a href="tel:${rawTel}">${telMatch[1]}</a>`);
+            // 품목 추출
+            const activeItems = [];
+            if (typeof o.items === 'object' && !Array.isArray(o.items)) {
+                for (let k in o.items) {
+                    const parsed = parseValueToSizeQty(o.items[k]);
+                    if (parsed) activeItems.push({ name: k, size: parsed.size, qty: parsed.qty });
+                }
+            } else if (Array.isArray(o.items)) {
+                o.items.forEach(it => {
+                    if (typeof it === 'object') activeItems.push({ name: it.name, size: it.size, qty: it.qty });
+                });
             }
 
             const hasNotes = o.notes && o.notes !== '-' && o.notes !== '';
@@ -1483,7 +1500,9 @@
                     </div>
 
                     <div class="order-parent-bar">
-                        <span>👤 보호자: <b>${parentDisplay}</b></span>
+                        <span>👤 <b>${pName}</b></span>
+                        <span style="color:#cbd5e1;">|</span>
+                        <span>📞 ${phoneLink}</span>
                     </div>
 
                     <table class="order-table">
@@ -1495,13 +1514,13 @@
                             </tr>
                         </thead>
                         <tbody>
-                            ${itemsArray.map(it => `
+                            ${activeItems.length > 0 ? activeItems.map(it => `
                                 <tr>
                                     <td style="text-align: left; padding-left: 10px; font-weight: 700;">⚾ ${it.name}</td>
                                     <td><span class="size-badge">${it.size}</span></td>
                                     <td><span class="qty-badge">${it.qty}</span></td>
                                 </tr>
-                            `).join('')}
+                            `).join('') : `<tr><td colspan="3" style="color:#94a3b8;">신청 품목 없음</td></tr>`}
                         </tbody>
                     </table>
 
@@ -1515,7 +1534,7 @@
         document.getElementById(id).style.display = 'none';
     }
 
-    // 구글 스프레드시트 선수 명단 로드
+    // 구글 스프레드시트 명단 로드
     async function loadGoogleSheetData() {
         try {
             const cacheUrl = GOOGLE_SHEET_CSV_URL + (GOOGLE_SHEET_CSV_URL.includes('?') ? '&' : '?') + 'nocache=' + new Date().getTime();
