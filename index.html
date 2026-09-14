@@ -832,7 +832,7 @@
     <div id="statusNotice" class="loading-notice">선수 명단을 실시간으로 불러오고 있습니다...</div>
 </div>
 
-<!-- 1. 관리자 로그인 모달 (비밀번호 노출 없음) -->
+<!-- 1. 관리자 로그인 모달 -->
 <div id="loginModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">관리자 등급 로그인</div>
@@ -950,7 +950,7 @@
     </div>
 </div>
 
-<!-- 3. 관리자 전용 접수 현황 모달 -->
+<!-- 3. 관리자 전용 접수 현황 모달 (체감속도 0초 즉시 렌더링) -->
 <div id="ordersModal" class="modal">
     <div class="modal-content" style="max-width: 500px; width: 95%;">
         <div class="modal-header" id="ordersModalTitle">📋 유니폼 주문 접수 현황</div>
@@ -982,11 +982,10 @@
     let players = [];
     let selectedGrade = 'all';
     let currentView = localStorage.getItem('daeyeon_view_mode') || 'list';
-    let currentRole = 'guest'; // 'guest', 'general', 'sub', 'super', 'dev'
+    let currentRole = 'guest';
 
     let isUniformActive = localStorage.getItem('daeyeon_uniform_active') !== 'false';
 
-    // 비밀번호 불러오기
     function getStoredPasswords() {
         return {
             super: localStorage.getItem('daeyeon_pw_super') || '9999',
@@ -995,18 +994,16 @@
         };
     }
 
-    // [수정] 개발자 마스터 비밀번호 판별: 오직 '일 + 월 + 년도(4자리)' (DDMMYYYY)만 허용!
+    // 개발자 마스터 비밀번호: 일(2자리) + 월(2자리) + 년도(4자리)
     function isDevPassword(inputPw) {
         const now = new Date();
-        const yyyy = String(now.getFullYear()); // 4자리 연도 고정
-        const mm = String(now.getMonth() + 1).padStart(2, '0'); // 2자리 월
-        const dd = String(now.getDate()).padStart(2, '0'); // 2자리 일
+        const yyyy = String(now.getFullYear());
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
         const d = String(now.getDate());
         const m = String(now.getMonth() + 1);
 
-        // 일(2자리) + 월(2자리) + 년도(4자리) -> 예: 14092026
         const primaryDevPw = dd + mm + yyyy;
-        // 한 자리 일/월 입력 시 유연성 제공 -> 예: 1492026
         const secondaryDevPw = d + m + yyyy;
 
         const trimmed = inputPw.trim();
@@ -1055,7 +1052,6 @@
 
     function formatBirth(p) {
         if (!p.birth || p.birth === '-') return '-';
-
         const bHidden = !!p.hideBirth;
         const canViewBirth = (currentRole !== 'guest');
 
@@ -1188,7 +1184,7 @@
         }
         notice.style.display = 'none';
 
-        // 1. 리스트형 메인 명단 테이블
+        // 리스트형
         tableBody.innerHTML = filtered.map(p => {
             const photoUrl = `data/photos/${p.no}.jpg`;
             const isHidden = (p.visible === false);
@@ -1226,7 +1222,7 @@
             `;
         }).join('');
 
-        // 2. 이미지형 그리드
+        // 이미지형
         cardContainer.innerHTML = filtered.map(p => {
             const photoUrl = `data/photos/${p.no}.jpg`;
             const isHidden = (p.visible === false);
@@ -1275,7 +1271,7 @@
         }).join('');
     }
 
-    // 관리자 로그인 제어
+    // 관리자 로그인
     function openAdminModal() {
         if (currentRole !== 'guest') {
             if (confirm('관리자 모드를 로그아웃 하시겠습니까?')) {
@@ -1293,23 +1289,16 @@
         const pw = document.getElementById('adminPw').value.trim();
         const pws = getStoredPasswords();
 
-        // 1. 개발자 마스터 비밀번호 검증 (오직 일월년 4자리 연도 형태만 허용!)
         if (isDevPassword(pw)) {
             currentRole = 'dev';
             alert('⚡ [개발자 마스터 관리자]로 로그인되었습니다.\n(모든 권한 및 비밀번호 강제 제어 가능)');
-        }
-        // 2. 최고관리자
-        else if (pw === pws.super) {
+        } else if (pw === pws.super) {
             currentRole = 'super';
             alert('👑 최고관리자로 로그인되었습니다.\n(유니폼 접수 ON/OFF 및 비밀번호 관리 가능)');
-        }
-        // 3. 보조관리자
-        else if (pw === pws.sub) {
+        } else if (pw === pws.sub) {
             currentRole = 'sub';
             alert('🛠️ 보조관리자로 로그인되었습니다.');
-        }
-        // 4. 일반관리자
-        else if (pw === pws.general) {
+        } else if (pw === pws.general) {
             currentRole = 'general';
             alert('📋 일반관리자로 로그인되었습니다.');
         } else {
@@ -1387,7 +1376,7 @@
         }
     }
 
-    // 비밀번호 관리 모달 열기
+    // 비밀번호 관리 모달
     function openPasswordManageModal() {
         const body = document.getElementById('pwModalBody');
         const btns = document.getElementById('pwModalBtns');
@@ -1668,33 +1657,10 @@
         return { size: str, qty: '1벌' };
     }
 
-    async function openOrdersSummaryModal() {
+    // 주문 카드 목록 HTML 렌더링 헬퍼
+    function renderOrdersHtml(orders) {
         const content = document.getElementById('ordersListContent');
-        const title = document.getElementById('ordersModalTitle');
-        content.innerHTML = '<div style="text-align:center; padding:40px 10px; color:#64748b; font-size:13px;">구글 시트에서 최신 접수 내역을 확인하는 중...</div>';
-        document.getElementById('ordersModal').style.display = 'flex';
-
-        let orders = [];
-
-        if (GOOGLE_SCRIPT_UNIFORM_API_URL && GOOGLE_SCRIPT_UNIFORM_API_URL.trim() !== "") {
-            try {
-                const res = await fetch(GOOGLE_SCRIPT_UNIFORM_API_URL + '?nocache=' + Date.now());
-                const json = await res.json();
-                if (json && json.orders && json.orders.length > 0) {
-                    orders = json.orders.reverse();
-                }
-            } catch (e) {
-                console.warn("시트 조회 실패, 로컬 백업 로드:", e);
-            }
-        }
-
-        if (orders.length === 0) {
-            orders = JSON.parse(localStorage.getItem('daeyeon_uniform_orders') || '[]');
-        }
-
-        title.textContent = `📋 유니폼 주문 접수 현황 (총 ${orders.length}건)`;
-
-        if (orders.length === 0) {
+        if (!orders || orders.length === 0) {
             content.innerHTML = '<div style="text-align:center; padding:50px 20px; color:#94a3b8; font-weight:600;">현재 접수된 주문 내역이 없습니다.</div>';
             return;
         }
@@ -1761,6 +1727,52 @@
                 </div>
             `;
         }).join('');
+    }
+
+    // ★ [핵심 개선] 체감 속도 0초! 즉시 열리고 백그라운드 동기화 ★
+    async function openOrdersSummaryModal() {
+        const title = document.getElementById('ordersModalTitle');
+        const content = document.getElementById('ordersListContent');
+        document.getElementById('ordersModal').style.display = 'flex';
+
+        // 1. 기존 데이터가 있으면 0.01초 만에 즉시 표시!
+        let localOrders = JSON.parse(localStorage.getItem('daeyeon_uniform_orders') || '[]');
+        if (localOrders.length > 0) {
+            title.innerHTML = `📋 유니폼 접수 현황 (총 ${localOrders.length}건) <span id="syncTag" style="font-size:11px; color:#0284c7; font-weight:600; margin-left:6px;">🔄 최신 동기화 중...</span>`;
+            renderOrdersHtml(localOrders);
+        } else {
+            title.textContent = '📋 유니폼 주문 접수 현황';
+            content.innerHTML = '<div style="text-align:center; padding:40px 10px; color:#64748b; font-size:13px;">구글 시트에서 최신 접수 내역을 확인하는 중...</div>';
+        }
+
+        // 2. 구글 시트 백그라운드 통신 (4초 타임아웃 적용)
+        if (GOOGLE_SCRIPT_UNIFORM_API_URL && GOOGLE_SCRIPT_UNIFORM_API_URL.trim() !== "") {
+            const controller = new AbortController();
+            const timeoutTimer = setTimeout(() => controller.abort(), 4000);
+
+            try {
+                const res = await fetch(GOOGLE_SCRIPT_UNIFORM_API_URL + '?nocache=' + Date.now(), {
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutTimer);
+                const json = await res.json();
+                if (json && json.orders && json.orders.length > 0) {
+                    const fetchedOrders = json.orders.reverse();
+                    localStorage.setItem('daeyeon_uniform_orders', JSON.stringify(fetchedOrders));
+                    title.innerHTML = `📋 유니폼 접수 현황 (총 ${fetchedOrders.length}건) <span id="syncTag" style="font-size:11px; color:#15803d; font-weight:600; margin-left:6px;">✅ 동기화 완료</span>`;
+                    renderOrdersHtml(fetchedOrders);
+                    return;
+                }
+            } catch (e) {
+                console.warn("구글 시트 실시간 조회 지연 또는 캐시 유지:", e);
+                const syncTag = document.getElementById('syncTag');
+                if (syncTag) syncTag.innerHTML = `<span style="color:#d97706;">⚡ 저장된 최근 내역</span>`;
+            }
+        }
+
+        if (localOrders.length === 0) {
+            content.innerHTML = '<div style="text-align:center; padding:50px 20px; color:#94a3b8; font-weight:600;">현재 접수된 주문 내역이 없습니다.</div>';
+        }
     }
 
     function closeModal(id) {
