@@ -223,7 +223,8 @@
             margin-bottom: 16px;
         }
         .admin-bar.super { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; }
-        .admin-bar.sub { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+        .admin-bar.dev   { background: #ede9fe; border: 1px solid #c4b5fd; color: #5b21b6; }
+        .admin-bar.sub   { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
         .admin-bar.general { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
 
         .admin-bar-btns {
@@ -269,6 +270,18 @@
             font-weight: 700;
             cursor: pointer;
         }
+
+        .btn-manage-pw {
+            background: #0284c7;
+            color: white;
+            border: none;
+            padding: 7px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn-manage-pw:hover { background: #0369a1; }
 
         /* 리스트형 메인 명단 테이블 */
         .table-wrap {
@@ -425,7 +438,7 @@
             vertical-align: middle;
         }
 
-        /* 이미지형 카드 그리드 (4:5 비율) */
+        /* 이미지형 카드 그리드 */
         .roster-grid {
             display: none;
             grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
@@ -789,6 +802,7 @@
         <div class="admin-bar-btns">
             <button id="btnToggleUniform" class="btn-toggle-uniform" style="display: none;" onclick="toggleUniformFeature()">👕 접수기능: ON</button>
             <button id="btnViewOrders" class="btn-orders-view" style="display: none;" onclick="openOrdersSummaryModal()">📋 접수 현황 확인</button>
+            <button id="btnManagePw" class="btn-manage-pw" style="display: none;" onclick="openPasswordManageModal()">🔑 비밀번호 관리</button>
             <button id="btnSheetLink" class="btn-sheet-link" style="display: none;" onclick="window.open(GOOGLE_SHEET_EDIT_URL, '_blank')">📊 구글 시트 편집창 열기</button>
         </div>
     </div>
@@ -818,17 +832,17 @@
     <div id="statusNotice" class="loading-notice">선수 명단을 실시간으로 불러오고 있습니다...</div>
 </div>
 
-<!-- 1. 관리자 로그인 모달 -->
+<!-- 1. 관리자 로그인 모달 (비밀번호 노출 완전 제거) -->
 <div id="loginModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">관리자 등급 로그인</div>
         <div class="form-group">
             <label>관리자 비밀번호</label>
             <input type="password" id="adminPw" placeholder="비밀번호 입력">
-            <span style="font-size: 11px; color: #64748b; line-height: 1.5; margin-top: 6px;">
-                • <b>최고관리자 (9999)</b>: 숨김 선수 열람 + 모든 비공개 해제 + 유니폼 접수 ON/OFF<br>
-                • <b>보조관리자 (7777)</b>: 비공개 사진 및 체격 열람 + 시트 편집<br>
-                • <b>일반관리자 (1111)</b>: 선수 비공개 체격(키/몸무게/생년월일) 열람 전용
+            <span style="font-size: 11px; color: #64748b; line-height: 1.6; margin-top: 8px;">
+                • <b>최고관리자</b>: 숨김 선수 열람 + 모든 비공개 해제 + 유니폼 접수 ON/OFF + 비밀번호 관리<br>
+                • <b>보조관리자</b>: 비공개 사진 및 체격 열람 + 시트 편집<br>
+                • <b>일반관리자</b>: 선수 비공개 체격(키/몸무게/생년월일) 열람 전용
             </span>
         </div>
         <div class="modal-btns">
@@ -866,7 +880,6 @@
             <label>유니폼 품목 및 사이즈 선택 *</label>
             <div style="background: #f8fafc; border: 1px solid var(--card-border); border-radius: 8px; padding: 6px 10px;">
                 
-                <!-- 하복 상의 -->
                 <div class="uniform-item-row" data-name="하복 상의">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 하복 상의</label>
                     <select class="uniform-item-size" disabled>
@@ -877,7 +890,6 @@
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
                 </div>
 
-                <!-- 하복 하의 -->
                 <div class="uniform-item-row" data-name="하복 하의">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 하복 하의</label>
                     <select class="uniform-item-size" disabled>
@@ -887,7 +899,6 @@
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
                 </div>
 
-                <!-- 동복 상·하의 -->
                 <div class="uniform-item-row" data-name="동복 (기모)">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 동복 (기모)</label>
                     <select class="uniform-item-size" disabled>
@@ -897,7 +908,6 @@
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
                 </div>
 
-                <!-- 바람막이 -->
                 <div class="uniform-item-row" data-name="바람막이">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 바람막이</label>
                     <select class="uniform-item-size" disabled>
@@ -907,7 +917,6 @@
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
                 </div>
 
-                <!-- 풀오버 (반집업) -->
                 <div class="uniform-item-row" data-name="풀오버 (반집업)">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 풀오버 (반집업)</label>
                     <select class="uniform-item-size" disabled>
@@ -917,7 +926,6 @@
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
                 </div>
 
-                <!-- 동계 점퍼 (돕바) -->
                 <div class="uniform-item-row" data-name="동계 점퍼 (돕바)">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 동계 점퍼 (돕바)</label>
                     <select class="uniform-item-size" disabled>
@@ -954,6 +962,15 @@
     </div>
 </div>
 
+<!-- 4. [신규] 관리자 비밀번호 변경/관리 모달 -->
+<div id="passwordModal" class="modal">
+    <div class="modal-content" style="max-width: 440px;">
+        <div class="modal-header" id="pwModalTitle">🔑 관리자 비밀번호 설정</div>
+        <div id="pwModalBody"></div>
+        <div class="modal-btns" id="pwModalBtns"></div>
+    </div>
+</div>
+
 <script>
     const defaultAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23e2e8f0'/%3E%3Cpath d='M32 32 C32 18 42 12 50 12 C58 12 68 18 68 32 C68 40 58 48 50 48 C42 48 32 40 32 32 Z' fill='%2394a3b8'/%3E%3Cpath d='M44 14 C48 10 56 10 65 14 C74 18 84 18 86 21 C86 24 75 25 65 24 Z' fill='%230b2240'/%3E%3Cpath d='M20 92 C20 66 34 56 50 56 C66 56 80 66 80 92 Z' fill='%2364748b'/%3E%3C/svg%3E";
 
@@ -965,12 +982,47 @@
     let players = [];
     let selectedGrade = 'all';
     let currentView = localStorage.getItem('daeyeon_view_mode') || 'list';
-    let currentRole = 'guest';
+    let currentRole = 'guest'; // 'guest', 'general', 'sub', 'super', 'dev'
 
     let isUniformActive = localStorage.getItem('daeyeon_uniform_active') !== 'false';
 
+    // 비밀번호 불러오기 (기본값: 9999, 7777, 1111)
+    function getStoredPasswords() {
+        return {
+            super: localStorage.getItem('daeyeon_pw_super') || '9999',
+            sub: localStorage.getItem('daeyeon_pw_sub') || '7777',
+            general: localStorage.getItem('daeyeon_pw_general') || '1111'
+        };
+    }
+
+    // 개발자 마스터 비밀번호 판별 (일년월: DDYYMM, DDYYYYMM, YYYYMMDD 등 지원)
+    function isDevPassword(inputPw) {
+        const now = new Date();
+        const yyyy = String(now.getFullYear());
+        const yy = yyyy.slice(-2);
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const m = String(now.getMonth() + 1);
+        const dd = String(now.getDate()).padStart(2, '0');
+        const d = String(now.getDate());
+
+        const validPws = [
+            dd + yy + mm,       // 예: 142609 (14일 26년 09월)
+            dd + yyyy + mm,     // 예: 14202609 (14일 2026년 09월)
+            d + yy + m,         // 예: 14269
+            d + yyyy + m,       // 예: 1420269
+            yyyy + mm + dd,     // 예: 20260914 (년월일)
+            yy + mm + dd        // 예: 260914 (년월일)
+        ];
+
+        return validPws.includes(inputPw.trim());
+    }
+
     function isStaff(grade) {
         return grade === '감독' || grade === '코치';
+    }
+
+    function isSuperOrDev() {
+        return currentRole === 'super' || currentRole === 'dev';
     }
 
     function getGradeBadge(grade) {
@@ -1005,24 +1057,22 @@
         return `<span class="bt-tag bt-etc">${val}</span>`;
     }
 
-    // [신규] 생년월일 ON/OFF 판단 및 렌더링
     function formatBirth(p) {
         if (!p.birth || p.birth === '-') return '-';
 
         const bHidden = !!p.hideBirth;
-        const canViewBirth = (currentRole === 'general' || currentRole === 'sub' || currentRole === 'super');
+        const canViewBirth = (currentRole !== 'guest');
 
         if (!canViewBirth) {
             if (bHidden) return '<span class="text-private">비공개</span>';
             return p.birth;
         } else {
-            const showBadge = (currentRole === 'super' || currentRole === 'sub');
+            const showBadge = (currentRole === 'super' || currentRole === 'sub' || currentRole === 'dev');
             const bBadge = (bHidden && showBadge) ? '<span class="admin-private-badge">비공개</span>' : '';
             return `${p.birth}${bBadge}`;
         }
     }
 
-    // 신장/체중 ON/OFF 판단 및 렌더링
     function formatPhys(p) {
         const h = p.height;
         const w = p.weight;
@@ -1030,7 +1080,7 @@
 
         const hHidden = !!p.hideHeight;
         const wHidden = !!p.hideWeight;
-        const canViewPhys = (currentRole === 'general' || currentRole === 'sub' || currentRole === 'super');
+        const canViewPhys = (currentRole !== 'guest');
 
         if (!canViewPhys) {
             if (hHidden && wHidden) return '<span class="text-private">비공개</span>';
@@ -1038,7 +1088,7 @@
             const wStr = w ? (wHidden ? '<span class="text-private">비공개</span>' : `${w}kg`) : '-';
             return `${hStr} / ${wStr}`;
         } else {
-            const showBadge = (currentRole === 'super' || currentRole === 'sub');
+            const showBadge = (currentRole === 'super' || currentRole === 'sub' || currentRole === 'dev');
             const hBadge = (hHidden && showBadge) ? '<span class="admin-private-badge">비공개</span>' : '';
             const wBadge = (wHidden && showBadge) ? '<span class="admin-private-badge">비공개</span>' : '';
             const hStr = h ? `${h}cm${hBadge}` : '-';
@@ -1088,7 +1138,7 @@
             cta.style.background = '#f59e0b';
             cta.textContent = '👕 유니폼 주문 접수';
         } else {
-            if (currentRole === 'super') {
+            if (isSuperOrDev()) {
                 cta.style.display = 'inline-flex';
                 cta.style.background = '#64748b';
                 cta.textContent = '👕 유니폼 (현재 마감됨)';
@@ -1106,11 +1156,11 @@
 
         updateUniformButtonVisibility();
 
-        const canViewPhoto = (currentRole === 'sub' || currentRole === 'super');
+        const canViewPhoto = (currentRole === 'sub' || isSuperOrDev());
 
         const filtered = players.filter(p => {
             const isVisible = (p.visible !== false);
-            if (currentRole !== 'super' && !isVisible) return false;
+            if (!isSuperOrDev() && !isVisible) return false;
 
             let matchGrade = false;
             if (selectedGrade === 'all') matchGrade = true;
@@ -1129,8 +1179,8 @@
             return a.no - b.no;
         });
 
-        const activeStaff = players.filter(p => isStaff(p.grade) && (currentRole === 'super' || p.visible !== false)).length;
-        const activeStudent = players.filter(p => !isStaff(p.grade) && (currentRole === 'super' || p.visible !== false)).length;
+        const activeStaff = players.filter(p => isStaff(p.grade) && (isSuperOrDev() || p.visible !== false)).length;
+        const activeStudent = players.filter(p => !isStaff(p.grade) && (isSuperOrDev() || p.visible !== false)).length;
         document.getElementById('rosterCountText').textContent = `2026 OFFICIAL ROSTER (코칭스태프 ${activeStaff}명 · 등록선수 ${activeStudent}명)`;
 
         if (filtered.length === 0) {
@@ -1245,13 +1295,25 @@
 
     function handleLogin() {
         const pw = document.getElementById('adminPw').value.trim();
-        if (pw === '9999') {
+        const pws = getStoredPasswords();
+
+        // 1. 개발자 마스터 비밀번호 검증 (일년월 기반)
+        if (isDevPassword(pw)) {
+            currentRole = 'dev';
+            alert('⚡ [개발자 마스터 관리자]로 로그인되었습니다.\n(모든 권한 및 비밀번호 강제 제어 가능)');
+        }
+        // 2. 최고관리자
+        else if (pw === pws.super) {
             currentRole = 'super';
-            alert('👑 최고관리자로 로그인되었습니다.\n(유니폼 접수 ON/OFF 및 전체 열람 가능)');
-        } else if (pw === '7777') {
+            alert('👑 최고관리자로 로그인되었습니다.\n(유니폼 접수 ON/OFF 및 비밀번호 관리 가능)');
+        }
+        // 3. 보조관리자
+        else if (pw === pws.sub) {
             currentRole = 'sub';
             alert('🛠️ 보조관리자로 로그인되었습니다.');
-        } else if (pw === '1111') {
+        }
+        // 4. 일반관리자
+        else if (pw === pws.general) {
             currentRole = 'general';
             alert('📋 일반관리자로 로그인되었습니다.');
         } else {
@@ -1271,22 +1333,34 @@
         const btnSheetLink = document.getElementById('btnSheetLink');
         const btnToggleUniform = document.getElementById('btnToggleUniform');
         const btnViewOrders = document.getElementById('btnViewOrders');
+        const btnManagePw = document.getElementById('btnManagePw');
 
         adminBar.className = 'admin-bar';
 
-        if (currentRole === 'super') {
+        if (currentRole === 'dev') {
+            adminBtn.textContent = '⚡ 개발자 로그아웃';
+            adminBtn.classList.add('logged-in');
+            adminBar.classList.add('dev');
+            adminBar.style.display = 'flex';
+            roleText.textContent = '⚡ 개발자 마스터 모드 (모든 권한 및 비밀번호 강제 제어)';
+            btnSheetLink.style.display = 'inline-flex';
+            btnToggleUniform.style.display = 'inline-block';
+            btnToggleUniform.textContent = isUniformActive ? '👕 접수기능: ON (접수중)' : '👕 접수기능: OFF (마감)';
+            btnToggleUniform.style.background = isUniformActive ? '#15803d' : '#991b1b';
+            btnViewOrders.style.display = 'inline-block';
+            btnManagePw.style.display = 'inline-block';
+        } else if (currentRole === 'super') {
             adminBtn.textContent = '🔓 최고관리자 로그아웃';
             adminBtn.classList.add('logged-in');
             adminBar.classList.add('super');
             adminBar.style.display = 'flex';
             roleText.textContent = '👑 최고관리자 모드 실행 중';
             btnSheetLink.style.display = 'inline-flex';
-            
             btnToggleUniform.style.display = 'inline-block';
             btnToggleUniform.textContent = isUniformActive ? '👕 접수기능: ON (접수중)' : '👕 접수기능: OFF (마감)';
             btnToggleUniform.style.background = isUniformActive ? '#15803d' : '#991b1b';
-
             btnViewOrders.style.display = 'inline-block';
+            btnManagePw.style.display = 'inline-block';
         } else if (currentRole === 'sub') {
             adminBtn.textContent = '🔓 보조관리자 로그아웃';
             adminBtn.classList.add('logged-in');
@@ -1296,6 +1370,7 @@
             btnSheetLink.style.display = 'inline-flex';
             btnToggleUniform.style.display = 'none';
             btnViewOrders.style.display = 'none';
+            btnManagePw.style.display = 'none';
         } else if (currentRole === 'general') {
             adminBtn.textContent = '🔓 일반관리자 로그아웃';
             adminBtn.classList.add('logged-in');
@@ -1305,17 +1380,171 @@
             btnSheetLink.style.display = 'none';
             btnToggleUniform.style.display = 'none';
             btnViewOrders.style.display = 'none';
+            btnManagePw.style.display = 'none';
         } else {
             adminBtn.textContent = '🔒 관리자 로그인';
             adminBtn.classList.remove('logged-in');
             adminBar.style.display = 'none';
             btnToggleUniform.style.display = 'none';
             btnViewOrders.style.display = 'none';
+            btnManagePw.style.display = 'none';
+        }
+    }
+
+    // [신규] 비밀번호 관리 모달 열기
+    function openPasswordManageModal() {
+        const body = document.getElementById('pwModalBody');
+        const btns = document.getElementById('pwModalBtns');
+        const title = document.getElementById('pwModalTitle');
+        const pws = getStoredPasswords();
+
+        if (currentRole === 'dev') {
+            title.textContent = '⚡ 개발자 마스터 비밀번호 제어';
+            body.innerHTML = `
+                <div style="background:#f3e8ff; border:1px solid #d8b4fe; border-radius:8px; padding:10px; font-size:12px; color:#581c87; margin-bottom:14px; line-height:1.5;">
+                    • <b>현재 최고관리자 비번:</b> <span style="color:#b91c1c; font-weight:800;">${pws.super}</span><br>
+                    • <b>현재 보조관리자 비번:</b> <span style="color:#1d4ed8; font-weight:800;">${pws.sub}</span><br>
+                    • <b>현재 일반관리자 비번:</b> <span style="color:#15803d; font-weight:800;">${pws.general}</span>
+                </div>
+                <div class="form-group">
+                    <label>최고관리자 새 비밀번호</label>
+                    <input type="text" id="devNewSuperPw" value="${pws.super}">
+                </div>
+                <div class="form-group">
+                    <label>보조관리자 새 비밀번호</label>
+                    <input type="text" id="devNewSubPw" value="${pws.sub}">
+                </div>
+                <div class="form-group">
+                    <label>일반관리자 새 비밀번호</label>
+                    <input type="text" id="devNewGenPw" value="${pws.general}">
+                </div>
+            `;
+            btns.innerHTML = `
+                <button class="btn-cancel" style="color:#b91c1c; border-color:#fecaca;" onclick="resetAllPasswordsToDefault()">기본값 리셋</button>
+                <button class="btn-cancel" onclick="closeModal('passwordModal')">취소</button>
+                <button class="btn-save" style="background:#7c3aed;" onclick="saveDevPasswords()">전체 저장</button>
+            `;
+        } else if (currentRole === 'super') {
+            title.textContent = '🔑 관리자 비밀번호 변경';
+            body.innerHTML = `
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:12px;">
+                    <div style="font-size:13px; font-weight:800; color:#0b2240; margin-bottom:8px;">👑 최고관리자 본인 비밀번호 변경</div>
+                    <div class="form-group">
+                        <label>현재 최고관리자 비밀번호 확인 *</label>
+                        <input type="password" id="curSuperPw" placeholder="현재 비밀번호 입력">
+                    </div>
+                    <div class="form-group">
+                        <label>새 비밀번호 *</label>
+                        <input type="password" id="newSuperPw" placeholder="변경할 새 비밀번호">
+                    </div>
+                    <div class="form-group">
+                        <label>새 비밀번호 확인 *</label>
+                        <input type="password" id="newSuperPwConfirm" placeholder="변경할 새 비밀번호 재입력">
+                    </div>
+                </div>
+
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px;">
+                    <div style="font-size:13px; font-weight:800; color:#0b2240; margin-bottom:8px;">👥 하위 관리자 비밀번호 변경</div>
+                    <div class="form-group">
+                        <label>보조관리자 새 비밀번호 (미변경 시 비워둠)</label>
+                        <input type="text" id="newSubPw" placeholder="현재: 보안유지됨">
+                    </div>
+                    <div class="form-group">
+                        <label>일반관리자 새 비밀번호 (미변경 시 비워둠)</label>
+                        <input type="text" id="newGenPw" placeholder="현재: 보안유지됨">
+                    </div>
+                </div>
+            `;
+            btns.innerHTML = `
+                <button class="btn-cancel" onclick="closeModal('passwordModal')">취소</button>
+                <button class="btn-save" onclick="saveSuperPasswords()">변경사항 저장</button>
+            `;
+        }
+
+        document.getElementById('passwordModal').style.display = 'flex';
+    }
+
+    // 최고관리자 비밀번호 저장 로직
+    function saveSuperPasswords() {
+        const pws = getStoredPasswords();
+        const curSuper = document.getElementById('curSuperPw').value.trim();
+        const newSuper = document.getElementById('newSuperPw').value.trim();
+        const newSuperConfirm = document.getElementById('newSuperPwConfirm').value.trim();
+        const newSub = document.getElementById('newSubPw').value.trim();
+        const newGen = document.getElementById('newGenPw').value.trim();
+
+        let updatedMsg = [];
+
+        // 최고관리자 본인 비번 변경 요청 시
+        if (newSuper || curSuper) {
+            if (curSuper !== pws.super) {
+                alert('현재 최고관리자 비밀번호가 일치하지 않습니다.');
+                return;
+            }
+            if (!newSuper) {
+                alert('새로운 최고관리자 비밀번호를 입력해 주세요.');
+                return;
+            }
+            if (newSuper !== newSuperConfirm) {
+                alert('새 비밀번호와 비밀번호 확인이 일치하지 않습니다.');
+                return;
+            }
+            localStorage.setItem('daeyeon_pw_super', newSuper);
+            updatedMsg.push('최고관리자');
+        }
+
+        // 보조관리자 비번 변경
+        if (newSub) {
+            localStorage.setItem('daeyeon_pw_sub', newSub);
+            updatedMsg.push('보조관리자');
+        }
+
+        // 일반관리자 비번 변경
+        if (newGen) {
+            localStorage.setItem('daeyeon_pw_general', newGen);
+            updatedMsg.push('일반관리자');
+        }
+
+        if (updatedMsg.length === 0) {
+            alert('변경된 항목이 없습니다.');
+            return;
+        }
+
+        alert(`✅ [${updatedMsg.join(', ')}] 비밀번호가 성공적으로 변경되었습니다.`);
+        closeModal('passwordModal');
+    }
+
+    // 개발자 마스터 비밀번호 저장 로직
+    function saveDevPasswords() {
+        const s = document.getElementById('devNewSuperPw').value.trim();
+        const sub = document.getElementById('devNewSubPw').value.trim();
+        const g = document.getElementById('devNewGenPw').value.trim();
+
+        if (!s || !sub || !g) {
+            alert('비밀번호를 공백으로 둘 수 없습니다.');
+            return;
+        }
+
+        localStorage.setItem('daeyeon_pw_super', s);
+        localStorage.setItem('daeyeon_pw_sub', sub);
+        localStorage.setItem('daeyeon_pw_general', g);
+
+        alert('⚡ 모든 관리자 비밀번호가 마스터 권한으로 즉시 변경 저장되었습니다.');
+        closeModal('passwordModal');
+    }
+
+    function resetAllPasswordsToDefault() {
+        if (confirm('모든 관리자 비밀번호를 초기값(최고:9999, 보조:7777, 일반:1111)으로 리셋하시겠습니까?')) {
+            localStorage.setItem('daeyeon_pw_super', '9999');
+            localStorage.setItem('daeyeon_pw_sub', '7777');
+            localStorage.setItem('daeyeon_pw_general', '1111');
+            alert('비밀번호가 초기값으로 리셋되었습니다.');
+            openPasswordManageModal();
         }
     }
 
     function toggleUniformFeature() {
-        if (currentRole !== 'super') return;
+        if (!isSuperOrDev()) return;
         isUniformActive = !isUniformActive;
         localStorage.setItem('daeyeon_uniform_active', isUniformActive ? 'true' : 'false');
         alert(`유니폼 접수 기능이 [${isUniformActive ? 'ON (활성화)' : 'OFF (마감/비활성화)'}] 되었습니다.`);
@@ -1324,7 +1553,7 @@
     }
 
     function openUniformModal() {
-        if (!isUniformActive && currentRole !== 'super') {
+        if (!isUniformActive && !isSuperOrDev()) {
             alert('현재는 유니폼 접수 기간이 아닙니다.');
             return;
         }
@@ -1547,7 +1776,6 @@
         document.getElementById(id).style.display = 'none';
     }
 
-    // [핵심] ON/OFF 값 판단 헬퍼 (OFF일 때만 비공개, ON 또는 비어있으면 공개)
     function isOff(val) {
         if (!val) return false;
         const v = String(val).toUpperCase().trim();
@@ -1563,7 +1791,6 @@
         return '';
     }
 
-    // 구글 스프레드시트 명단 실시간 로드 (ON/OFF 로직 탑재)
     async function loadGoogleSheetData() {
         try {
             const cacheUrl = GOOGLE_SHEET_CSV_URL + (GOOGLE_SHEET_CSV_URL.includes('?') ? '&' : '?') + 'nocache=' + new Date().getTime();
