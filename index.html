@@ -832,7 +832,7 @@
     <div id="statusNotice" class="loading-notice">선수 명단을 실시간으로 불러오고 있습니다...</div>
 </div>
 
-<!-- 1. 관리자 로그인 모달 (비밀번호 노출 완전 제거) -->
+<!-- 1. 관리자 로그인 모달 (비밀번호 노출 없음) -->
 <div id="loginModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">관리자 등급 로그인</div>
@@ -962,7 +962,7 @@
     </div>
 </div>
 
-<!-- 4. [신규] 관리자 비밀번호 변경/관리 모달 -->
+<!-- 4. 관리자 비밀번호 변경/관리 모달 -->
 <div id="passwordModal" class="modal">
     <div class="modal-content" style="max-width: 440px;">
         <div class="modal-header" id="pwModalTitle">🔑 관리자 비밀번호 설정</div>
@@ -986,7 +986,7 @@
 
     let isUniformActive = localStorage.getItem('daeyeon_uniform_active') !== 'false';
 
-    // 비밀번호 불러오기 (기본값: 9999, 7777, 1111)
+    // 비밀번호 불러오기
     function getStoredPasswords() {
         return {
             super: localStorage.getItem('daeyeon_pw_super') || '9999',
@@ -995,26 +995,22 @@
         };
     }
 
-    // 개발자 마스터 비밀번호 판별 (일년월: DDYYMM, DDYYYYMM, YYYYMMDD 등 지원)
+    // [수정] 개발자 마스터 비밀번호 판별: 오직 '일 + 월 + 년도(4자리)' (DDMMYYYY)만 허용!
     function isDevPassword(inputPw) {
         const now = new Date();
-        const yyyy = String(now.getFullYear());
-        const yy = yyyy.slice(-2);
-        const mm = String(now.getMonth() + 1).padStart(2, '0');
-        const m = String(now.getMonth() + 1);
-        const dd = String(now.getDate()).padStart(2, '0');
+        const yyyy = String(now.getFullYear()); // 4자리 연도 고정
+        const mm = String(now.getMonth() + 1).padStart(2, '0'); // 2자리 월
+        const dd = String(now.getDate()).padStart(2, '0'); // 2자리 일
         const d = String(now.getDate());
+        const m = String(now.getMonth() + 1);
 
-        const validPws = [
-            dd + yy + mm,       // 예: 142609 (14일 26년 09월)
-            dd + yyyy + mm,     // 예: 14202609 (14일 2026년 09월)
-            d + yy + m,         // 예: 14269
-            d + yyyy + m,       // 예: 1420269
-            yyyy + mm + dd,     // 예: 20260914 (년월일)
-            yy + mm + dd        // 예: 260914 (년월일)
-        ];
+        // 일(2자리) + 월(2자리) + 년도(4자리) -> 예: 14092026
+        const primaryDevPw = dd + mm + yyyy;
+        // 한 자리 일/월 입력 시 유연성 제공 -> 예: 1492026
+        const secondaryDevPw = d + m + yyyy;
 
-        return validPws.includes(inputPw.trim());
+        const trimmed = inputPw.trim();
+        return (trimmed === primaryDevPw || trimmed === secondaryDevPw);
     }
 
     function isStaff(grade) {
@@ -1297,7 +1293,7 @@
         const pw = document.getElementById('adminPw').value.trim();
         const pws = getStoredPasswords();
 
-        // 1. 개발자 마스터 비밀번호 검증 (일년월 기반)
+        // 1. 개발자 마스터 비밀번호 검증 (오직 일월년 4자리 연도 형태만 허용!)
         if (isDevPassword(pw)) {
             currentRole = 'dev';
             alert('⚡ [개발자 마스터 관리자]로 로그인되었습니다.\n(모든 권한 및 비밀번호 강제 제어 가능)');
@@ -1391,7 +1387,7 @@
         }
     }
 
-    // [신규] 비밀번호 관리 모달 열기
+    // 비밀번호 관리 모달 열기
     function openPasswordManageModal() {
         const body = document.getElementById('pwModalBody');
         const btns = document.getElementById('pwModalBtns');
@@ -1464,7 +1460,6 @@
         document.getElementById('passwordModal').style.display = 'flex';
     }
 
-    // 최고관리자 비밀번호 저장 로직
     function saveSuperPasswords() {
         const pws = getStoredPasswords();
         const curSuper = document.getElementById('curSuperPw').value.trim();
@@ -1475,7 +1470,6 @@
 
         let updatedMsg = [];
 
-        // 최고관리자 본인 비번 변경 요청 시
         if (newSuper || curSuper) {
             if (curSuper !== pws.super) {
                 alert('현재 최고관리자 비밀번호가 일치하지 않습니다.');
@@ -1493,13 +1487,11 @@
             updatedMsg.push('최고관리자');
         }
 
-        // 보조관리자 비번 변경
         if (newSub) {
             localStorage.setItem('daeyeon_pw_sub', newSub);
             updatedMsg.push('보조관리자');
         }
 
-        // 일반관리자 비번 변경
         if (newGen) {
             localStorage.setItem('daeyeon_pw_general', newGen);
             updatedMsg.push('일반관리자');
@@ -1514,7 +1506,6 @@
         closeModal('passwordModal');
     }
 
-    // 개발자 마스터 비밀번호 저장 로직
     function saveDevPasswords() {
         const s = document.getElementById('devNewSuperPw').value.trim();
         const sub = document.getElementById('devNewSubPw').value.trim();
