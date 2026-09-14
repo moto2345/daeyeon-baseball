@@ -540,7 +540,7 @@
             border: 1px solid #f1f5f9;
         }
 
-        /* 모달 팝업 공통 */
+        /* 모달 팝업 기본 */
         .modal {
             display: none;
             position: fixed;
@@ -828,7 +828,7 @@
             <span style="font-size: 11px; color: #64748b; line-height: 1.5; margin-top: 6px;">
                 • <b>최고관리자 (9999)</b>: 숨김 선수 열람 + 모든 비공개 해제 + 유니폼 접수 ON/OFF<br>
                 • <b>보조관리자 (7777)</b>: 비공개 사진 및 체격 열람 + 시트 편집<br>
-                • <b>일반관리자 (1111)</b>: 선수 비공개 체격(키/몸무게) 열람 전용
+                • <b>일반관리자 (1111)</b>: 선수 비공개 체격(키/몸무게/생년월일) 열람 전용
             </span>
         </div>
         <div class="modal-btns">
@@ -838,7 +838,7 @@
     </div>
 </div>
 
-<!-- 2. 유니폼 주문 신청 모달 (성함/연락처 분리 완료) -->
+<!-- 2. 유니폼 주문 신청 모달 -->
 <div id="uniformModal" class="modal">
     <div class="modal-content" style="max-width: 500px;">
         <div class="modal-header">👕 유니폼 및 의류 주문 접수</div>
@@ -851,7 +851,6 @@
             <select id="ordPlayerSelect" style="font-weight: 700; color: var(--kbo-blue);"></select>
         </div>
 
-        <!-- [개선] 학부모 성함 및 연락처 입력칸 분리 -->
         <div style="display: flex; gap: 8px;">
             <div class="form-group" style="flex: 1;">
                 <label>신청 학부모 성함 *</label>
@@ -1006,6 +1005,24 @@
         return `<span class="bt-tag bt-etc">${val}</span>`;
     }
 
+    // [신규] 생년월일 ON/OFF 판단 및 렌더링
+    function formatBirth(p) {
+        if (!p.birth || p.birth === '-') return '-';
+
+        const bHidden = !!p.hideBirth;
+        const canViewBirth = (currentRole === 'general' || currentRole === 'sub' || currentRole === 'super');
+
+        if (!canViewBirth) {
+            if (bHidden) return '<span class="text-private">비공개</span>';
+            return p.birth;
+        } else {
+            const showBadge = (currentRole === 'super' || currentRole === 'sub');
+            const bBadge = (bHidden && showBadge) ? '<span class="admin-private-badge">비공개</span>' : '';
+            return `${p.birth}${bBadge}`;
+        }
+    }
+
+    // 신장/체중 ON/OFF 판단 및 렌더링
     function formatPhys(p) {
         const h = p.height;
         const w = p.weight;
@@ -1125,7 +1142,7 @@
         }
         notice.style.display = 'none';
 
-        // 리스트형 표
+        // 1. 리스트형 메인 명단 테이블
         tableBody.innerHTML = filtered.map(p => {
             const photoUrl = `data/photos/${p.no}.jpg`;
             const isHidden = (p.visible === false);
@@ -1157,13 +1174,13 @@
                     <td>${getGradeBadge(p.grade)}</td>
                     <td>${getPosBadge(p.pos, p.grade)}</td>
                     <td>${getBtBadge(p.bt, p.grade)}</td>
-                    <td style="color: #475569; font-size: 13px;">${p.birth || '-'}</td>
+                    <td style="color: #475569; font-size: 13px;">${formatBirth(p)}</td>
                     <td style="color: #475569; font-size: 13px;">${formatPhys(p)}</td>
                 </tr>
             `;
         }).join('');
 
-        // 이미지형 그리드
+        // 2. 이미지형 그리드
         cardContainer.innerHTML = filtered.map(p => {
             const photoUrl = `data/photos/${p.no}.jpg`;
             const isHidden = (p.visible === false);
@@ -1203,7 +1220,7 @@
                         </div>
                         <div class="card-meta">${getBtBadge(p.bt, p.grade)}</div>
                         <div class="card-extra">
-                            <div>🎂 ${p.birth || '-'}</div>
+                            <div>🎂 ${formatBirth(p)}</div>
                             <div>📏 ${formatPhys(p)}</div>
                         </div>
                     </div>
@@ -1337,7 +1354,6 @@
         qtySelect.disabled = !chk.checked;
     }
 
-    // ★ [개선] 분리된 성함, 연락처 및 유니폼 항목별 구조화 전송 ★
     async function submitUniformOrder() {
         const player = document.getElementById('ordPlayerSelect').value;
         const parentName = document.getElementById('ordParentName').value.trim();
@@ -1422,7 +1438,6 @@
         }
     }
 
-    // 값 파싱 헬퍼
     function parseValueToSizeQty(val) {
         if (!val || val === '-') return null;
         const str = String(val).trim();
@@ -1433,7 +1448,6 @@
         return { size: str, qty: '1벌' };
     }
 
-    // ★ [개선] 분리된 데이터 기반의 접수 현황 렌더링 ★
     async function openOrdersSummaryModal() {
         const content = document.getElementById('ordersListContent');
         const title = document.getElementById('ordersModalTitle');
@@ -1471,7 +1485,6 @@
             const rawTel = pPhone.replace(/[^0-9]/g, '');
             const phoneLink = rawTel ? `<a href="tel:${rawTel}">${pPhone}</a>` : pPhone;
 
-            // 품목 추출
             const activeItems = [];
             if (typeof o.items === 'object' && !Array.isArray(o.items)) {
                 for (let k in o.items) {
@@ -1534,7 +1547,23 @@
         document.getElementById(id).style.display = 'none';
     }
 
-    // 구글 스프레드시트 명단 로드
+    // [핵심] ON/OFF 값 판단 헬퍼 (OFF일 때만 비공개, ON 또는 비어있으면 공개)
+    function isOff(val) {
+        if (!val) return false;
+        const v = String(val).toUpperCase().trim();
+        return v === 'OFF' || v === '비공개';
+    }
+
+    function getColVal(row, ...keys) {
+        for (let k of keys) {
+            if (row[k] !== undefined && row[k] !== null && String(row[k]).trim() !== '') {
+                return String(row[k]).trim();
+            }
+        }
+        return '';
+    }
+
+    // 구글 스프레드시트 명단 실시간 로드 (ON/OFF 로직 탑재)
     async function loadGoogleSheetData() {
         try {
             const cacheUrl = GOOGLE_SHEET_CSV_URL + (GOOGLE_SHEET_CSV_URL.includes('?') ? '&' : '?') + 'nocache=' + new Date().getTime();
@@ -1545,21 +1574,29 @@
                 header: true,
                 skipEmptyLines: true,
                 complete: function(results) {
-                    players = results.data.map((row, idx) => ({
-                        id: idx + 1,
-                        no: parseInt(row['등번호']) || 0,
-                        name: (row['이름'] || '').trim(),
-                        grade: (row['구분'] || '').trim(),
-                        pos: (row['포지션'] || '-').trim(),
-                        bt: (row['투타'] || '-').trim(),
-                        birth: (row['생년월일'] || '').trim(),
-                        height: (row['키'] || '').trim(),
-                        weight: (row['몸무게'] || '').trim(),
-                        visible: String(row['노출여부'] || '').toUpperCase().trim() !== 'OFF',
-                        hidePhoto: ['O', 'Y', 'TRUE', '1'].includes(String(row['사진비공개'] || '').toUpperCase().trim()),
-                        hideHeight: ['O', 'Y', 'TRUE', '1'].includes(String(row['키비공개'] || '').toUpperCase().trim()),
-                        hideWeight: ['O', 'Y', 'TRUE', '1'].includes(String(row['몸무게비공개'] || '').toUpperCase().trim())
-                    })).filter(p => p.no && p.name);
+                    players = results.data.map((row, idx) => {
+                        const photoFlag = getColVal(row, '사진공개', '사진노출', '사진비공개', '사진ON/OFF');
+                        const birthFlag = getColVal(row, '생년월일공개', '생년월일노출', '생일공개', '생년월일비공개');
+                        const heightFlag = getColVal(row, '키공개', '키노출', '키비공개');
+                        const weightFlag = getColVal(row, '몸무게공개', '몸무게노출', '몸무게비공개');
+
+                        return {
+                            id: idx + 1,
+                            no: parseInt(row['등번호']) || 0,
+                            name: (row['이름'] || '').trim(),
+                            grade: (row['구분'] || '').trim(),
+                            pos: (row['포지션'] || '-').trim(),
+                            bt: (row['투타'] || '-').trim(),
+                            birth: (row['생년월일'] || '').trim(),
+                            height: (row['키'] || '').trim(),
+                            weight: (row['몸무게'] || '').trim(),
+                            visible: String(row['노출여부'] || '').toUpperCase().trim() !== 'OFF',
+                            hidePhoto: isOff(photoFlag),
+                            hideBirth: isOff(birthFlag),
+                            hideHeight: isOff(heightFlag),
+                            hideWeight: isOff(weightFlag)
+                        };
+                    }).filter(p => p.no && p.name);
 
                     switchView(currentView);
                 }
