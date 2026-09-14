@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- 구글 스프레드시트 연동 설정 (CSV 주소 & 편집창 주소) -->
+    <!-- 구글 연동 설정 -->
     <script>
         const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw2YtYByfiPWXbRfqkzmZ6yzaZVfJHO0f9zAmCiLnwlMvVXCt9lv4AmQAz4_vSjzPy0APtl0hwYNmW/pub?output=csv";
         const GOOGLE_SHEET_EDIT_URL = "https://docs.google.com/spreadsheets/d/1ljpHkiJL_H1NN5rwTaQOL5QYeev32QvaBTKzxSPgNVA/edit?gid=1653839889#gid=1653839889";
+        
+        // ★ [2단계]에서 복사한 Apps Script 웹 앱 URL을 아래 따옴표 안에 붙여넣어 주세요! ★
+        const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
     </script>
 
     <meta charset="UTF-8">
@@ -539,7 +542,7 @@
             border: 1px solid #f1f5f9;
         }
 
-        /* 모달 팝업 기본 공통 */
+        /* 모달 팝업 기본 */
         .modal {
             display: none;
             position: fixed;
@@ -570,7 +573,7 @@
         .btn-cancel { background: #f1f5f9; border: 1px solid var(--card-border); padding: 8px 14px; border-radius: 6px; font-weight: 700; cursor: pointer; }
         .btn-save { background: var(--kbo-blue); color: #ffffff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; }
 
-        /* 유니폼 신청 폼 내 품목 선택 행 */
+        /* 유니폼 선택 행 */
         .uniform-item-row {
             display: flex;
             align-items: center;
@@ -597,9 +600,7 @@
         .uniform-item-size { flex: 1.1; }
         .uniform-item-qty { width: 62px; }
 
-        /* ====================================================
-           [신규 개선] 유니폼 주문 접수 현황 카드 & 테이블 스타일
-           ==================================================== */
+        /* 접수 현황 카드 & 테이블 */
         .order-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
@@ -676,9 +677,7 @@
             color: #1e293b;
         }
 
-        .order-table tr:last-child td {
-            border-bottom: none;
-        }
+        .order-table tr:last-child td { border-bottom: none; }
 
         .size-badge {
             background: #eff6ff;
@@ -739,7 +738,6 @@
     <div class="header-title">대연초 야구부 명단</div>
     <div class="header-subtitle" id="rosterCountText">선수단 데이터를 불러오는 중...</div>
     
-    <!-- 헤더 우측 CTA 버튼 그룹 -->
     <div class="header-actions">
         <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
         <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
@@ -776,7 +774,6 @@
     <div id="adminBar" class="admin-bar">
         <span id="adminRoleText" style="font-size: 13px; font-weight: 700;"></span>
         <div class="admin-bar-btns">
-            <!-- 최고관리자 전용 유니폼 ON/OFF 스위치 -->
             <button id="btnToggleUniform" class="btn-toggle-uniform" style="display: none;" onclick="toggleUniformFeature()">👕 접수기능: ON</button>
             <button id="btnViewOrders" class="btn-orders-view" style="display: none;" onclick="openOrdersSummaryModal()">📋 접수 현황 확인</button>
             <button id="btnSheetLink" class="btn-sheet-link" style="display: none;" onclick="window.open(GOOGLE_SHEET_EDIT_URL, '_blank')">📊 구글 시트 편집창 열기</button>
@@ -828,7 +825,7 @@
     </div>
 </div>
 
-<!-- 2. 학부모용 유니폼 주문 신청 모달 -->
+<!-- 2. 유니폼 주문 신청 모달 -->
 <div id="uniformModal" class="modal">
     <div class="modal-content" style="max-width: 520px;">
         <div class="modal-header">👕 유니폼 및 의류 주문 접수</div>
@@ -921,18 +918,18 @@
 
         <div class="modal-btns">
             <button class="btn-cancel" onclick="closeModal('uniformModal')">취소</button>
-            <button class="btn-save" style="background: #f59e0b;" onclick="submitUniformOrder()">신청서 제출</button>
+            <button class="btn-save" id="btnSubmitOrder" style="background: #f59e0b;" onclick="submitUniformOrder()">신청서 제출</button>
         </div>
     </div>
 </div>
 
-<!-- 3. [개선] 관리자 전용 접수 현황 조회 모달 -->
+<!-- 3. 관리자 전용 접수 현황 조회 모달 -->
 <div id="ordersModal" class="modal">
     <div class="modal-content" style="max-width: 600px;">
         <div class="modal-header" id="ordersModalTitle">📋 유니폼 주문 접수 현황</div>
         <div id="ordersListContent" style="max-height: 440px; overflow-y: auto; padding-right: 2px;"></div>
         <div class="modal-btns" style="justify-content: space-between;">
-            <button class="btn-cancel" style="color: #b91c1c; border-color: #fecaca; background:#fff5f5;" onclick="clearAllOrders()">🗑️ 전체 데이터 비우기</button>
+            <button class="btn-sheet-link" onclick="window.open(GOOGLE_SHEET_EDIT_URL, '_blank')">📊 구글 시트에서 전체 확인</button>
             <button class="btn-save" onclick="closeModal('ordersModal')">닫기</button>
         </div>
     </div>
@@ -1108,7 +1105,7 @@
         }
         notice.style.display = 'none';
 
-        // 1. [리스트형] 렌더링
+        // 리스트형
         tableBody.innerHTML = filtered.map(p => {
             const photoUrl = `data/photos/${p.no}.jpg`;
             const isHidden = (p.visible === false);
@@ -1146,7 +1143,7 @@
             `;
         }).join('');
 
-        // 2. [이미지형] 렌더링
+        // 이미지형
         cardContainer.innerHTML = filtered.map(p => {
             const photoUrl = `data/photos/${p.no}.jpg`;
             const isHidden = (p.visible === false);
@@ -1184,9 +1181,7 @@
                             <span class="card-name"><span class="card-name-no">No.${p.no}</span> ${p.name}${hiddenBadge}</span>
                             ${getGradeBadge(p.grade)}
                         </div>
-                        <div class="card-meta">
-                            ${getBtBadge(p.bt, p.grade)}
-                        </div>
+                        <div class="card-meta">${getBtBadge(p.bt, p.grade)}</div>
                         <div class="card-extra">
                             <div>🎂 ${p.birth || '-'}</div>
                             <div>📏 ${formatPhys(p)}</div>
@@ -1321,7 +1316,8 @@
         qtySelect.disabled = !chk.checked;
     }
 
-    function submitUniformOrder() {
+    // ★ [실시간 구글 시트 전송 탑재] 유니폼 주문 신청 처리 ★
+    async function submitUniformOrder() {
         const player = document.getElementById('ordPlayerSelect').value;
         const parentInfo = document.getElementById('ordParentInfo').value.trim();
         const notes = document.getElementById('ordNotes').value.trim();
@@ -1360,15 +1356,37 @@
             notes: notes || '-'
         };
 
-        const orders = JSON.parse(localStorage.getItem('daeyeon_uniform_orders') || '[]');
-        orders.push(orderData);
-        localStorage.setItem('daeyeon_uniform_orders', JSON.stringify(orders));
+        const submitBtn = document.getElementById('btnSubmitOrder');
+        submitBtn.disabled = true;
+        submitBtn.textContent = '구글 시트로 접수 중...';
 
-        alert(`✅ 유니폼 주문 신청이 정상 접수되었습니다!\n\n• 대상: ${player}\n• 신청 품목 수: ${selectedItems.length}종\n• 신청자: ${parentInfo}`);
-        closeModal('uniformModal');
+        try {
+            // 구글 Apps Script Web App으로 실시간 전송
+            if (GOOGLE_SCRIPT_UNIFORM_API_URL && !GOOGLE_SCRIPT_UNIFORM_API_URL.includes('여기에_')) {
+                await fetch(GOOGLE_SCRIPT_UNIFORM_API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                });
+            }
+
+            // 로컬 백업 저장
+            const orders = JSON.parse(localStorage.getItem('daeyeon_uniform_orders') || '[]');
+            orders.unshift(orderData);
+            localStorage.setItem('daeyeon_uniform_orders', JSON.stringify(orders));
+
+            alert(`✅ 유니폼 주문 신청이 구글 스프레드시트에 정상 접수되었습니다!\n\n• 대상: ${player}\n• 신청 품목 수: ${selectedItems.length}종\n• 신청자: ${parentInfo}`);
+            closeModal('uniformModal');
+        } catch (err) {
+            console.error(err);
+            alert('접수 처리 중 통신 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '신청서 제출';
+        }
     }
 
-    // [핵심] 기존 문자열/신규 객체 데이터 모두 깔끔하게 분리 파싱
     function parseOrderItem(item) {
         if (typeof item === 'object' && item !== null && item.name) {
             return {
@@ -1377,7 +1395,6 @@
                 qty: item.qty || '1벌'
             };
         }
-        // 기존 텍스트 데이터 파싱 (예: "하복 상의 (160 / 1벌)")
         const str = String(item).trim();
         const match = str.match(/^(.*?)\s*\((.*?)\s*\/\s*(.*?)\)$/);
         if (match) {
@@ -1390,87 +1407,106 @@
         return { name: str, size: '-', qty: '-' };
     }
 
-    // [전면 개편] 영수증/표 스타일의 한눈에 보이는 접수 현황 렌더링
-    function openOrdersSummaryModal() {
-        const orders = JSON.parse(localStorage.getItem('daeyeon_uniform_orders') || '[]');
+    // ★ [실시간 구글 시트 데이터 로드] 접수 현황 조회 ★
+    async function openOrdersSummaryModal() {
         const content = document.getElementById('ordersListContent');
         const title = document.getElementById('ordersModalTitle');
+        content.innerHTML = '<div style="text-align:center; padding:50px 20px; color:#64748b; font-weight:600;">구글 시트에서 최신 접수 내역을 동기화하는 중...</div>';
+        document.getElementById('ordersModal').style.display = 'flex';
+
+        let orders = [];
+
+        // 1. 구글 Apps Script에서 실시간 접수 내역 가져오기
+        if (GOOGLE_SCRIPT_UNIFORM_API_URL && !GOOGLE_SCRIPT_UNIFORM_API_URL.includes('여기에_')) {
+            try {
+                const res = await fetch(GOOGLE_SCRIPT_UNIFORM_API_URL + '?nocache=' + Date.now());
+                const json = await res.json();
+                if (json && json.orders && json.orders.length > 0) {
+                    orders = json.orders.reverse(); // 최신순 정렬
+                }
+            } catch (e) {
+                console.warn("시트 실시간 조회 실패, 로컬 백업 로드:", e);
+            }
+        }
+
+        // 2. 만약 시트 연동 전이거나 로드 실패 시 로컬스토리지 백업 데이터 표시
+        if (orders.length === 0) {
+            orders = JSON.parse(localStorage.getItem('daeyeon_uniform_orders') || '[]');
+        }
 
         title.textContent = `📋 유니폼 주문 접수 현황 (총 ${orders.length}건)`;
 
         if (orders.length === 0) {
             content.innerHTML = '<div style="text-align:center; padding:50px 20px; color:#94a3b8; font-weight:600;">현재 접수된 주문 내역이 없습니다.</div>';
-        } else {
-            content.innerHTML = orders.map((o, idx) => {
-                const parsedItems = (o.items || []).map(raw => parseOrderItem(raw));
-                
-                // 전화번호가 있을 경우 클릭 시 바로 통화 연결
-                const telMatch = o.parent.match(/(01[016789]-?\d{3,4}-?\d{4})/);
-                let parentDisplay = o.parent;
-                if (telMatch) {
-                    const rawTel = telMatch[1].replace(/-/g, '');
-                    parentDisplay = o.parent.replace(telMatch[1], `<a href="tel:${rawTel}">${telMatch[1]}</a>`);
-                }
+            return;
+        }
 
-                const hasNotes = o.notes && o.notes !== '-' && o.notes !== '';
-                const notesHtml = hasNotes ? `
-                    <div class="order-notes-box">
-                        <span>📝</span>
-                        <div><b>요청사항:</b> ${o.notes}</div>
+        content.innerHTML = orders.map((o, idx) => {
+            // 품목 파싱 (문자열 "A (160 / 1벌) | B (28 / 1벌)" 또는 배열 객체 처리)
+            let itemsArray = [];
+            if (typeof o.items === 'string') {
+                itemsArray = o.items.split('|').map(s => parseOrderItem(s.trim()));
+            } else if (Array.isArray(o.items)) {
+                itemsArray = o.items.map(raw => parseOrderItem(raw));
+            }
+
+            const telMatch = String(o.parent || '').match(/(01[016789]-?\d{3,4}-?\d{4})/);
+            let parentDisplay = o.parent || '-';
+            if (telMatch) {
+                const rawTel = telMatch[1].replace(/-/g, '');
+                parentDisplay = parentDisplay.replace(telMatch[1], `<a href="tel:${rawTel}">${telMatch[1]}</a>`);
+            }
+
+            const hasNotes = o.notes && o.notes !== '-' && o.notes !== '';
+            const notesHtml = hasNotes ? `
+                <div class="order-notes-box">
+                    <span>📝</span>
+                    <div><b>요청사항:</b> ${o.notes}</div>
+                </div>
+            ` : '';
+
+            return `
+                <div class="order-card">
+                    <div class="order-card-header">
+                        <div class="order-player-title">#${idx+1}. ${o.player}</div>
+                        <div class="order-date-text">${o.date}</div>
                     </div>
-                ` : '';
 
-                return `
-                    <div class="order-card">
-                        <div class="order-card-header">
-                            <div class="order-player-title">#${idx+1}. ${o.player}</div>
-                            <div class="order-date-text">${o.date}</div>
-                        </div>
+                    <div class="order-parent-bar">
+                        <span>👤</span>
+                        <span>신청 보호자: <b>${parentDisplay}</b></span>
+                    </div>
 
-                        <div class="order-parent-bar">
-                            <span>👤</span>
-                            <span>신청 보호자: <b>${parentDisplay}</b></span>
-                        </div>
-
-                        <table class="order-table">
-                            <thead>
+                    <table class="order-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align: left; padding-left: 12px;">신청 품목</th>
+                                <th style="width: 110px;">사이즈</th>
+                                <th style="width: 80px;">수량</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itemsArray.map(it => `
                                 <tr>
-                                    <th style="text-align: left; padding-left: 12px;">신청 품목</th>
-                                    <th style="width: 110px;">사이즈</th>
-                                    <th style="width: 80px;">수량</th>
+                                    <td style="text-align: left; padding-left: 12px; font-weight: 700;">⚾ ${it.name}</td>
+                                    <td><span class="size-badge">${it.size}</span></td>
+                                    <td><span class="qty-badge">${it.qty}</span></td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                ${parsedItems.map(it => `
-                                    <tr>
-                                        <td style="text-align: left; padding-left: 12px; font-weight: 700;">⚾ ${it.name}</td>
-                                        <td><span class="size-badge">${it.size}</span></td>
-                                        <td><span class="qty-badge">${it.qty}</span></td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
+                            `).join('')}
+                        </tbody>
+                    </table>
 
-                        ${notesHtml}
-                    </div>
-                `;
-            }).join('');
-        }
-        document.getElementById('ordersModal').style.display = 'flex';
-    }
-
-    function clearAllOrders() {
-        if (confirm('접수된 모든 주문 데이터를 완전히 삭제하시겠습니까?\n(삭제 후에는 복구할 수 없습니다.)')) {
-            localStorage.removeItem('daeyeon_uniform_orders');
-            openOrdersSummaryModal();
-        }
+                    ${notesHtml}
+                </div>
+            `;
+        }).join('');
     }
 
     function closeModal(id) {
         document.getElementById(id).style.display = 'none';
     }
 
-    // 구글 스프레드시트 실시간 데이터 로드
+    // 구글 스프레드시트 선수 명단 실시간 로드
     async function loadGoogleSheetData() {
         try {
             const cacheUrl = GOOGLE_SHEET_CSV_URL + (GOOGLE_SHEET_CSV_URL.includes('?') ? '&' : '?') + 'nocache=' + new Date().getTime();
@@ -1506,7 +1542,6 @@
         }
     }
 
-    // 초기 실행
     loadGoogleSheetData();
 </script>
 
