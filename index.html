@@ -63,7 +63,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* 헤더 우측 컨트롤 버튼 그룹 */
         .header-actions {
             position: absolute;
             top: 14px;
@@ -75,7 +74,6 @@
             justify-content: flex-end;
         }
 
-        /* 유니폼 주문 접수 독립 CTA 버튼 */
         .btn-uniform-cta {
             background: #f59e0b;
             color: #ffffff;
@@ -92,9 +90,7 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        .btn-uniform-cta:hover {
-            background: #d97706;
-        }
+        .btn-uniform-cta:hover { background: #d97706; }
 
         .admin-toggle-btn {
             background: rgba(255,255,255,0.12);
@@ -574,7 +570,7 @@
         .btn-cancel { background: #f1f5f9; border: 1px solid var(--card-border); padding: 8px 14px; border-radius: 6px; font-weight: 700; cursor: pointer; }
         .btn-save { background: var(--kbo-blue); color: #ffffff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; }
 
-        /* 유니폼 품목 테이블 */
+        /* 유니폼 신청 폼 내 품목 선택 행 */
         .uniform-item-row {
             display: flex;
             align-items: center;
@@ -600,6 +596,124 @@
         }
         .uniform-item-size { flex: 1.1; }
         .uniform-item-qty { width: 62px; }
+
+        /* ====================================================
+           [신규 개선] 유니폼 주문 접수 현황 카드 & 테이블 스타일
+           ==================================================== */
+        .order-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            border-left: 4px solid var(--kbo-blue);
+        }
+
+        .order-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: 10px;
+        }
+
+        .order-player-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--kbo-blue);
+        }
+
+        .order-date-text {
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .order-parent-bar {
+            font-size: 13px;
+            color: #334155;
+            background: #f8fafc;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .order-parent-bar a {
+            color: #1d4ed8;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .order-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .order-table th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 700;
+            padding: 8px 10px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 12px;
+        }
+
+        .order-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #1e293b;
+        }
+
+        .order-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .size-badge {
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid #bfdbfe;
+            display: inline-block;
+            font-size: 12px;
+        }
+
+        .qty-badge {
+            background: #fef3c7;
+            color: #92400e;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid #fde68a;
+            display: inline-block;
+            font-size: 12px;
+        }
+
+        .order-notes-box {
+            font-size: 12px;
+            color: #854d0e;
+            background: #fefce8;
+            border: 1px solid #fef08a;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-top: 8px;
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+        }
 
         .loading-notice {
             text-align: center;
@@ -714,7 +828,7 @@
     </div>
 </div>
 
-<!-- 2. 학부모용 유니폼 주문 신청 모달 (추천 2번 구현) -->
+<!-- 2. 학부모용 유니폼 주문 신청 모달 -->
 <div id="uniformModal" class="modal">
     <div class="modal-content" style="max-width: 520px;">
         <div class="modal-header">👕 유니폼 및 의류 주문 접수</div>
@@ -729,7 +843,7 @@
 
         <div class="form-group">
             <label>신청 학부모 성함 및 연락처 *</label>
-            <input type="text" id="ordParentInfo" placeholder="예: 홍길동 (010-1234-5678)">
+            <input type="text" id="ordParentInfo" placeholder="예: 김나현 (010-7163-3164)">
         </div>
 
         <div class="form-group" style="margin-top: 6px;">
@@ -740,11 +854,11 @@
                 <div class="uniform-item-row">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 하복 상의</label>
                     <select class="uniform-item-size" disabled>
-                        <option value="130">130호</option><option value="140">140호</option><option value="150">150호</option>
-                        <option value="160" selected>160호</option><option value="85(S)">85(S)</option><option value="90(M)">90(M)</option>
+                        <option value="130호">130호</option><option value="140호">140호</option><option value="150호">150호</option>
+                        <option value="160호" selected>160호</option><option value="85(S)">85(S)</option><option value="90(M)">90(M)</option>
                         <option value="95(L)">95(L)</option><option value="100(XL)">100(XL)</option>
                     </select>
-                    <select class="uniform-item-qty" disabled><option value="1">1벌</option><option value="2">2벌</option><option value="3">3벌</option></select>
+                    <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
                 </div>
 
                 <!-- 하복 하의 -->
@@ -754,47 +868,47 @@
                         <option value="24인치">24인치</option><option value="26인치">26인치</option><option value="28인치" selected>28인치</option>
                         <option value="30인치">30인치</option><option value="32인치">32인치</option><option value="34인치">34인치</option>
                     </select>
-                    <select class="uniform-item-qty" disabled><option value="1">1벌</option><option value="2">2벌</option><option value="3">3벌</option></select>
+                    <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
                 </div>
 
                 <!-- 동복 상·하의 -->
                 <div class="uniform-item-row">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 동복 (기모)</label>
                     <select class="uniform-item-size" disabled>
-                        <option value="140">140호</option><option value="150">150호</option><option value="160" selected>160호</option>
+                        <option value="140호">140호</option><option value="150호">150호</option><option value="160호" selected>160호</option>
                         <option value="85(S)">85(S)</option><option value="90(M)">90(M)</option><option value="95(L)">95(L)</option><option value="100(XL)">100(XL)</option>
                     </select>
-                    <select class="uniform-item-qty" disabled><option value="1">1벌</option><option value="2">2벌</option></select>
+                    <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
                 </div>
 
                 <!-- 바람막이 -->
                 <div class="uniform-item-row">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 바람막이</label>
                     <select class="uniform-item-size" disabled>
-                        <option value="140">140호</option><option value="150">150호</option><option value="160" selected>160호</option>
+                        <option value="140호">140호</option><option value="150호">150호</option><option value="160호" selected>160호</option>
                         <option value="85(S)">85(S)</option><option value="90(M)">90(M)</option><option value="95(L)">95(L)</option><option value="100(XL)">100(XL)</option>
                     </select>
-                    <select class="uniform-item-qty" disabled><option value="1">1벌</option><option value="2">2벌</option></select>
+                    <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
                 </div>
 
                 <!-- 풀오버 (반집업) -->
                 <div class="uniform-item-row">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 풀오버 (반집업)</label>
                     <select class="uniform-item-size" disabled>
-                        <option value="140">140호</option><option value="150">150호</option><option value="160" selected>160호</option>
+                        <option value="140호">140호</option><option value="150호">150호</option><option value="160호" selected>160호</option>
                         <option value="85(S)">85(S)</option><option value="90(M)">90(M)</option><option value="95(L)">95(L)</option><option value="100(XL)">100(XL)</option>
                     </select>
-                    <select class="uniform-item-qty" disabled><option value="1">1벌</option><option value="2">2벌</option></select>
+                    <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
                 </div>
 
                 <!-- 동계 점퍼 (돕바) -->
                 <div class="uniform-item-row">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 동계 점퍼 (돕바)</label>
                     <select class="uniform-item-size" disabled>
-                        <option value="140">140호</option><option value="150">150호</option><option value="160" selected>160호</option>
+                        <option value="140호">140호</option><option value="150호">150호</option><option value="160호" selected>160호</option>
                         <option value="85(S)">85(S)</option><option value="90(M)">90(M)</option><option value="95(L)">95(L)</option><option value="100(XL)">100(XL)</option>
                     </select>
-                    <select class="uniform-item-qty" disabled><option value="1">1벌</option><option value="2">2벌</option></select>
+                    <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
                 </div>
 
             </div>
@@ -812,13 +926,13 @@
     </div>
 </div>
 
-<!-- 3. 관리자 전용 접수 현황 조회 모달 -->
+<!-- 3. [개선] 관리자 전용 접수 현황 조회 모달 -->
 <div id="ordersModal" class="modal">
-    <div class="modal-content" style="max-width: 580px;">
-        <div class="modal-header">📋 유니폼 주문 접수 현황</div>
-        <div id="ordersListContent" style="max-height: 400px; overflow-y: auto; font-size: 13px;"></div>
-        <div class="modal-btns">
-            <button class="btn-cancel" style="color: #b91c1c;" onclick="clearAllOrders()">전체 데이터 비우기</button>
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header" id="ordersModalTitle">📋 유니폼 주문 접수 현황</div>
+        <div id="ordersListContent" style="max-height: 440px; overflow-y: auto; padding-right: 2px;"></div>
+        <div class="modal-btns" style="justify-content: space-between;">
+            <button class="btn-cancel" style="color: #b91c1c; border-color: #fecaca; background:#fff5f5;" onclick="clearAllOrders()">🗑️ 전체 데이터 비우기</button>
             <button class="btn-save" onclick="closeModal('ordersModal')">닫기</button>
         </div>
     </div>
@@ -837,7 +951,6 @@
     let currentView = localStorage.getItem('daeyeon_view_mode') || 'list';
     let currentRole = 'guest';
 
-    // 유니폼 접수 활성화 상태 (기본값: true / 최고관리자가 ON/OFF 토글 가능)
     let isUniformActive = localStorage.getItem('daeyeon_uniform_active') !== 'false';
 
     function isStaff(grade) {
@@ -936,7 +1049,6 @@
 
     function updateUniformButtonVisibility() {
         const cta = document.getElementById('btnUniformCTA');
-        // 기능이 켜져있거나, 최고관리자일 때 노출
         if (isUniformActive) {
             cta.style.display = 'inline-flex';
             cta.style.background = '#f59e0b';
@@ -947,7 +1059,7 @@
                 cta.style.background = '#64748b';
                 cta.textContent = '👕 유니폼 (현재 마감됨)';
             } else {
-                cta.style.display = 'none'; // 일반 사용자에게는 숨김
+                cta.style.display = 'none';
             }
         }
     }
@@ -1085,7 +1197,7 @@
         }).join('');
     }
 
-    // 관리자 모드 제어
+    // 관리자 로그인 제어
     function openAdminModal() {
         if (currentRole !== 'guest') {
             if (confirm('관리자 모드를 로그아웃 하시겠습니까?')) {
@@ -1138,7 +1250,6 @@
             roleText.textContent = '👑 최고관리자 모드 실행 중';
             btnSheetLink.style.display = 'inline-flex';
             
-            // 최고관리자 전용 유니폼 제어 버튼 노출
             btnToggleUniform.style.display = 'inline-block';
             btnToggleUniform.textContent = isUniformActive ? '👕 접수기능: ON (접수중)' : '👕 접수기능: OFF (마감)';
             btnToggleUniform.style.background = isUniformActive ? '#15803d' : '#991b1b';
@@ -1171,7 +1282,6 @@
         }
     }
 
-    // 최고관리자: 유니폼 접수 ON/OFF 전환
     function toggleUniformFeature() {
         if (currentRole !== 'super') return;
         isUniformActive = !isUniformActive;
@@ -1181,21 +1291,18 @@
         render();
     }
 
-    // 유니폼 모달 제어
     function openUniformModal() {
         if (!isUniformActive && currentRole !== 'super') {
             alert('현재는 유니폼 접수 기간이 아닙니다.');
             return;
         }
 
-        // 선수 선택 셀렉트 옵션 채우기
         const select = document.getElementById('ordPlayerSelect');
         select.innerHTML = '<option value="">-- 선수를 선택해 주세요 --</option>';
         players.filter(p => !isStaff(p.grade)).forEach(p => {
             select.innerHTML += `<option value="No.${p.no} ${p.name} (${p.grade}학년)">No.${p.no} ${p.name} (${p.grade}학년)</option>`;
         });
 
-        // 폼 초기화
         document.getElementById('ordParentInfo').value = '';
         document.getElementById('ordNotes').value = '';
         document.querySelectorAll('.chk-item').forEach(c => {
@@ -1214,7 +1321,6 @@
         qtySelect.disabled = !chk.checked;
     }
 
-    // 유니폼 신청서 제출 처리
     function submitUniformOrder() {
         const player = document.getElementById('ordPlayerSelect').value;
         const parentInfo = document.getElementById('ordParentInfo').value.trim();
@@ -1236,7 +1342,7 @@
                 const name = row.querySelector('.uniform-item-name').innerText.trim();
                 const size = row.querySelector('.uniform-item-size').value;
                 const qty = row.querySelector('.uniform-item-qty').value;
-                selectedItems.push(`${name} (${size} / ${qty}벌)`);
+                selectedItems.push({ name, size, qty });
             }
         });
 
@@ -1254,40 +1360,107 @@
             notes: notes || '-'
         };
 
-        // 로컬스토리지에 접수 내역 저장
         const orders = JSON.parse(localStorage.getItem('daeyeon_uniform_orders') || '[]');
         orders.push(orderData);
         localStorage.setItem('daeyeon_uniform_orders', JSON.stringify(orders));
 
-        alert(`✅ 유니폼 주문 신청이 정상 접수되었습니다!\n\n• 대상: ${player}\n• 품목: ${selectedItems.join(', ')}\n• 신청자: ${parentInfo}`);
+        alert(`✅ 유니폼 주문 신청이 정상 접수되었습니다!\n\n• 대상: ${player}\n• 신청 품목 수: ${selectedItems.length}종\n• 신청자: ${parentInfo}`);
         closeModal('uniformModal');
     }
 
-    // 접수 현황 보기 (최고관리자 전용)
+    // [핵심] 기존 문자열/신규 객체 데이터 모두 깔끔하게 분리 파싱
+    function parseOrderItem(item) {
+        if (typeof item === 'object' && item !== null && item.name) {
+            return {
+                name: item.name,
+                size: item.size || '-',
+                qty: item.qty || '1벌'
+            };
+        }
+        // 기존 텍스트 데이터 파싱 (예: "하복 상의 (160 / 1벌)")
+        const str = String(item).trim();
+        const match = str.match(/^(.*?)\s*\((.*?)\s*\/\s*(.*?)\)$/);
+        if (match) {
+            return {
+                name: match[1].trim(),
+                size: match[2].trim(),
+                qty: match[3].trim()
+            };
+        }
+        return { name: str, size: '-', qty: '-' };
+    }
+
+    // [전면 개편] 영수증/표 스타일의 한눈에 보이는 접수 현황 렌더링
     function openOrdersSummaryModal() {
         const orders = JSON.parse(localStorage.getItem('daeyeon_uniform_orders') || '[]');
         const content = document.getElementById('ordersListContent');
+        const title = document.getElementById('ordersModalTitle');
+
+        title.textContent = `📋 유니폼 주문 접수 현황 (총 ${orders.length}건)`;
 
         if (orders.length === 0) {
-            content.innerHTML = '<p style="text-align:center; padding:30px; color:#64748b;">현재 접수된 주문 내역이 없습니다.</p>';
+            content.innerHTML = '<div style="text-align:center; padding:50px 20px; color:#94a3b8; font-weight:600;">현재 접수된 주문 내역이 없습니다.</div>';
         } else {
-            content.innerHTML = orders.map((o, idx) => `
-                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:10px;">
-                    <div style="display:flex; justify-content:space-between; font-weight:800; color:#0b2240; margin-bottom:4px;">
-                        <span>#${idx+1}. ${o.player}</span>
-                        <span style="font-size:11px; color:#64748b;">${o.date}</span>
+            content.innerHTML = orders.map((o, idx) => {
+                const parsedItems = (o.items || []).map(raw => parseOrderItem(raw));
+                
+                // 전화번호가 있을 경우 클릭 시 바로 통화 연결
+                const telMatch = o.parent.match(/(01[016789]-?\d{3,4}-?\d{4})/);
+                let parentDisplay = o.parent;
+                if (telMatch) {
+                    const rawTel = telMatch[1].replace(/-/g, '');
+                    parentDisplay = o.parent.replace(telMatch[1], `<a href="tel:${rawTel}">${telMatch[1]}</a>`);
+                }
+
+                const hasNotes = o.notes && o.notes !== '-' && o.notes !== '';
+                const notesHtml = hasNotes ? `
+                    <div class="order-notes-box">
+                        <span>📝</span>
+                        <div><b>요청사항:</b> ${o.notes}</div>
                     </div>
-                    <div style="font-size:12px; color:#334155; margin-bottom:4px;">👤 신청자: ${o.parent}</div>
-                    <div style="font-size:12px; font-weight:700; color:#2563eb; margin-bottom:4px;">📦 신청품목: ${o.items.join(' / ')}</div>
-                    <div style="font-size:11px; color:#64748b;">📝 요청사항: ${o.notes}</div>
-                </div>
-            `).join('');
+                ` : '';
+
+                return `
+                    <div class="order-card">
+                        <div class="order-card-header">
+                            <div class="order-player-title">#${idx+1}. ${o.player}</div>
+                            <div class="order-date-text">${o.date}</div>
+                        </div>
+
+                        <div class="order-parent-bar">
+                            <span>👤</span>
+                            <span>신청 보호자: <b>${parentDisplay}</b></span>
+                        </div>
+
+                        <table class="order-table">
+                            <thead>
+                                <tr>
+                                    <th style="text-align: left; padding-left: 12px;">신청 품목</th>
+                                    <th style="width: 110px;">사이즈</th>
+                                    <th style="width: 80px;">수량</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${parsedItems.map(it => `
+                                    <tr>
+                                        <td style="text-align: left; padding-left: 12px; font-weight: 700;">⚾ ${it.name}</td>
+                                        <td><span class="size-badge">${it.size}</span></td>
+                                        <td><span class="qty-badge">${it.qty}</span></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+
+                        ${notesHtml}
+                    </div>
+                `;
+            }).join('');
         }
         document.getElementById('ordersModal').style.display = 'flex';
     }
 
     function clearAllOrders() {
-        if (confirm('접수된 모든 주문 데이터를 완전히 삭제하시겠습니까?')) {
+        if (confirm('접수된 모든 주문 데이터를 완전히 삭제하시겠습니까?\n(삭제 후에는 복구할 수 없습니다.)')) {
             localStorage.removeItem('daeyeon_uniform_orders');
             openOrdersSummaryModal();
         }
