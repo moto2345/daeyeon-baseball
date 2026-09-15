@@ -11,7 +11,7 @@
         const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
         
         // 웹페이지 배포 버전
-        const APP_VERSION = "v1.7.3 · b260915";
+        const APP_VERSION = "v1.7.4 · b260915";
     </script>
 
     <meta charset="UTF-8">
@@ -1023,7 +1023,7 @@
         <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
         <div class="admin-btn-group">
             <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
-            <span class="app-version-tag" id="appVersionDisplay">v1.7.3 · b260915</span>
+            <span class="app-version-tag" id="appVersionDisplay">v1.7.4 · b260915</span>
         </div>
     </div>
 </header>
@@ -1381,7 +1381,6 @@
         return (t === p1 || t === p2);
     }
 
-    // 지도자 판별
     function isStaff(grade) {
         if (!grade) return false;
         const g = String(grade).trim();
@@ -1390,37 +1389,19 @@
 
     function isSuperOrDev() { return currentRole === 'super' || currentRole === 'dev'; }
 
-    // ★ [직책 우선순위 랭킹 엔진] 감독(1) -> 수석코치(2) -> 투수코치(3) -> 기타 코치(4~) -> 학생(10)
+    // ★ 직책 랭킹 엔진 (감독 -> 수석코치 -> 투수코치 -> 기타 코치 -> 학생)
     function getStaffRank(p) {
         const grade = String(p.grade || '').trim();
         const pos = String(p.pos || '').trim();
         const combined = `${grade} ${pos}`;
 
-        // 1순위: 감독
-        if (grade === '감독' || pos.includes('감독') || combined.includes('감독')) {
-            return 1;
-        }
-        // 2순위: 수석코치
-        if (combined.includes('수석')) {
-            return 2;
-        }
-        // 3순위: 투수코치
-        if (combined.includes('투수코치') || (pos.includes('투수') && isStaff(grade))) {
-            return 3;
-        }
-        // 4순위: 타격코치
+        if (grade === '감독' || pos.includes('감독') || combined.includes('감독')) return 1;
+        if (combined.includes('수석')) return 2;
+        if (combined.includes('투수코치') || (pos.includes('투수') && isStaff(grade))) return 3;
         if (combined.includes('타격')) return 4;
-        // 5순위: 배터리/포수코치
         if (combined.includes('배터리') || combined.includes('포수코치')) return 5;
-        // 6순위: 수비/야수/작전/주루 코치
         if (combined.includes('야수') || combined.includes('수비') || combined.includes('주루')) return 6;
-
-        // 7순위: 일반 코치 및 기타 스태프
-        if (isStaff(grade) || pos.includes('코치')) {
-            return 7;
-        }
-
-        // 10순위: 일반 학생 선수
+        if (isStaff(grade) || pos.includes('코치')) return 7;
         return 10;
     }
 
@@ -1542,7 +1523,8 @@
         return p.no ? `data/photos/${p.no}.jpg` : defaultAvatar;
     }
 
-    // ★ [핵심 정렬 로직 적용] 감독(1) -> 수석코치(2) -> 투수코치(3) -> 기타 코치 -> 학생
+    // ★ [완벽 다중 정렬 알고리즘 적용] ★
+    // 코칭스태프 우선(감독->수석->투수코치) -> 1차 등번호 -> 2차 학년(6->1) -> 3차 이름 가나다순
     function render() {
         const searchEl = document.getElementById('searchInput');
         const query = searchEl.value.trim().toLowerCase();
@@ -1563,13 +1545,10 @@
             const matchSearch = p.name.toLowerCase().includes(query) || (p.no && p.no.toString().includes(query)) || (p.pos && p.pos.includes(query)) || (p.bt && p.bt.includes(query));
             return matchGrade && matchSearch;
         }).sort((a, b) => {
-            // 직책 랭킹 비교 (감독: 1, 수석코치: 2, 투수코치: 3...)
+            // [0단계] 코칭스태프 직책 랭킹 비교
             const rankA = getStaffRank(a);
             const rankB = getStaffRank(b);
-
-            if (rankA !== rankB) {
-                return rankA - rankB;
-            }
+            if (rankA !== rankB) return rankA - rankB;
 
             // 지도자 동급일 경우
             if (rankA < 10) {
@@ -1579,10 +1558,24 @@
                 return a.name.localeCompare(b.name, 'ko');
             }
 
-            // 학생 선수들
-            if (a.no && !b.no) return -1;
-            if (!a.no && b.no) return 1;
-            if (a.no && b.no && a.no !== b.no) return a.no - b.no;
+            // [선수단 다중 정렬]
+            // 1순위: 등번호 우선 정렬 (번호 있는 선수가 앞쪽으로)
+            const hasNoA = Boolean(a.no && a.no > 0);
+            const hasNoB = Boolean(b.no && b.no > 0);
+            if (hasNoA && !hasNoB) return -1;
+            if (!hasNoA && hasNoB) return 1;
+            if (hasNoA && hasNoB && a.no !== b.no) {
+                return a.no - b.no;
+            }
+
+            // 2순위: 등번호가 같거나 미정인 경우 학년 기준 (고학년 6학년 -> 1학년 순)
+            const gradeA = parseInt(String(a.grade).replace(/[^0-9]/g, ''), 10) || 0;
+            const gradeB = parseInt(String(b.grade).replace(/[^0-9]/g, ''), 10) || 0;
+            if (gradeA !== gradeB) {
+                return gradeB - gradeA;
+            }
+
+            // 3순위: 학년도 같은 경우 이름 기준 (가나다순)
             return a.name.localeCompare(b.name, 'ko');
         });
 
