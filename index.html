@@ -10,8 +10,8 @@
         const GOOGLE_SHEET_CONTACTS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw2YtYByfiPWXbRfqkzmZ6yzaZVfJHO0f9zAmCiLnwlMvVXCt9lv4AmQAz4_vSjzPy0APtl0hwYNmW/pub?gid=812608822&single=true&output=csv";
         const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
         
-        // 웹페이지 배포 버전 (안정화 v1.7.9)
-        const APP_VERSION = "v1.7.9 · b260915";
+        // 웹페이지 배포 버전 (보안 잠금 장치 v1.8.0)
+        const APP_VERSION = "v1.8.0 · b260915";
     </script>
 
     <meta charset="UTF-8">
@@ -43,6 +43,39 @@
             background-color: var(--bg-gray);
             color: var(--text-title);
             padding-bottom: 70px;
+        }
+
+        /* ===================================================
+           [보안 잠금 오버레이 및 블러 스타일]
+           =================================================== */
+        #lockOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(11, 34, 64, 0.82);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .lock-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 380px;
+            border-radius: 16px;
+            padding: 26px 22px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.35);
+            text-align: center;
+            border-top: 6px solid var(--kbo-red);
+            animation: fadeInScale 0.25s ease-out;
+        }
+
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.93); }
+            to { opacity: 1; transform: scale(1); }
         }
 
         header {
@@ -1015,6 +1048,26 @@
 </head>
 <body>
 
+<!-- ===================================================
+     🔒 인터벌 보안 잠금 팝업 (배경 블러 처리)
+     =================================================== -->
+<div id="lockOverlay">
+    <div class="lock-card">
+        <div style="font-size: 32px; margin-bottom: 8px;">⚾</div>
+        <h2 style="font-size: 18px; font-weight: 900; color: var(--kbo-blue); margin-bottom: 6px;">대연초 야구부 보안 인증</h2>
+        <p style="font-size: 12px; color: #64748b; margin-bottom: 16px; line-height: 1.5;">
+            선수 명단 및 비상연락망 보호를 위해 보안 비밀번호를 입력해 주세요.<br>
+            <span style="color: var(--kbo-red); font-weight: 700;">(힌트: 대연초등학교 창립년도 4자리)</span>
+        </p>
+        <div style="margin-bottom: 12px;">
+            <input type="password" id="lockPasswordInput" placeholder="비밀번호 입력 (4자리)" style="width: 100%; padding: 10px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 16px; text-align: center; font-weight: 800; letter-spacing: 2px; outline: none;" onkeydown="if(event.key==='Enter') verifyLockPassword()">
+        </div>
+        <button onclick="verifyLockPassword()" style="width: 100%; background: var(--kbo-blue); color: white; border: none; padding: 10px; border-radius: 8px; font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 10px rgba(11,34,64,0.2);">
+            🔐 잠금 해제 (1시간 유지)
+        </button>
+    </div>
+</div>
+
 <header>
     <div class="header-title">대연초 야구부 명단</div>
     <div class="header-subtitle" id="rosterCountText">선수단 데이터를 불러오는 중...</div>
@@ -1023,7 +1076,7 @@
         <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
         <div class="admin-btn-group">
             <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
-            <span class="app-version-tag" id="appVersionDisplay">v1.7.9 · b260915</span>
+            <span class="app-version-tag" id="appVersionDisplay">v1.8.0 · b260915</span>
         </div>
     </div>
 </header>
@@ -1334,6 +1387,37 @@
 </div>
 
 <script>
+    // ==========================================================
+    // 🔒 [보안 잠금 체크 및 인증 로직] (페이지 로드 시 즉시 실행)
+    // ==========================================================
+    (function checkPageAuth() {
+        const authExpire = localStorage.getItem('daeyeon_auth_expire');
+        if (authExpire && Date.now() < parseInt(authExpire, 10)) {
+            // 1시간 인증 유효 -> 잠금 팝업 숨김
+            document.addEventListener("DOMContentLoaded", () => {
+                const overlay = document.getElementById('lockOverlay');
+                if (overlay) overlay.style.display = 'none';
+            });
+        }
+    })();
+
+    function verifyLockPassword() {
+        const inputVal = document.getElementById('lockPasswordInput').value.trim();
+        if (inputVal === "1922") {
+            // 1시간(3600초) 동안 유효하도록 만료 시간 설정
+            const expireTime = Date.now() + (60 * 60 * 1000);
+            localStorage.setItem('daeyeon_auth_expire', expireTime);
+            
+            const overlay = document.getElementById('lockOverlay');
+            if (overlay) overlay.style.display = 'none';
+            alert('🔓 보안 인증이 완료되었습니다. (1시간 동안 유지됩니다)');
+        } else {
+            alert('❌ 비밀번호가 올바르지 않습니다.\n(힌트: 대연초등학교 창립년도 4자리)');
+            document.getElementById('lockPasswordInput').value = '';
+            document.getElementById('lockPasswordInput').focus();
+        }
+    }
+
     const defaultAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23e2e8f0'/%3E%3Cpath d='M32 32 C32 18 42 12 50 12 C58 12 68 18 68 32 C68 40 58 48 50 48 C42 48 32 40 32 32 Z' fill='%2394a3b8'/%3E%3Cpath d='M44 14 C48 10 56 10 65 14 C74 18 84 18 86 21 C86 24 75 25 65 24 Z' fill='%230b2240'/%3E%3Cpath d='M20 92 C20 66 34 56 50 56 C66 56 80 66 80 92 Z' fill='%2364748b'/%3E%3C/svg%3E";
 
     function handleImgError(el) { el.onerror = null; el.src = defaultAvatar; }
@@ -1541,11 +1625,10 @@
                 return a.name.localeCompare(b.name, 'ko');
             }
 
-            // 2. v1.7.2 원본의 완벽하고 안정적인 선수 정렬 로직 복원 (등번호 크기순 정확한 정렬)
-            const noA = (a.no && a.no > 0) ? a.no : 9999;
-            const noB = (b.no && b.no > 0) ? b.no : 9999;
-            if (noA !== noB) return noA - noB;
-
+            // 2. v1.7.2 원본의 완벽하고 안정적인 선수 정렬 로직 복원
+            if (a.no && !b.no) return -1;
+            if (!a.no && b.no) return 1;
+            if (a.no && b.no && a.no !== b.no) return a.no - b.no;
             return a.name.localeCompare(b.name, 'ko');
         });
 
@@ -2307,7 +2390,7 @@
             delete customPhotos[uploadTargetPlayer.name];
             localStorage.setItem('daeyeon_custom_photos', JSON.stringify(customPhotos));
 
-            const p = players.find(item => (uploadTargetPlayer.no && item.no === target.no) || item.name === target.name);
+            const p = players.find(item => (uploadTargetPlayer.no && item.no === uploadTargetPlayer.no) || item.name === uploadTargetPlayer.name);
             if (p) p.photoLink = "";
 
             alert(`✅ ${uploadTargetPlayer.name} 선수의 사진이 삭제되어 기본 이미지로 복원되었습니다.`);
@@ -2424,7 +2507,7 @@
             adminBar.classList.add('general');
             adminBar.style.display = 'flex';
             roleText.textContent = '📋 일반관리자 모드';
-            btnSheetLink.style.display = 'none';
+            btnSheetLink.style.display = 'inline-flex';
             btnToggleUniform.style.display = 'none';
             btnViewOrders.style.display = 'none';
             btnManagePw.style.display = 'none';
@@ -2527,7 +2610,7 @@
             localStorage.setItem('daeyeon_pw_super', '0000');
             localStorage.setItem('daeyeon_pw_sub', '1234');
             localStorage.setItem('daeyeon_pw_general', '5678');
-            alert('비밀번호가 초기값(최고:0000, 보조:1234, 일반:5678)으로 리셋되었습니다.');
+            alert('비밀번호가 초기값(최고:0000, 보조:1234, 일반:5678)으로 리셋하시겠습니까?');
             openPasswordManageModal();
         }
     }
@@ -2570,7 +2653,7 @@
                 complete: function(results) {
                     players = results.data.map((row, idx) => {
                         const photoFlag = getColVal(row, '사진공개', '사진노출', '사진비공개', '사진ON/OFF');
-                        const birthFlag = getColVal(row, '생년월일공개', '생년월일노출', '생일공개', '생년월일비공개');
+                        const birthFlag = getColVal(row, '생년월일공개', '생년월일노출', '생일공grade', '생년월일비공개');
                         const heightFlag = getColVal(row, '키공개', '키노출', '키비공개');
                         const weightFlag = getColVal(row, '몸무게공개', '몸무게노출', '몸무게비공개');
                         const drivePhotoLink = getColVal(row, '사진링크', '드라이브사진', '사진URL', '이미지링크');
@@ -2582,7 +2665,7 @@
                         return {
                             id: idx + 1,
                             no: no,
-                            name: (row['이름'] || '').trim(),
+                            name: (row['T름'] || row['이름'] || '').trim(),
                             grade: (row['구분'] || '').trim(),
                             pos: (row['포지션'] || '-').trim(),
                             bt: (row['투타'] || '-').trim(),
