@@ -10,8 +10,8 @@
         const GOOGLE_SHEET_CONTACTS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw2YtYByfiPWXbRfqkzmZ6yzaZVfJHO0f9zAmCiLnwlMvVXCt9lv4AmQAz4_vSjzPy0APtl0hwYNmW/pub?gid=812608822&single=true&output=csv";
         const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
         
-        // 웹페이지 배포 버전 (비상연락망 상세복사 업그레이드 v1.9.2)
-        const APP_VERSION = "v1.9.2 · b260915";
+        // 웹페이지 배포 버전 (선수 이름 연락처 표기 v1.9.3)
+        const APP_VERSION = "v1.9.3 · b260915";
     </script>
 
     <meta charset="UTF-8">
@@ -1132,7 +1132,7 @@
         <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
         <div class="admin-btn-group">
             <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
-            <span class="app-version-tag" id="appVersionDisplay">v1.9.2 · b260915</span>
+            <span class="app-version-tag" id="appVersionDisplay">v1.9.3 · b260915</span>
         </div>
     </div>
 </header>
@@ -1420,7 +1420,7 @@
     </div>
 </div>
 
-<!-- 6. 학부모 비상연락망 모달 (ID 정상 복구: id="contactsModalTitle") -->
+<!-- 6. 학부모 비상연락망 모달 -->
 <div id="emergencyContactsModal" class="modal">
     <div class="modal-content" style="max-width: 480px; width: 95%;">
         <div class="modal-header" id="contactsModalTitle">🚨 학부모 비상연락망</div>
@@ -1441,7 +1441,6 @@
         <div class="contact-quick-bar" style="flex-shrink: 0;">
             <span style="font-size: 11px; font-weight: 800; color: #991b1b; white-space: nowrap;">⚡ 긴급 공지</span>
             <div style="display: flex; gap: 3px; flex-wrap: wrap;">
-                <!-- ★ 상세 복사 버튼 -->
                 <button class="btn-quick-action" onclick="copyAllContactPhones()">📋 비상연락망 복사</button>
                 <button class="btn-quick-action" onclick="copyEmergencyTemplate('weather')">🌧️ 우천취소</button>
                 <button class="btn-quick-action" onclick="copyEmergencyTemplate('match')">⚾ 경기시간</button>
@@ -2378,10 +2377,11 @@
                         </div>
                     ` : ''}
 
+                    <!-- ★ '학생' 대신 선수 본인의 이름으로 표기 (예: 📱 류태영) -->
                     ${sPhone ? `
                         <div class="contact-row" style="background:#eff6ff;">
                             <div class="contact-left-info">
-                                <span class="contact-role-badge role-student">📱 학생</span>
+                                <span class="contact-role-badge role-student">📱 ${name}</span>
                                 <span class="contact-phone-text" style="color:#1d4ed8;">${sPhone}</span>
                             </div>
                             <div class="contact-actions">
@@ -2452,7 +2452,8 @@
             text += `\n${idx + 1}. ${noText}${name}${gradeText}`;
             if (fPhone) text += `\n  • 아버님: ${fPhone}`;
             if (mPhone) text += `\n  • 어머님: ${mPhone}`;
-            if (sPhone) text += `\n  • 학생: ${sPhone}`;
+            // 복사 시에도 선수 이름으로 표기
+            if (sPhone) text += `\n  • ${name}: ${sPhone}`;
             if (address) text += `\n  • 주소: ${address}`;
             if (note) text += `\n  • 비고: ${note}`;
             text += `\n`;
