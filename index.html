@@ -981,7 +981,7 @@
 
     let players = [];
     
-    // ★ [개선] 새로고침(F5) 시에도 유지되는 세션 상태 복원 ★
+    // 새로고침 시에도 유지되는 세션 상태
     let currentRole = sessionStorage.getItem('daeyeon_admin_role') || 'guest';
     let selectedGrade = sessionStorage.getItem('daeyeon_selected_grade') || 'all';
     let currentView = localStorage.getItem('daeyeon_view_mode') || 'list';
@@ -989,11 +989,12 @@
 
     let isUniformActive = localStorage.getItem('daeyeon_uniform_active') !== 'false';
 
+    // [수정] 기본 비밀번호: 최고(0000), 보조(1234), 일반(5678)
     function getStoredPasswords() {
         return {
-            super: localStorage.getItem('daeyeon_pw_super') || '9999',
-            sub: localStorage.getItem('daeyeon_pw_sub') || '7777',
-            general: localStorage.getItem('daeyeon_pw_general') || '1111'
+            super: localStorage.getItem('daeyeon_pw_super') || '0000',
+            sub: localStorage.getItem('daeyeon_pw_sub') || '1234',
+            general: localStorage.getItem('daeyeon_pw_general') || '5678'
         };
     }
 
@@ -1117,14 +1118,14 @@
 
     function setGrade(grade, btn) {
         selectedGrade = grade;
-        sessionStorage.setItem('daeyeon_selected_grade', grade); // 세션 저장
+        sessionStorage.setItem('daeyeon_selected_grade', grade);
         document.querySelectorAll('#gradeFilters .filter-btn').forEach(b => b.classList.remove('active'));
         if (btn) btn.classList.add('active');
         render();
     }
 
     function handleSearchInput(val) {
-        sessionStorage.setItem('daeyeon_search_query', val); // 세션 저장
+        sessionStorage.setItem('daeyeon_search_query', val);
         render();
     }
 
@@ -1281,12 +1282,12 @@
         }).join('');
     }
 
-    // 관리자 로그인 제어
+    // 관리자 로그인
     function openAdminModal() {
         if (currentRole !== 'guest') {
             if (confirm('관리자 모드를 로그아웃 하시겠습니까?')) {
                 currentRole = 'guest';
-                sessionStorage.removeItem('daeyeon_admin_role'); // 세션 삭제
+                sessionStorage.removeItem('daeyeon_admin_role');
                 updateAdminUI();
                 render();
             }
@@ -1528,12 +1529,13 @@
         closeModal('passwordModal');
     }
 
+    // [수정] 기본값 리셋: 최고(0000), 보조(1234), 일반(5678)
     function resetAllPasswordsToDefault() {
-        if (confirm('모든 관리자 비밀번호를 초기값(최고:9999, 보조:7777, 일반:1111)으로 리셋하시겠습니까?')) {
-            localStorage.setItem('daeyeon_pw_super', '9999');
-            localStorage.setItem('daeyeon_pw_sub', '7777');
-            localStorage.setItem('daeyeon_pw_general', '1111');
-            alert('비밀번호가 초기값으로 리셋되었습니다.');
+        if (confirm('모든 관리자 비밀번호를 초기값(최고:0000, 보조:1234, 일반:5678)으로 리셋하시겠습니까?')) {
+            localStorage.setItem('daeyeon_pw_super', '0000');
+            localStorage.setItem('daeyeon_pw_sub', '1234');
+            localStorage.setItem('daeyeon_pw_general', '5678');
+            alert('비밀번호가 초기값(최고:0000, 보조:1234, 일반:5678)으로 리셋되었습니다.');
             openPasswordManageModal();
         }
     }
@@ -1662,7 +1664,7 @@
         }
     }
 
-    // ★ [철통 방어 파싱 로직] 모든 구버전/신버전 품목 데이터를 100% 안전하게 추출 ★
+    // 구버전/신버전 품목 통합 파싱 헬퍼
     function safeParseItems(rawItems) {
         const list = [];
         if (!rawItems) return list;
@@ -1731,7 +1733,7 @@
                 }
             });
         } catch (err) {
-            console.error("품목 파싱 예외 방어:", err);
+            console.error("품목 파싱 오류 방어:", err);
         }
 
         return list;
@@ -1807,19 +1809,19 @@
                     </div>
                 `;
             } catch (err) {
-                console.error("단일 주문 카드 렌더링 예외:", err);
+                console.error("단일 주문 렌더링 오류 방어:", err);
                 return '';
             }
         }).join('');
     }
 
-    // ★ [핵심] 유니폼 접수 현황 모달 열기 (0초 즉시 렌더링 + 안전 동기화) ★
+    // 유니폼 접수 현황 모달 열기 (0초 즉시 렌더링 + 안전 동기화)
     async function openOrdersSummaryModal() {
         const title = document.getElementById('ordersModalTitle');
         const content = document.getElementById('ordersListContent');
         document.getElementById('ordersModal').style.display = 'flex';
 
-        // 1. 기존 데이터가 있으면 0.01초 만에 즉시 렌더링!
+        // 1. 기존 데이터가 있으면 0.01초 만에 즉시 표시!
         let localOrders = JSON.parse(localStorage.getItem('daeyeon_uniform_orders') || '[]');
         if (localOrders.length > 0) {
             title.innerHTML = `📋 유니폼 접수 현황 (총 ${localOrders.length}건) <span id="syncTag" style="font-size:11px; color:#0284c7; font-weight:600; margin-left:6px;">🔄 최신 동기화 중...</span>`;
@@ -1893,7 +1895,7 @@
                 }
             });
 
-            // 관리자 바 상태 즉시 복원
+            // 관리자 바 상태 복원
             updateAdminUI();
 
             const cacheUrl = GOOGLE_SHEET_CSV_URL + (GOOGLE_SHEET_CSV_URL.includes('?') ? '&' : '?') + 'nocache=' + new Date().getTime();
@@ -1937,7 +1939,6 @@
         }
     }
 
-    // 초기 실행
     loadGoogleSheetData();
 </script>
 
