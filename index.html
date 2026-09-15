@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+    <!-- 구글 연동 설정 (CSV 주소, 편집창 주소, 유니폼 API) -->
     <script>
         const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw2YtYByfiPWXbRfqkzmZ6yzaZVfJHO0f9zAmCiLnwlMvVXCt9lv4AmQAz4_vSjzPy0APtl0hwYNmW/pub?output=csv";
         const GOOGLE_SHEET_EDIT_URL = "https://docs.google.com/spreadsheets/d/1ljpHkiJL_H1NN5rwTaQOL5QYeev32QvaBTKzxSPgNVA/edit?gid=1653839889#gid=1653839889";
@@ -9,12 +10,14 @@
         const GOOGLE_SHEET_CONTACTS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw2YtYByfiPWXbRfqkzmZ6yzaZVfJHO0f9zAmCiLnwlMvVXCt9lv4AmQAz4_vSjzPy0APtl0hwYNmW/pub?gid=812608822&single=true&output=csv";
         const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
         
-        const APP_VERSION = "v1.7.0 · b260915";
+        // 웹페이지 배포 버전
+        const APP_VERSION = "v1.7.1 · b260915";
     </script>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>대연초 야구부 명단</title>
+    <!-- CSV 파싱 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <style>
@@ -669,9 +672,6 @@
         .uniform-item-len { flex: 1.1; }
         .uniform-item-qty { width: 56px; }
 
-        /* ===================================================
-           [2순위 탭 UI] 유니폼 접수 현황 모달 스타일
-           =================================================== */
         .order-modal-tabs {
             display: flex;
             border-bottom: 2px solid #e2e8f0;
@@ -791,7 +791,6 @@
             white-space: nowrap;
         }
 
-        /* 2순위 집계표 스타일 */
         .summary-box {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
@@ -822,9 +821,6 @@
             color: #334155;
         }
 
-        /* ===================================================
-           [모바일 최적화] 🚨 비상연락망 스타일
-           =================================================== */
         #emergencyContactsModal .modal-content {
             padding: 16px 14px !important;
             max-width: 480px;
@@ -1002,7 +998,7 @@
         <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
         <div class="admin-btn-group">
             <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
-            <span class="app-version-tag" id="appVersionDisplay">v1.7.0 · b260915</span>
+            <span class="app-version-tag" id="appVersionDisplay">v1.7.1 · b260915</span>
         </div>
     </div>
 </header>
@@ -1133,12 +1129,13 @@
                     <select class="uniform-item-qty" disabled><option value="1개">1개</option><option value="2개">2개</option></select>
                 </div>
 
+                <!-- ★ [수정] 130~160호 제거, 표준 80~110 단일 규격 적용 ★ -->
                 <div class="uniform-item-row" data-name="유니폼상의">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> ⚾ 유니폼 상의</label>
                     <select class="uniform-item-size" disabled>
-                        <option value="130호">130호</option><option value="140호">140호</option><option value="150호">150호</option>
-                        <option value="160호" selected>160호</option><option value="85(S)">85(S)</option><option value="90(M)">90(M)</option>
-                        <option value="95(L)">95(L)</option><option value="100(XL)">100(XL)</option><option value="105(2XL)">105(2XL)</option>
+                        <option value="80">80</option><option value="85">85</option><option value="90">90</option>
+                        <option value="95" selected>95</option><option value="100">100</option><option value="105">105</option>
+                        <option value="110">110</option>
                     </select>
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
                 </div>
@@ -1161,8 +1158,9 @@
                 <div class="uniform-item-row" data-name="여름훈련티">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> ☀️ 여름훈련티</label>
                     <select class="uniform-item-size" disabled>
-                        <option value="85">85</option><option value="90">90</option><option value="95" selected>95</option>
-                        <option value="100">100</option><option value="105">105</option><option value="110">110</option>
+                        <option value="80">80</option><option value="85">85</option><option value="90">90</option>
+                        <option value="95" selected>95</option><option value="100">100</option><option value="105">105</option>
+                        <option value="110">110</option>
                     </select>
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
                 </div>
@@ -1170,8 +1168,9 @@
                 <div class="uniform-item-row" data-name="겨울훈련티">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> ❄️ 겨울훈련티</label>
                     <select class="uniform-item-size" disabled>
-                        <option value="85">85</option><option value="90">90</option><option value="95" selected>95</option>
-                        <option value="100">100</option><option value="105">105</option><option value="110">110</option>
+                        <option value="80">80</option><option value="85">85</option><option value="90">90</option>
+                        <option value="95" selected>95</option><option value="100">100</option><option value="105">105</option>
+                        <option value="110">110</option>
                     </select>
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
                 </div>
@@ -1213,14 +1212,11 @@
     </div>
 </div>
 
-<!-- ===================================================
-     [2순위 탑재] 📋 유니폼 접수 & 발주 집계 모달
-     =================================================== -->
+<!-- 3. 유니폼 접수 & 발주 집계 모달 -->
 <div id="ordersModal" class="modal">
     <div class="modal-content" style="max-width: 520px; width: 95%;">
         <div class="modal-header" id="ordersModalTitle">📋 유니폼 주문 현황 & 발주 관리</div>
         
-        <!-- 3개 서브 탭 (선수별 내역 / 사이즈별 총수량 / 미신청자) -->
         <div class="order-modal-tabs">
             <button class="order-tab-btn active" id="tabBtnPlayerOrders" onclick="switchOrderModalTab('players')">선수별 내역</button>
             <button class="order-tab-btn" id="tabBtnItemSummary" onclick="switchOrderModalTab('summary')">📦 사이즈별 발주 집계</button>
@@ -1324,8 +1320,8 @@
 
     let isUniformActive = localStorage.getItem('daeyeon_uniform_active') !== 'false';
     let emergencyContactsData = [];
-    let loadedOrdersData = []; // 유니폼 주문 데이터 캐시
-    let activeOrderModalTab = 'players'; // 'players' | 'summary' | 'unordered'
+    let loadedOrdersData = [];
+    let activeOrderModalTab = 'players';
 
     let uploadTargetPlayer = null;
     let uploadOptimizedBase64 = null;
@@ -1606,7 +1602,7 @@
     }
 
     // ===================================================
-    // [2순위 탑재] 📋 유니폼 주문 현황 & 발주 집계 & 미신청자
+    // 유니폼 주문 현황 & 발주 집계 & 미신청자 (2순위)
     // ===================================================
     async function openOrdersSummaryModal() {
         document.getElementById('ordersModal').style.display = 'flex';
@@ -1636,13 +1632,11 @@
         document.getElementById('tabBtnItemSummary').className = 'order-tab-btn ' + (tab === 'summary' ? 'active' : '');
         document.getElementById('tabBtnUnordered').className = 'order-tab-btn ' + (tab === 'unordered' ? 'active' : '');
 
-        // 미신청자 수 갱신
         const unordered = loadedOrdersData.filter(o => !o.hasOrder);
         document.getElementById('unorderedCount').textContent = unordered.length;
 
         const content = document.getElementById('ordersListContent');
 
-        // 1. 선수별 주문 내역
         if (tab === 'players') {
             const orderedList = loadedOrdersData.filter(o => o.hasOrder);
             if (orderedList.length === 0) {
@@ -1682,8 +1676,6 @@
                 `;
             }).join('');
         }
-
-        // 2. [2순위 핵심] 📦 업체 발주용 사이즈별 수량 집계
         else if (tab === 'summary') {
             const summary = {};
             let totalOrderCount = 0;
@@ -1707,8 +1699,8 @@
 
             let html = `
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <span style="font-size:12px; font-weight:800; color:#1e40af;">총 발주 품목 수량: ${totalOrderCount}건</span>
-                    <button class="btn-quick-action" style="background:#0284c7; color:white; border:none; padding:5px 10px; font-size:11px;" onclick="copyOrderSummaryText()">📋 업체 발주용 카톡 텍스트 복사</button>
+                    <span style="font-size:12px; font-weight:800; color:#1e40af;">총 발주 품목: ${totalOrderCount}건</span>
+                    <button class="btn-quick-action" style="background:#0284c7; color:white; border:none; padding:5px 10px; font-size:11px;" onclick="copyOrderSummaryText()">📋 발주용 텍스트 복사</button>
                 </div>
             `;
 
@@ -1716,9 +1708,7 @@
                 const sizes = summary[item];
                 html += `
                     <div class="summary-box">
-                        <div class="summary-title">
-                            <span>⚾ ${item}</span>
-                        </div>
+                        <div class="summary-title"><span>⚾ ${item}</span></div>
                         <div style="display:flex; flex-wrap:wrap; gap:4px;">
                             ${Object.keys(sizes).map(s => `
                                 <span class="summary-item-badge"><b>${s}</b>: <span style="color:#c8102e; font-weight:800;">${sizes[s]}</span>벌</span>
@@ -1727,11 +1717,8 @@
                     </div>
                 `;
             }
-
             content.innerHTML = html;
         }
-
-        // 3. [2순위 핵심] ⚠️ 미신청자 명단
         else if (tab === 'unordered') {
             const unordered = loadedOrdersData.filter(o => !o.hasOrder);
             if (unordered.length === 0) {
@@ -1755,7 +1742,6 @@
         }
     }
 
-    // 업체 발주용 텍스트 복사 (카카오톡 발송용)
     function copyOrderSummaryText() {
         const summary = {};
         loadedOrdersData.filter(o => o.hasOrder).forEach(o => {
@@ -1778,7 +1764,7 @@
         }
 
         navigator.clipboard.writeText(text).then(() => {
-            alert("📋 업체 발주용 텍스트가 복사되었습니다!\n유니폼 제작업체 사장님 카톡에 바로 붙여넣기(Ctrl+V) 하세요.");
+            alert("📋 업체 발주용 텍스트가 복사되었습니다!\n유니폼 제작업체 사장님 카톡에 바로 붙여넣기 하세요.");
         });
     }
 
