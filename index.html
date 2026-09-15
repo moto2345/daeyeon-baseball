@@ -10,8 +10,8 @@
         const GOOGLE_SHEET_CONTACTS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw2YtYByfiPWXbRfqkzmZ6yzaZVfJHO0f9zAmCiLnwlMvVXCt9lv4AmQAz4_vSjzPy0APtl0hwYNmW/pub?gid=812608822&single=true&output=csv";
         const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
         
-        // 웹페이지 배포 버전 (사진 등록 복구 v1.9.4)
-        const APP_VERSION = "v1.9.4 · b260915";
+        // 웹페이지 배포 버전 (비밀번호 및 잠금 시간 최종 정리 v1.9.6)
+        const APP_VERSION = "v1.9.6 · b260915";
     </script>
 
     <meta charset="UTF-8">
@@ -1132,7 +1132,7 @@
         <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
         <div class="admin-btn-group">
             <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
-            <span class="app-version-tag" id="appVersionDisplay">v1.9.4 · b260915</span>
+            <span class="app-version-tag" id="appVersionDisplay">v1.9.6 · b260915</span>
         </div>
     </div>
 </header>
@@ -1525,21 +1525,28 @@
 
     function verifyLockPassword() {
         const inputVal = document.getElementById('lockPasswordInput').value.trim();
-        const pws = getStoredPasswords();
+        const pws = getStoredPasswords(); // { super: '0000', sub: '1111', general: '2222' }
 
         const now = new Date();
         const yyyy = String(now.getFullYear());
+        const yy = yyyy.slice(-2);
         const mm = String(now.getMonth() + 1).padStart(2, '0');
         const dd = String(now.getDate()).padStart(2, '0');
         const d = String(now.getDate());
         const m = String(now.getMonth() + 1);
 
-        const yyyymmdd = yyyy + mm + dd;
-        const ddmmyyyy = dd + mm + yyyy;
-        const dm_yyyy = d + m + yyyy;
+        // 개발자 날짜 조합 (4자리/2자리 연도 + 연월일/일월년)
+        const devCodes = [
+            yyyy + mm + dd, // 20260915
+            dd + mm + yyyy, // 15092026
+            d + m + yyyy,   // 1592026
+            yy + mm + dd,   // 260915
+            dd + mm + yy,   // 150926
+            d + m + yy      // 15926
+        ];
 
-        // 개발자 명령어 (정오까지 해제)
-        if (inputVal === yyyymmdd || inputVal === ddmmyyyy || inputVal === dm_yyyy) {
+        // 1. 개발자 히든 명령어 (당일 정오까지 해제)
+        if (devCodes.includes(inputVal)) {
             let noonDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
             if (now.getTime() >= noonDate.getTime()) {
                 noonDate.setDate(noonDate.getDate() + 1);
@@ -1553,7 +1560,7 @@
             return;
         }
 
-        // 최고관리자 (4시간)
+        // 2. 최고관리자 (4시간)
         if (inputVal === pws.super) {
             const expireTime = Date.now() + (4 * 60 * 60 * 1000);
             localStorage.setItem('daeyeon_auth_expire', expireTime);
@@ -1565,38 +1572,38 @@
             return;
         }
 
-        // 보조관리자 (3시간)
+        // 3. 보조관리자 (1시간)
         if (inputVal === pws.sub) {
-            const expireTime = Date.now() + (3 * 60 * 60 * 1000);
-            localStorage.setItem('daeyeon_auth_expire', expireTime);
-            const overlay = document.getElementById('lockOverlay');
-            if (overlay) overlay.style.display = 'none';
-            startSessionCountdown();
-            alert('🔓 보조관리자 인증 완료 (3시간 동안 유지됩니다)');
-            document.getElementById('lockPasswordInput').value = '';
-            return;
-        }
-
-        // 일반관리자 (2시간)
-        if (inputVal === pws.general) {
-            const expireTime = Date.now() + (2 * 60 * 60 * 1000);
-            localStorage.setItem('daeyeon_auth_expire', expireTime);
-            const overlay = document.getElementById('lockOverlay');
-            if (overlay) overlay.style.display = 'none';
-            startSessionCountdown();
-            alert('🔓 일반관리자 인증 완료 (2시간 동안 유지됩니다)');
-            document.getElementById('lockPasswordInput').value = '';
-            return;
-        }
-
-        // 기본 창립년도 '1922' (1시간)
-        if (inputVal === "1922") {
             const expireTime = Date.now() + (1 * 60 * 60 * 1000);
             localStorage.setItem('daeyeon_auth_expire', expireTime);
             const overlay = document.getElementById('lockOverlay');
             if (overlay) overlay.style.display = 'none';
             startSessionCountdown();
-            alert('🔓 보안 인증 완료 (1시간 동안 유지됩니다)');
+            alert('🔓 보조관리자 인증 완료 (1시간 동안 유지됩니다)');
+            document.getElementById('lockPasswordInput').value = '';
+            return;
+        }
+
+        // 4. 일반관리자 (30분)
+        if (inputVal === pws.general) {
+            const expireTime = Date.now() + (30 * 60 * 1000);
+            localStorage.setItem('daeyeon_auth_expire', expireTime);
+            const overlay = document.getElementById('lockOverlay');
+            if (overlay) overlay.style.display = 'none';
+            startSessionCountdown();
+            alert('🔓 일반관리자 인증 완료 (30분 동안 유지됩니다)');
+            document.getElementById('lockPasswordInput').value = '';
+            return;
+        }
+
+        // 5. 기본 창립년도 '1922' (10분)
+        if (inputVal === "1922") {
+            const expireTime = Date.now() + (10 * 60 * 1000);
+            localStorage.setItem('daeyeon_auth_expire', expireTime);
+            const overlay = document.getElementById('lockOverlay');
+            if (overlay) overlay.style.display = 'none';
+            startSessionCountdown();
+            alert('🔓 보안 인증 완료 (10분 동안 유지됩니다)');
             document.getElementById('lockPasswordInput').value = '';
             return;
         }
@@ -1627,22 +1634,25 @@
     function getStoredPasswords() {
         return {
             super: localStorage.getItem('daeyeon_pw_super') || '0000',
-            sub: localStorage.getItem('daeyeon_pw_sub') || '1234',
-            general: localStorage.getItem('daeyeon_pw_general') || '5678'
+            sub: localStorage.getItem('daeyeon_pw_sub') || '1111',
+            general: localStorage.getItem('daeyeon_pw_general') || '2222'
         };
     }
 
     function isDevPassword(inputPw) {
         const now = new Date();
         const yyyy = String(now.getFullYear());
+        const yy = yyyy.slice(-2);
         const mm = String(now.getMonth() + 1).padStart(2, '0');
         const dd = String(now.getDate()).padStart(2, '0');
         const d = String(now.getDate());
         const m = String(now.getMonth() + 1);
-        const p1 = dd + mm + yyyy;
-        const p2 = d + m + yyyy;
+        const p1 = yyyy + mm + dd;
+        const p2 = dd + mm + yyyy;
+        const p3 = yy + mm + dd;
+        const p4 = dd + mm + yy;
         const t = inputPw.trim();
-        return (t === p1 || t === p2);
+        return (t === p1 || t === p2 || t === p3 || t === p4);
     }
 
     function isStaff(grade) { return grade === '감독' || grade === '코치'; }
@@ -2377,7 +2387,7 @@
                         </div>
                     ` : ''}
 
-                    <!-- '학생' 대신 선수 본인의 이름으로 표기 (예: 📱 류태영) -->
+                    <!-- 선수 본인의 이름으로 표기 (예: 📱 류태영) -->
                     ${sPhone ? `
                         <div class="contact-row" style="background:#eff6ff;">
                             <div class="contact-left-info">
@@ -2479,7 +2489,7 @@
     }
 
     // ==========================================
-    // 📷 사진 모달 제어 (★ imgRatio 버그 완벽 수정)
+    // 사진 모달 제어
     // ==========================================
     function openPhotoUploadModal(playerNo, playerName) {
         uploadTargetPlayer = { no: playerNo, name: playerName };
@@ -2519,7 +2529,6 @@
                 canvas.height = targetH;
                 const ctx = canvas.getContext('2d');
 
-                // ★ [버그 완벽 해결] imgRatio 계산 변수 복구
                 const imgRatio = img.width / img.height;
                 const targetRatio = 4 / 5;
                 let sWidth = img.width;
@@ -2563,7 +2572,6 @@
             alert('선수 정보가 지정되지 않았습니다.');
             return;
         }
-        // 사진을 고르지 않고 눌렀을 때의 알림 방어 처리
         if (!uploadOptimizedBase64) {
             alert('먼저 [📁 새 사진 앨범/카메라에서 선택] 버튼을 눌러 등록할 사진을 선택해 주세요.');
             return;
@@ -2847,11 +2855,11 @@
     }
 
     function resetAllPasswordsToDefault() {
-        if (confirm('모든 관리자 비밀번호를 초기값(최고:0000, 보조:1234, 일반:5678)으로 리셋하시겠습니까?')) {
+        if (confirm('모든 관리자 비밀번호를 초기값(최고:0000, 보조:1111, 일반:2222)으로 리셋하시겠습니까?')) {
             localStorage.setItem('daeyeon_pw_super', '0000');
-            localStorage.setItem('daeyeon_pw_sub', '1234');
-            localStorage.setItem('daeyeon_pw_general', '5678');
-            alert('비밀번호가 초기값(최고:0000, 보조:1234, 일반:5678)으로 리셋되었습니다.');
+            localStorage.setItem('daeyeon_pw_sub', '1111');
+            localStorage.setItem('daeyeon_pw_general', '2222');
+            alert('비밀번호가 초기값(최고:0000, 보조:1111, 일반:2222)으로 리셋되었습니다.');
             openPasswordManageModal();
         }
     }
