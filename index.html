@@ -11,7 +11,7 @@
         const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
         
         // 웹페이지 배포 버전
-        const APP_VERSION = "v1.7.1 · b260915";
+        const APP_VERSION = "v1.7.3 · b260915";
     </script>
 
     <meta charset="UTF-8">
@@ -648,29 +648,54 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 8px 4px;
+            padding: 8px 6px;
             border-bottom: 1px solid #f1f5f9;
-            gap: 6px;
+            gap: 8px;
             font-size: 13px;
         }
         .uniform-item-row:last-child { border-bottom: none; }
+
         .uniform-item-name {
-            flex: 1.2;
+            flex: 1.1;
             display: flex;
             align-items: center;
             gap: 6px;
             font-weight: 700;
             color: #1e293b;
             font-size: 13px;
+            white-space: nowrap !important;
+            flex-shrink: 0;
         }
-        .uniform-item-size, .uniform-item-qty, .uniform-item-len {
-            padding: 5px 6px !important;
+
+        .uniform-item-size {
+            flex: 1.2;
+            min-width: 0;
+            padding: 6px 8px !important;
             font-size: 12px !important;
-            border-radius: 4px !important;
+            border-radius: 5px !important;
         }
-        .uniform-item-size { flex: 1.1; }
-        .uniform-item-len { flex: 1.1; }
-        .uniform-item-qty { width: 56px; }
+
+        .pants-double-box {
+            flex: 1.2;
+            display: flex;
+            gap: 4px;
+            min-width: 0;
+        }
+        .pants-double-box select {
+            flex: 1;
+            min-width: 0;
+            padding: 6px 4px !important;
+            font-size: 12px !important;
+            border-radius: 5px !important;
+        }
+
+        .uniform-item-qty {
+            width: 58px !important;
+            flex-shrink: 0;
+            padding: 6px 6px !important;
+            font-size: 12px !important;
+            border-radius: 5px !important;
+        }
 
         .order-modal-tabs {
             display: flex;
@@ -998,7 +1023,7 @@
         <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
         <div class="admin-btn-group">
             <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
-            <span class="app-version-tag" id="appVersionDisplay">v1.7.1 · b260915</span>
+            <span class="app-version-tag" id="appVersionDisplay">v1.7.3 · b260915</span>
         </div>
     </div>
 </header>
@@ -1118,6 +1143,7 @@
             <label>유니폼 품목 및 사이즈 선택 *</label>
             <div style="background: #f8fafc; border: 1px solid var(--card-border); border-radius: 8px; padding: 6px 10px;">
                 
+                <!-- 1. 모자 -->
                 <div class="uniform-item-row" data-name="모자">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 🧢 모자</label>
                     <select class="uniform-item-size" disabled>
@@ -1129,7 +1155,7 @@
                     <select class="uniform-item-qty" disabled><option value="1개">1개</option><option value="2개">2개</option></select>
                 </div>
 
-                <!-- ★ [수정] 130~160호 제거, 표준 80~110 단일 규격 적용 ★ -->
+                <!-- 2. 유니폼 상의 -->
                 <div class="uniform-item-row" data-name="유니폼상의">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> ⚾ 유니폼 상의</label>
                     <select class="uniform-item-size" disabled>
@@ -1140,21 +1166,25 @@
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
                 </div>
 
+                <!-- 3. 바지(허리/기장) -->
                 <div class="uniform-item-row" id="rowPants">
                     <label class="uniform-item-name"><input type="checkbox" id="chkPants" onchange="togglePantsInputs(this)"> 👖 바지(허리/기장)</label>
-                    <select id="pantsWaist" class="uniform-item-size" disabled title="허리 사이즈">
-                        <option value="24">24인치</option><option value="25">25인치</option><option value="26">26인치</option>
-                        <option value="27">27인치</option><option value="28" selected>28인치</option><option value="29">29인치</option>
-                        <option value="30">30인치</option><option value="32">32인치</option><option value="34">34인치</option>
-                    </select>
-                    <select id="pantsLength" class="uniform-item-len" disabled title="기장 옵션">
-                        <option value="기본" selected>기본</option>
-                        <option value="+3cm">+3cm</option><option value="+5cm">+5cm</option><option value="+7cm">+7cm</option>
-                        <option value="-3cm">-3cm</option><option value="-5cm">-5cm</option>
-                    </select>
+                    <div class="pants-double-box">
+                        <select id="pantsWaist" disabled title="허리 사이즈">
+                            <option value="24">24인치</option><option value="25">25인치</option><option value="26">26인치</option>
+                            <option value="27">27인치</option><option value="28" selected>28인치</option><option value="29">29인치</option>
+                            <option value="30">30인치</option><option value="32">32인치</option><option value="34">34인치</option>
+                        </select>
+                        <select id="pantsLength" disabled title="기장 옵션">
+                            <option value="기본" selected>기본</option>
+                            <option value="+3cm">+3cm</option><option value="+5cm">+5cm</option><option value="+7cm">+7cm</option>
+                            <option value="-3cm">-3cm</option><option value="-5cm">-5cm</option>
+                        </select>
+                    </div>
                     <select id="pantsQty" class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
                 </div>
 
+                <!-- 4. 여름훈련티 -->
                 <div class="uniform-item-row" data-name="여름훈련티">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> ☀️ 여름훈련티</label>
                     <select class="uniform-item-size" disabled>
@@ -1165,6 +1195,7 @@
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
                 </div>
 
+                <!-- 5. 겨울훈련티 -->
                 <div class="uniform-item-row" data-name="겨울훈련티">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> ❄️ 겨울훈련티</label>
                     <select class="uniform-item-size" disabled>
@@ -1175,6 +1206,7 @@
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
                 </div>
 
+                <!-- 6. 바람막이 -->
                 <div class="uniform-item-row" data-name="바람막이">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 💨 바람막이</label>
                     <select class="uniform-item-size" disabled>
@@ -1184,6 +1216,7 @@
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
                 </div>
 
+                <!-- 7. 풀오버 -->
                 <div class="uniform-item-row" data-name="풀오버">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 🧥 풀오버</label>
                     <select class="uniform-item-size" disabled>
@@ -1193,6 +1226,7 @@
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
                 </div>
 
+                <!-- 8. 겨울점퍼 -->
                 <div class="uniform-item-row" data-name="겨울점퍼">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 🧤 겨울점퍼</label>
                     <select class="uniform-item-size" disabled>
@@ -1347,8 +1381,48 @@
         return (t === p1 || t === p2);
     }
 
-    function isStaff(grade) { return grade === '감독' || grade === '코치'; }
+    // 지도자 판별
+    function isStaff(grade) {
+        if (!grade) return false;
+        const g = String(grade).trim();
+        return g === '감독' || g.includes('코치') || g.includes('지도자');
+    }
+
     function isSuperOrDev() { return currentRole === 'super' || currentRole === 'dev'; }
+
+    // ★ [직책 우선순위 랭킹 엔진] 감독(1) -> 수석코치(2) -> 투수코치(3) -> 기타 코치(4~) -> 학생(10)
+    function getStaffRank(p) {
+        const grade = String(p.grade || '').trim();
+        const pos = String(p.pos || '').trim();
+        const combined = `${grade} ${pos}`;
+
+        // 1순위: 감독
+        if (grade === '감독' || pos.includes('감독') || combined.includes('감독')) {
+            return 1;
+        }
+        // 2순위: 수석코치
+        if (combined.includes('수석')) {
+            return 2;
+        }
+        // 3순위: 투수코치
+        if (combined.includes('투수코치') || (pos.includes('투수') && isStaff(grade))) {
+            return 3;
+        }
+        // 4순위: 타격코치
+        if (combined.includes('타격')) return 4;
+        // 5순위: 배터리/포수코치
+        if (combined.includes('배터리') || combined.includes('포수코치')) return 5;
+        // 6순위: 수비/야수/작전/주루 코치
+        if (combined.includes('야수') || combined.includes('수비') || combined.includes('주루')) return 6;
+
+        // 7순위: 일반 코치 및 기타 스태프
+        if (isStaff(grade) || pos.includes('코치')) {
+            return 7;
+        }
+
+        // 10순위: 일반 학생 선수
+        return 10;
+    }
 
     function getGradeBadge(grade) {
         if (isStaff(grade)) return `<span class="grade-tag grade-staff">${grade}</span>`;
@@ -1359,7 +1433,7 @@
         if (!pos || pos === '-' || pos === '정보없음' || pos === '미정') return '<span class="pos-tag pos-none">미정</span>';
         const p = String(pos).trim();
         if (grade === '감독' || p.includes('감독') || p.includes('총괄')) return `<span class="pos-tag pos-manager">${p}</span>`;
-        if (grade === '코치' || p.includes('코치')) return `<span class="pos-tag pos-coach">${p}</span>`;
+        if (grade === '코치' || p.includes('코치') || isStaff(grade)) return `<span class="pos-tag pos-coach">${p}</span>`;
         if (p.includes('투수')) return `<span class="pos-tag pos-pitcher">${p}</span>`;
         if (p.includes('포수')) return `<span class="pos-tag pos-catcher">${p}</span>`;
         if (p.includes('내야') || p.includes('1루') || p.includes('2루') || p.includes('3루') || p.includes('유격')) return `<span class="pos-tag pos-infield">${p}</span>`;
@@ -1468,6 +1542,7 @@
         return p.no ? `data/photos/${p.no}.jpg` : defaultAvatar;
     }
 
+    // ★ [핵심 정렬 로직 적용] 감독(1) -> 수석코치(2) -> 투수코치(3) -> 기타 코치 -> 학생
     function render() {
         const searchEl = document.getElementById('searchInput');
         const query = searchEl.value.trim().toLowerCase();
@@ -1488,9 +1563,23 @@
             const matchSearch = p.name.toLowerCase().includes(query) || (p.no && p.no.toString().includes(query)) || (p.pos && p.pos.includes(query)) || (p.bt && p.bt.includes(query));
             return matchGrade && matchSearch;
         }).sort((a, b) => {
-            const rankA = a.grade === '감독' ? 1 : (a.grade === '코치' ? 2 : 3);
-            const rankB = b.grade === '감독' ? 1 : (b.grade === '코치' ? 2 : 3);
-            if (rankA !== rankB) return rankA - rankB;
+            // 직책 랭킹 비교 (감독: 1, 수석코치: 2, 투수코치: 3...)
+            const rankA = getStaffRank(a);
+            const rankB = getStaffRank(b);
+
+            if (rankA !== rankB) {
+                return rankA - rankB;
+            }
+
+            // 지도자 동급일 경우
+            if (rankA < 10) {
+                if (a.no && b.no && a.no !== b.no) return a.no - b.no;
+                if (a.no && !b.no) return -1;
+                if (!a.no && b.no) return 1;
+                return a.name.localeCompare(b.name, 'ko');
+            }
+
+            // 학생 선수들
             if (a.no && !b.no) return -1;
             if (!a.no && b.no) return 1;
             if (a.no && b.no && a.no !== b.no) return a.no - b.no;
@@ -1602,7 +1691,7 @@
     }
 
     // ===================================================
-    // 유니폼 주문 현황 & 발주 집계 & 미신청자 (2순위)
+    // 유니폼 주문 현황 & 발주 집계 & 미신청자
     // ===================================================
     async function openOrdersSummaryModal() {
         document.getElementById('ordersModal').style.display = 'flex';
@@ -2158,7 +2247,7 @@
                 let sx = 0, sy = 0;
                 const targetRatio = 4 / 5;
 
-                if (img.width / img.height > targetRatio) {
+                if (imgRatio > targetRatio) {
                     sWidth = img.height * targetRatio;
                     sx = (img.width - sWidth) / 2;
                 } else {
@@ -2475,7 +2564,7 @@
             localStorage.setItem('daeyeon_pw_super', '0000');
             localStorage.setItem('daeyeon_pw_sub', '1234');
             localStorage.setItem('daeyeon_pw_general', '5678');
-            alert('비밀번호가 초기값으로 리셋되었습니다.');
+            alert('비밀번호가 초기값(최고:0000, 보조:1234, 일반:5678)으로 리셋되었습니다.');
             openPasswordManageModal();
         }
     }
