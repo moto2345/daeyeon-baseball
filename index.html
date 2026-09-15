@@ -8,7 +8,7 @@
         const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
         
         // 웹페이지 배포 버전
-        const APP_VERSION = "v1.4.3 · b260915";
+        const APP_VERSION = "v1.4.4 · b260915";
     </script>
 
     <meta charset="UTF-8">
@@ -374,12 +374,15 @@
             font-size: 15px;
         }
 
+        /* [개선] 학년 뱃지: 어떤 상황에서도 두 줄로 깨지지 않도록 방어 */
         .grade-tag {
             display: inline-block;
-            padding: 3px 10px;
+            padding: 3px 8px;
             border-radius: 12px;
             font-size: 12px;
             font-weight: 700;
+            white-space: nowrap !important; /* 줄바꿈 절대 금지 */
+            flex-shrink: 0 !important;      /* 너비 찌그러짐 방지 */
         }
         .grade-staff { background: #0f172a; color: #ffffff; }
         .grade-6 { background: #fee2e2; color: #991b1b; }
@@ -546,26 +549,32 @@
             gap: 4px;
         }
 
+        /* [개선] 이름과 뱃지 행 정렬 최적화 */
         .card-name-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 6px;
+            width: 100%;
         }
 
+        /* [개선] 이름 박스: 한 줄 표시 & 넘칠 경우 자연스러운 축소 */
         .card-name {
-            font-size: 16px;
             font-weight: 800;
             color: var(--text-title);
             display: flex;
             align-items: baseline;
-            gap: 4px;
+            gap: 3px;
+            min-width: 0;
+            white-space: nowrap;
         }
 
         .card-name-no {
             color: var(--kbo-red);
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 800;
             letter-spacing: -0.2px;
+            flex-shrink: 0;
         }
 
         .card-meta {
@@ -800,7 +809,7 @@
         <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
         <div class="admin-btn-group">
             <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
-            <span class="app-version-tag" id="appVersionDisplay">v1.4.3 · b260915</span>
+            <span class="app-version-tag" id="appVersionDisplay">v1.4.4 · b260915</span>
         </div>
     </div>
 </header>
@@ -1023,7 +1032,6 @@
             📁 새 사진 앨범/카메라에서 선택
         </button>
 
-        <!-- [신규: 사진 삭제 버튼] -->
         <button type="button" id="btnDeletePhoto" class="btn-cancel" style="width: 100%; padding: 8px; font-size: 12px; font-weight: 700; border-color: #fecaca; color: #b91c1c; background: #fff5f5; margin-bottom: 14px; display: none;" onclick="executeDeletePhoto()">
             🗑️ 등록된 사진 삭제 (기본 이미지 복원)
         </button>
@@ -1324,7 +1332,16 @@
             const playerPath = isStaff(p.grade) ? `staff/${p.no || p.name}` : `${p.grade}/${p.no || p.name}`;
 
             const noBadgeText = p.no ? `No.${p.no}` : '배번미정';
-            const noNameText = p.no ? `<span class="card-name-no">No.${p.no}</span> ` : '';
+            const noNameText = p.no ? `<span class="card-name-no">No.${p.no}</span>` : '';
+
+            // ★ [핵심] 이름 길이에 따른 스마트 폰트 크기 자동 조절 ★
+            const rawNameLen = p.name.length;
+            let nameStyle = 'font-size: 16px;';
+            if (rawNameLen >= 7) {
+                nameStyle = 'font-size: 12px; letter-spacing: -0.6px;';
+            } else if (rawNameLen >= 5) {
+                nameStyle = 'font-size: 13.5px; letter-spacing: -0.4px;';
+            }
 
             const uploadBtnHtml = isSuperOrDev() ? `
                 <button type="button" class="btn-upload-photo" onclick="event.stopPropagation(); openPhotoUploadModal(${p.no || 0}, '${p.name}')">📷 사진 변경</button>
@@ -1359,7 +1376,9 @@
                     ${cardPhotoHtml}
                     <div class="card-info">
                         <div class="card-name-row">
-                            <span class="card-name">${noNameText}${p.name}${hiddenBadge}</span>
+                            <span class="card-name" style="${nameStyle}">
+                                ${noNameText}<span>${p.name}</span>${hiddenBadge}
+                            </span>
                             ${getGradeBadge(p.grade)}
                         </div>
                         <div class="card-meta">${getBtBadge(p.bt, p.grade)}</div>
@@ -1373,7 +1392,6 @@
         }).join('');
     }
 
-    // 사진 모달 열기 (기존 사진이 있으면 삭제 버튼 노출)
     function openPhotoUploadModal(playerNo, playerName) {
         uploadTargetPlayer = { no: playerNo, name: playerName };
         uploadOptimizedBase64 = null;
@@ -1389,7 +1407,6 @@
         btn.disabled = true;
         btn.textContent = '구글 드라이브 등록';
 
-        // 기존 사진 존재 여부 검사 후 삭제 버튼 표시
         const p = players.find(item => item.name === playerName);
         const currentPhoto = p ? getPlayerPhotoUrl(p) : '';
         const hasCustomPhoto = currentPhoto && !currentPhoto.includes('data:image/svg');
@@ -1497,7 +1514,6 @@
         }
     }
 
-    // ★ [신규] 등록된 사진 삭제 및 기본 이미지 복원 실행 함수 ★
     async function executeDeletePhoto() {
         if (!uploadTargetPlayer) return;
         if (!confirm(`${uploadTargetPlayer.name} 선수의 등록된 사진을 삭제하고 기본 이미지로 복원하시겠습니까?`)) return;
@@ -1520,7 +1536,6 @@
                 body: JSON.stringify(payload)
             });
 
-            // 로컬 캐시 삭제
             const customPhotos = JSON.parse(localStorage.getItem('daeyeon_custom_photos') || '{}');
             if (uploadTargetPlayer.no) delete customPhotos[uploadTargetPlayer.no];
             delete customPhotos[uploadTargetPlayer.name];
@@ -1541,7 +1556,6 @@
         }
     }
 
-    // 관리자 로그인
     function openAdminModal() {
         if (currentRole !== 'guest') {
             if (confirm('관리자 모드를 로그아웃 하시겠습니까?')) {
