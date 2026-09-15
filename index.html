@@ -10,8 +10,8 @@
         const GOOGLE_SHEET_CONTACTS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw2YtYByfiPWXbRfqkzmZ6yzaZVfJHO0f9zAmCiLnwlMvVXCt9lv4AmQAz4_vSjzPy0APtl0hwYNmW/pub?gid=812608822&single=true&output=csv";
         const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
         
-        // 웹페이지 배포 버전 (신청 수량 반영 v1.9.0)
-        const APP_VERSION = "v1.9.0 · b260915";
+        // 웹페이지 배포 버전 (비상연락망 렌더링 정상화 v1.9.1)
+        const APP_VERSION = "v1.9.1 · b260915";
     </script>
 
     <meta charset="UTF-8">
@@ -1132,7 +1132,7 @@
         <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
         <div class="admin-btn-group">
             <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
-            <span class="app-version-tag" id="appVersionDisplay">v1.9.0 · b260915</span>
+            <span class="app-version-tag" id="appVersionDisplay">v1.9.1 · b260915</span>
         </div>
     </div>
 </header>
@@ -1420,10 +1420,10 @@
     </div>
 </div>
 
-<!-- 6. 학부모 비상연락망 모달 -->
+<!-- 6. 학부모 비상연락망 모달 (★ ID 정상 복구: id="contactsModalTitle") -->
 <div id="emergencyContactsModal" class="modal">
     <div class="modal-content" style="max-width: 480px; width: 95%;">
-        <div class="modal-header">🚨 학부모 비상연락망</div>
+        <div class="modal-header" id="contactsModalTitle">🚨 학부모 비상연락망</div>
         
         <div style="display: flex; gap: 6px; margin-bottom: 8px; flex-shrink: 0;">
             <input type="text" id="contactSearchInput" placeholder="선수명 / 연락처 / 주소 검색" style="flex: 1; padding: 7px 10px; border: 1px solid var(--card-border); border-radius: 6px; font-size: 12px;" oninput="renderEmergencyContacts()">
@@ -1472,7 +1472,6 @@
         }
     })();
 
-    // 실시간 잔여 시간 카운트다운 루프
     function startSessionCountdown() {
         const badge = document.getElementById('sessionTimerBadge');
         const countdownEl = document.getElementById('timerCountdown');
@@ -1509,7 +1508,6 @@
         }, 1000);
     }
 
-    // 즉시 화면 잠금 함수
     function lockScreenNow() {
         localStorage.removeItem('daeyeon_auth_expire');
         if (window._sessionTimerInterval) clearInterval(window._sessionTimerInterval);
@@ -1536,11 +1534,11 @@
         const d = String(now.getDate());
         const m = String(now.getMonth() + 1);
 
-        const yyyymmdd = yyyy + mm + dd; // 연월일 (예: 20260915)
-        const ddmmyyyy = dd + mm + yyyy; // 일월년 (예: 15092026)
-        const dm_yyyy = d + m + yyyy;   // 일월년 단일자리 대응
+        const yyyymmdd = yyyy + mm + dd;
+        const ddmmyyyy = dd + mm + yyyy;
+        const dm_yyyy = d + m + yyyy;
 
-        // ★ 개발자 명령어: 연월일 또는 일월년 입력 시 둘 다 당일 정오(12:00)까지 해제
+        // 개발자 명령어 (정오까지 해제)
         if (inputVal === yyyymmdd || inputVal === ddmmyyyy || inputVal === dm_yyyy) {
             let noonDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
             if (now.getTime() >= noonDate.getTime()) {
@@ -1555,7 +1553,7 @@
             return;
         }
 
-        // 3. 최고관리자 비밀번호 (4시간)
+        // 최고관리자 (4시간)
         if (inputVal === pws.super) {
             const expireTime = Date.now() + (4 * 60 * 60 * 1000);
             localStorage.setItem('daeyeon_auth_expire', expireTime);
@@ -1567,7 +1565,7 @@
             return;
         }
 
-        // 4. 보조관리자 비밀번호 (3시간)
+        // 보조관리자 (3시간)
         if (inputVal === pws.sub) {
             const expireTime = Date.now() + (3 * 60 * 60 * 1000);
             localStorage.setItem('daeyeon_auth_expire', expireTime);
@@ -1579,7 +1577,7 @@
             return;
         }
 
-        // 5. 일반관리자 비밀번호 (2시간)
+        // 일반관리자 (2시간)
         if (inputVal === pws.general) {
             const expireTime = Date.now() + (2 * 60 * 60 * 1000);
             localStorage.setItem('daeyeon_auth_expire', expireTime);
@@ -1591,7 +1589,7 @@
             return;
         }
 
-        // 6. 기본 창립년도 '1922' (1시간)
+        // 기본 창립년도 '1922' (1시간)
         if (inputVal === "1922") {
             const expireTime = Date.now() + (1 * 60 * 60 * 1000);
             localStorage.setItem('daeyeon_auth_expire', expireTime);
@@ -1603,7 +1601,6 @@
             return;
         }
 
-        // 실패
         alert('❌ 비밀번호가 올바르지 않습니다.');
         document.getElementById('lockPasswordInput').value = '';
         document.getElementById('lockPasswordInput').focus();
@@ -1804,7 +1801,6 @@
             const matchSearch = p.name.toLowerCase().includes(query) || (p.no && p.no.toString().includes(query)) || (p.pos && p.pos.includes(query)) || (p.bt && p.bt.includes(query));
             return matchGrade && matchSearch;
         }).sort((a, b) => {
-            // 1. 코칭스태프 직책 순서 고정 (감독 -> 수석코치 -> 투수코치 -> 코치)
             const rankA = getStaffRank(a);
             const rankB = getStaffRank(b);
             if (rankA !== rankB) return rankA - rankB;
@@ -1816,7 +1812,6 @@
                 return a.name.localeCompare(b.name, 'ko');
             }
 
-            // 2. v1.7.2 원본의 완벽하고 안정적인 선수 정렬 로직 복원
             if (a.no && !b.no) return -1;
             if (!a.no && b.no) return 1;
             if (a.no && b.no && a.no !== b.no) return a.no - b.no;
@@ -2176,7 +2171,6 @@
         };
         let checkedCount = 0;
 
-        // ★ 모자, 상의, 훈련티, 아우터류: "사이즈 (갯수)" 또는 모자는 "프리 (갯수)" 형식으로 저장
         document.querySelectorAll('.uniform-item-row[data-name]').forEach(row => {
             const chk = row.querySelector('.chk-item');
             const name = row.getAttribute('data-name');
@@ -2192,7 +2186,6 @@
             }
         });
 
-        // ★ 바지: 허리는 숫자/인치, 기장은 "기장옵션 (갯수)" 형식으로 저장
         const chkPants = document.getElementById('chkPants');
         if (chkPants && chkPants.checked) {
             itemsMap["바지 (허리)"] = document.getElementById('pantsWaist').value;
@@ -2242,7 +2235,7 @@
     }
 
     // ==========================================
-    // 비상연락망 모달 로직
+    // 🚨 비상연락망 모달 로직 (정상 렌더링 복원)
     // ==========================================
     async function openEmergencyContactsModal() {
         document.getElementById('emergencyContactsModal').style.display = 'flex';
@@ -2259,12 +2252,14 @@
         }
 
         try {
-            const csvRes = await fetch(GOOGLE_SHEET_CONTACTS_CSV_URL + '&nocache=' + Date.now());
+            const cacheUrl = GOOGLE_SHEET_CONTACTS_CSV_URL + (GOOGLE_SHEET_CONTACTS_CSV_URL.includes('?') ? '&' : '?') + 'nocache=' + Date.now();
+            const csvRes = await fetch(cacheUrl);
             const csvText = await csvRes.text();
-            if (csvText && csvText.includes('선수이름')) {
+            
+            if (csvText && !csvText.trim().startsWith('<!DOCTYPE') && !csvText.trim().startsWith('<html')) {
                 Papa.parse(csvText, {
                     header: true,
-                    skipEmptyLines: true,
+                    skipEmptyLines: 'greedy',
                     complete: function(results) {
                         if (results.data && results.data.length > 0) {
                             emergencyContactsData = results.data;
@@ -2293,10 +2288,12 @@
     }
 
     function renderEmergencyContacts() {
-        const query = document.getElementById('contactSearchInput').value.trim().toLowerCase();
-        const selectedG = document.getElementById('contactGradeSelect').value;
+        const query = document.getElementById('contactSearchInput') ? document.getElementById('contactSearchInput').value.trim().toLowerCase() : '';
+        const selectedG = document.getElementById('contactGradeSelect') ? document.getElementById('contactGradeSelect').value : 'all';
         const content = document.getElementById('contactsListContent');
         const title = document.getElementById('contactsModalTitle');
+
+        if (!content) return;
 
         if (!emergencyContactsData || emergencyContactsData.length === 0) {
             content.innerHTML = '<div style="text-align:center; padding:40px 20px; color:#94a3b8; font-weight:600;">등록된 비상연락망 데이터가 없습니다.</div>';
@@ -2323,7 +2320,9 @@
             return noA - noB;
         });
 
-        title.textContent = `🚨 학부모 비상연락망 (${filtered.length}명)`;
+        if (title) {
+            title.textContent = `🚨 학부모 비상연락망 (${filtered.length}명)`;
+        }
 
         if (filtered.length === 0) {
             content.innerHTML = '<div style="text-align:center; padding:40px 20px; color:#94a3b8; font-weight:600;">검색 결과가 없습니다.</div>';
@@ -2343,12 +2342,13 @@
             const fRaw = fPhone.replace(/[^0-9]/g, '');
             const mRaw = mPhone.replace(/[^0-9]/g, '');
             const sRaw = sPhone.replace(/[^0-9]/g, '');
+            const gradeText = grade ? (grade.includes('학년') ? grade : grade + '학년') : '';
 
             return `
                 <div class="contact-card">
                     <div class="contact-header">
                         <span class="contact-player-name">${no ? 'No.'+no+' ' : ''}${name}</span>
-                        ${grade ? `<span class="grade-tag grade-${grade.replace(/[^0-9]/g,'')}">${grade}학년</span>` : ''}
+                        ${gradeText ? `<span class="grade-tag grade-${grade.replace(/[^0-9]/g,'')}">${gradeText}</span>` : ''}
                     </div>
 
                     ${fPhone ? `
@@ -2403,8 +2403,8 @@
     }
 
     function copyAllContactPhones() {
-        const query = document.getElementById('contactSearchInput').value.trim().toLowerCase();
-        const selectedG = document.getElementById('contactGradeSelect').value;
+        const query = document.getElementById('contactSearchInput') ? document.getElementById('contactSearchInput').value.trim().toLowerCase() : '';
+        const selectedG = document.getElementById('contactGradeSelect') ? document.getElementById('contactGradeSelect').value : 'all';
 
         const phones = [];
         emergencyContactsData.forEach(c => {
