@@ -10,8 +10,8 @@
         const GOOGLE_SHEET_CONTACTS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw2YtYByfiPWXbRfqkzmZ6yzaZVfJHO0f9zAmCiLnwlMvVXCt9lv4AmQAz4_vSjzPy0APtl0hwYNmW/pub?gid=812608822&single=true&output=csv";
         const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
         
-        // 웹페이지 배포 버전 (보안 잠금 장치 v1.8.0)
-        const APP_VERSION = "v1.8.0 · b260915";
+        // 웹페이지 배포 버전 (보안 잠금 장치 v1.8.1)
+        const APP_VERSION = "v1.8.1 · b260915";
     </script>
 
     <meta charset="UTF-8">
@@ -46,14 +46,14 @@
         }
 
         /* ===================================================
-           [보안 잠금 오버레이 및 블러 스타일]
+           🔒 보안 잠금 오버레이 (블러 강도 낮춤: 12px ➔ 4px)
            =================================================== */
         #lockOverlay {
             position: fixed;
             inset: 0;
-            background: rgba(11, 34, 64, 0.82);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(11, 34, 64, 0.65);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
             z-index: 99999;
             display: flex;
             align-items: center;
@@ -1049,15 +1049,14 @@
 <body>
 
 <!-- ===================================================
-     🔒 인터벌 보안 잠금 팝업 (배경 블러 처리)
+     🔒 인터벌 보안 잠금 팝업 (블러 강도 낮춤: 12px ➔ 4px, 힌트 제거)
      =================================================== -->
 <div id="lockOverlay">
     <div class="lock-card">
         <div style="font-size: 32px; margin-bottom: 8px;">⚾</div>
         <h2 style="font-size: 18px; font-weight: 900; color: var(--kbo-blue); margin-bottom: 6px;">대연초 야구부 보안 인증</h2>
         <p style="font-size: 12px; color: #64748b; margin-bottom: 16px; line-height: 1.5;">
-            선수 명단 및 비상연락망 보호를 위해 보안 비밀번호를 입력해 주세요.<br>
-            <span style="color: var(--kbo-red); font-weight: 700;">(힌트: 대연초등학교 창립년도 4자리)</span>
+            선수 명단 및 비상연락망 보호를 위해 보안 비밀번호를 입력해 주세요.
         </p>
         <div style="margin-bottom: 12px;">
             <input type="password" id="lockPasswordInput" placeholder="비밀번호 입력 (4자리)" style="width: 100%; padding: 10px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 16px; text-align: center; font-weight: 800; letter-spacing: 2px; outline: none;" onkeydown="if(event.key==='Enter') verifyLockPassword()">
@@ -1076,7 +1075,7 @@
         <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
         <div class="admin-btn-group">
             <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
-            <span class="app-version-tag" id="appVersionDisplay">v1.8.0 · b260915</span>
+            <span class="app-version-tag" id="appVersionDisplay">v1.8.1 · b260915</span>
         </div>
     </div>
 </header>
@@ -1393,7 +1392,6 @@
     (function checkPageAuth() {
         const authExpire = localStorage.getItem('daeyeon_auth_expire');
         if (authExpire && Date.now() < parseInt(authExpire, 10)) {
-            // 1시간 인증 유효 -> 잠금 팝업 숨김
             document.addEventListener("DOMContentLoaded", () => {
                 const overlay = document.getElementById('lockOverlay');
                 if (overlay) overlay.style.display = 'none';
@@ -1404,15 +1402,14 @@
     function verifyLockPassword() {
         const inputVal = document.getElementById('lockPasswordInput').value.trim();
         if (inputVal === "1922") {
-            // 1시간(3600초) 동안 유효하도록 만료 시간 설정
-            const expireTime = Date.now() + (60 * 60 * 1000);
+            const expireTime = Date.now() + (60 * 60 * 1000); // 1시간
             localStorage.setItem('daeyeon_auth_expire', expireTime);
             
             const overlay = document.getElementById('lockOverlay');
             if (overlay) overlay.style.display = 'none';
             alert('🔓 보안 인증이 완료되었습니다. (1시간 동안 유지됩니다)');
         } else {
-            alert('❌ 비밀번호가 올바르지 않습니다.\n(힌트: 대연초등학교 창립년도 4자리)');
+            alert('❌ 비밀번호가 올바르지 않습니다.');
             document.getElementById('lockPasswordInput').value = '';
             document.getElementById('lockPasswordInput').focus();
         }
@@ -2507,7 +2504,7 @@
             adminBar.classList.add('general');
             adminBar.style.display = 'flex';
             roleText.textContent = '📋 일반관리자 모드';
-            btnSheetLink.style.display = 'inline-flex';
+            btnSheetLink.style.display = 'none';
             btnToggleUniform.style.display = 'none';
             btnViewOrders.style.display = 'none';
             btnManagePw.style.display = 'none';
@@ -2610,7 +2607,7 @@
             localStorage.setItem('daeyeon_pw_super', '0000');
             localStorage.setItem('daeyeon_pw_sub', '1234');
             localStorage.setItem('daeyeon_pw_general', '5678');
-            alert('비밀번호가 초기값(최고:0000, 보조:1234, 일반:5678)으로 리셋하시겠습니까?');
+            alert('비밀번호가 초기값(최고:0000, 보조:1234, 일반:5678)으로 리셋되었습니다.');
             openPasswordManageModal();
         }
     }
@@ -2653,7 +2650,7 @@
                 complete: function(results) {
                     players = results.data.map((row, idx) => {
                         const photoFlag = getColVal(row, '사진공개', '사진노출', '사진비공개', '사진ON/OFF');
-                        const birthFlag = getColVal(row, '생년월일공개', '생년월일노출', '생일공grade', '생년월일비공개');
+                        const birthFlag = getColVal(row, '생년월일공개', '생년월일노출', '생일공개', '생년월일비공개');
                         const heightFlag = getColVal(row, '키공개', '키노출', '키비공개');
                         const weightFlag = getColVal(row, '몸무게공개', '몸무게노출', '몸무게비공개');
                         const drivePhotoLink = getColVal(row, '사진링크', '드라이브사진', '사진URL', '이미지링크');
@@ -2665,7 +2662,7 @@
                         return {
                             id: idx + 1,
                             no: no,
-                            name: (row['T름'] || row['이름'] || '').trim(),
+                            name: (row['이름'] || '').trim(),
                             grade: (row['구분'] || '').trim(),
                             pos: (row['포지션'] || '-').trim(),
                             bt: (row['투타'] || '-').trim(),
