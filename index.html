@@ -10,8 +10,8 @@
         const GOOGLE_SHEET_CONTACTS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw2YtYByfiPWXbRfqkzmZ6yzaZVfJHO0f9zAmCiLnwlMvVXCt9lv4AmQAz4_vSjzPy0APtl0hwYNmW/pub?gid=812608822&single=true&output=csv";
         const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
         
-        // 웹페이지 배포 버전 (비밀번호 및 잠금 시간 최종 정리 v1.9.6)
-        const APP_VERSION = "v1.9.6 · b260915";
+        // 웹페이지 배포 버전 (화면 잠금 버튼 좌측 이동 v1.9.7)
+        const APP_VERSION = "v1.9.7 · b260915";
     </script>
 
     <meta charset="UTF-8">
@@ -100,7 +100,7 @@
             letter-spacing: 0.5px;
         }
 
-        /* 좌측 상단 타이머 영역 */
+        /* 좌측 상단 타이머 및 잠금 버튼 영역 */
         .header-left-actions {
             position: absolute;
             top: 14px;
@@ -108,6 +108,7 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            flex-wrap: wrap;
         }
 
         .session-timer-badge {
@@ -1116,19 +1117,18 @@
 </div>
 
 <header>
-    <!-- 좌측 상단 실시간 남은 시간 타이머 배지 -->
+    <!-- 좌측 상단 실시간 남은 시간 타이머 배지 및 화면 잠금 버튼 배치 -->
     <div class="header-left-actions">
         <div id="sessionTimerBadge" class="session-timer-badge">
             ⏱️ <span id="timerCountdown">--:--:--</span>
         </div>
+        <button class="admin-toggle-btn" style="background: #dc2626; border-color: #b91c1c; height: 31px; font-size: 11px; padding: 0 10px;" onclick="lockScreenNow()" title="즉시 화면 잠금">🔒 화면 잠금</button>
     </div>
 
     <div class="header-title">대연초 야구부 명단</div>
     <div class="header-subtitle" id="rosterCountText">선수단 데이터를 불러오는 중...</div>
     
     <div class="header-actions">
-        <!-- 즉시 화면 잠금 버튼 -->
-        <button class="admin-toggle-btn" style="background: #dc2626; border-color: #b91c1c;" onclick="lockScreenNow()" title="즉시 화면 잠금">🔒 화면 잠금</button>
         <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
         <div class="admin-btn-group">
             <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
@@ -2678,7 +2678,7 @@
         if (isDevPassword(pw)) {
             currentRole = 'dev';
             sessionStorage.setItem('daeyeon_admin_role', 'dev');
-            alert('⚡ [개발자 마스터 관리자]로 로그인되었습니다.');
+            alert('⚡ [개발자]로 로그인되었습니다.');
         } else if (pw === pws.super) {
             currentRole = 'super';
             sessionStorage.setItem('daeyeon_admin_role', 'super');
