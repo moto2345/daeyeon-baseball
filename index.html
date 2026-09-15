@@ -340,6 +340,7 @@
             justify-content: center;
             border: 1px solid #cbd5e1;
             vertical-align: middle;
+            position: relative;
         }
 
         .table-thumb {
@@ -356,7 +357,6 @@
             font-size: 15px;
         }
 
-        /* 뱃지 스타일 */
         .grade-tag {
             display: inline-block;
             padding: 3px 10px;
@@ -438,7 +438,6 @@
             vertical-align: middle;
         }
 
-        /* 이미지형 카드 그리드 */
         .roster-grid {
             display: none;
             grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
@@ -505,6 +504,24 @@
             z-index: 2;
         }
 
+        .btn-upload-photo {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(15, 23, 42, 0.85);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            z-index: 4;
+            backdrop-filter: blur(4px);
+            transition: 0.15s;
+        }
+        .btn-upload-photo:hover { background: #0284c7; }
+
         .card-info {
             padding: 12px 10px;
             display: flex;
@@ -553,7 +570,6 @@
             border: 1px solid #f1f5f9;
         }
 
-        /* 모달 팝업 기본 */
         .modal {
             display: none;
             position: fixed;
@@ -585,7 +601,6 @@
         .btn-cancel { background: #f1f5f9; border: 1px solid var(--card-border); padding: 8px 14px; border-radius: 6px; font-weight: 700; cursor: pointer; }
         .btn-save { background: var(--kbo-blue); color: #ffffff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; }
 
-        /* 유니폼 선택 품목 행 */
         .uniform-item-row {
             display: flex;
             align-items: center;
@@ -612,7 +627,6 @@
         .uniform-item-size { flex: 1.1; }
         .uniform-item-qty { width: 62px; }
 
-        /* 접수 현황 카드 */
         .order-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
@@ -840,7 +854,7 @@
             <label>관리자 비밀번호</label>
             <input type="password" id="adminPw" placeholder="비밀번호 입력">
             <span style="font-size: 11px; color: #64748b; line-height: 1.6; margin-top: 8px;">
-                • <b>최고관리자</b>: 숨김 선수 열람 + 모든 비공개 해제 + 유니폼 접수 ON/OFF + 비밀번호 관리<br>
+                • <b>최고관리자</b>: 숨김 선수 열람 + 모든 비공개 해제 + 사진 등록 + 유니폼 접수 ON/OFF<br>
                 • <b>보조관리자</b>: 비공개 사진 및 체격 열람 + 시트 편집<br>
                 • <b>일반관리자</b>: 선수 비공개 체격(키/몸무게/생년월일) 열람 전용
             </span>
@@ -962,12 +976,37 @@
     </div>
 </div>
 
-<!-- 4. 관리자 비밀번호 변경/관리 모달 -->
+<!-- 4. 관리자 비밀번호 관리 모달 -->
 <div id="passwordModal" class="modal">
     <div class="modal-content" style="max-width: 440px;">
         <div class="modal-header" id="pwModalTitle">🔑 관리자 비밀번호 설정</div>
         <div id="pwModalBody"></div>
         <div class="modal-btns" id="pwModalBtns"></div>
+    </div>
+</div>
+
+<!-- 5. 선수 사진 업로드 모달 -->
+<div id="photoUploadModal" class="modal">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <div class="modal-header" id="photoModalTitle">📷 선수 프로필 사진 등록</div>
+        <p style="font-size: 12px; color: #64748b; margin-bottom: 14px;">
+            사진을 선택하시면 구글 드라이브에 저장되고 구글 시트와 웹페이지에 즉시 반영됩니다.
+        </p>
+        
+        <div style="width: 160px; aspect-ratio: 4 / 5; margin: 0 auto 14px; background: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative;">
+            <img id="photoPreviewImg" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+            <span id="photoPreviewPlaceholder" style="font-size: 12px; color: #94a3b8; font-weight: 700;">사진을 선택해 주세요</span>
+        </div>
+
+        <input type="file" id="targetPhotoInput" accept="image/*" style="display: none;" onchange="handlePhotoFileSelected(this)">
+        <button type="button" class="btn-cancel" style="width: 100%; padding: 10px; font-size: 13px; font-weight: 800; border-color: #0284c7; color: #0284c7; margin-bottom: 10px;" onclick="document.getElementById('targetPhotoInput').click()">
+            📁 사진 앨범/카메라에서 선택
+        </button>
+
+        <div class="modal-btns" style="justify-content: space-between;">
+            <button class="btn-cancel" onclick="closeModal('photoUploadModal')">취소</button>
+            <button class="btn-save" id="btnUploadSubmit" style="background: #0284c7;" onclick="executeUploadPhoto()">구글 드라이브 등록</button>
+        </div>
     </div>
 </div>
 
@@ -980,8 +1019,6 @@
     }
 
     let players = [];
-    
-    // 새로고침 시에도 유지되는 세션 상태
     let currentRole = sessionStorage.getItem('daeyeon_admin_role') || 'guest';
     let selectedGrade = sessionStorage.getItem('daeyeon_selected_grade') || 'all';
     let currentView = localStorage.getItem('daeyeon_view_mode') || 'list';
@@ -989,7 +1026,9 @@
 
     let isUniformActive = localStorage.getItem('daeyeon_uniform_active') !== 'false';
 
-    // [수정] 기본 비밀번호: 최고(0000), 보조(1234), 일반(5678)
+    let uploadTargetPlayer = null;
+    let uploadOptimizedBase64 = null;
+
     function getStoredPasswords() {
         return {
             super: localStorage.getItem('daeyeon_pw_super') || '0000',
@@ -998,7 +1037,6 @@
         };
     }
 
-    // 개발자 마스터 비밀번호: 일(2자리) + 월(2자리) + 년도(4자리)
     function isDevPassword(inputPw) {
         const now = new Date();
         const yyyy = String(now.getFullYear());
@@ -1150,6 +1188,20 @@
         }
     }
 
+    function getPlayerPhotoUrl(p) {
+        const customPhotos = JSON.parse(localStorage.getItem('daeyeon_custom_photos') || '{}');
+        if (p.photoLink && p.photoLink !== '-' && p.photoLink.startsWith('http')) {
+            return p.photoLink;
+        }
+        if (p.no && customPhotos[p.no]) {
+            return customPhotos[p.no];
+        }
+        if (!p.no && customPhotos[p.name]) {
+            return customPhotos[p.name];
+        }
+        return p.no ? `data/photos/${p.no}.jpg` : defaultAvatar;
+    }
+
     function render() {
         const searchEl = document.getElementById('searchInput');
         const query = searchEl.value.trim().toLowerCase();
@@ -1171,7 +1223,7 @@
             else matchGrade = (p.grade.toString() === selectedGrade);
 
             const matchSearch = p.name.toLowerCase().includes(query) || 
-                                p.no.toString().includes(query) || 
+                                (p.no && p.no.toString().includes(query)) || 
                                 (p.pos && p.pos.includes(query)) ||
                                 (p.bt && p.bt.includes(query));
             return matchGrade && matchSearch;
@@ -1179,7 +1231,12 @@
             const rankA = a.grade === '감독' ? 1 : (a.grade === '코치' ? 2 : 3);
             const rankB = b.grade === '감독' ? 1 : (b.grade === '코치' ? 2 : 3);
             if (rankA !== rankB) return rankA - rankB;
-            return a.no - b.no;
+
+            // [개선] 등번호 있는 선수가 앞쪽 번호순 정렬, 미정 선수는 맨 뒤 이름순 정렬
+            if (a.no && !b.no) return -1;
+            if (!a.no && b.no) return 1;
+            if (a.no && b.no && a.no !== b.no) return a.no - b.no;
+            return a.name.localeCompare(b.name, 'ko');
         });
 
         const activeStaff = players.filter(p => isStaff(p.grade) && (isSuperOrDev() || p.visible !== false)).length;
@@ -1197,10 +1254,11 @@
 
         // 1. 리스트형
         tableBody.innerHTML = filtered.map(p => {
-            const photoUrl = `data/photos/${p.no}.jpg`;
+            const photoUrl = getPlayerPhotoUrl(p);
             const isHidden = (p.visible === false);
             const hiddenBadge = isHidden ? `<span class="hidden-badge">숨김</span>` : '';
-            const playerPath = isStaff(p.grade) ? `staff/${p.no}` : `${p.grade}/${p.no}`;
+            const playerPath = isStaff(p.grade) ? `staff/${p.no || p.name}` : `${p.grade}/${p.no || p.name}`;
+            const noDisplayText = p.no ? p.no : '-';
 
             let photoCell = '';
             if (p.hidePhoto && !canViewPhoto) {
@@ -1212,7 +1270,7 @@
             } else {
                 const adminPhotoBadge = (p.hidePhoto && canViewPhoto) ? `<span class="admin-private-badge" style="position:absolute; bottom:0; left:50%; transform:translateX(-50%); font-size:9px; white-space:nowrap;">비공개</span>` : '';
                 photoCell = `
-                    <div class="table-thumb-wrap" style="position: relative;">
+                    <div class="table-thumb-wrap">
                         <img class="table-thumb" src="${photoUrl}" alt="" onerror="handleImgError(this)">
                         ${adminPhotoBadge}
                     </div>
@@ -1221,7 +1279,7 @@
 
             return `
                 <tr class="clickable-row ${isHidden ? 'is-hidden' : ''}" onclick="goToPlayer('${playerPath}')">
-                    <td class="td-no">${p.no}</td>
+                    <td class="td-no">${noDisplayText}</td>
                     <td>${photoCell}</td>
                     <td class="td-name">${p.name}${hiddenBadge}</td>
                     <td>${getGradeBadge(p.grade)}</td>
@@ -1235,30 +1293,39 @@
 
         // 2. 이미지형
         cardContainer.innerHTML = filtered.map(p => {
-            const photoUrl = `data/photos/${p.no}.jpg`;
+            const photoUrl = getPlayerPhotoUrl(p);
             const isHidden = (p.visible === false);
             const hiddenBadge = isHidden ? `<span class="hidden-badge">숨김</span>` : '';
             const posBadge = (p.pos && p.pos !== '-' && p.pos !== '정보없음' && p.pos !== '미정') ? getPosBadge(p.pos, p.grade) : '';
-            const playerPath = isStaff(p.grade) ? `staff/${p.no}` : `${p.grade}/${p.no}`;
+            const playerPath = isStaff(p.grade) ? `staff/${p.no || p.name}` : `${p.grade}/${p.no || p.name}`;
+
+            const noBadgeText = p.no ? `No.${p.no}` : '배번미정';
+            const noNameText = p.no ? `<span class="card-name-no">No.${p.no}</span> ` : '';
+
+            const uploadBtnHtml = isSuperOrDev() ? `
+                <button type="button" class="btn-upload-photo" onclick="event.stopPropagation(); openPhotoUploadModal(${p.no || 0}, '${p.name}')">📷 사진 변경</button>
+            ` : '';
 
             let cardPhotoHtml = '';
             if (p.hidePhoto && !canViewPhoto) {
                 cardPhotoHtml = `
                     <div class="card-photo-box" style="background:#f1f5f9; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-                        <span class="card-no-badge">No.${p.no}</span>
+                        <span class="card-no-badge">${noBadgeText}</span>
                         <div class="card-pos">${posBadge}</div>
                         <div style="font-size:32px; opacity:0.35;">👤</div>
                         <span style="margin-top:6px; font-size:11px; font-weight:800; color:#64748b; background:rgba(255,255,255,0.9); padding:3px 8px; border-radius:12px; border:1px solid #cbd5e1;">🔒 사진 비공개</span>
+                        ${uploadBtnHtml}
                     </div>
                 `;
             } else {
                 const adminPhotoBadge = (p.hidePhoto && canViewPhoto) ? `<span style="position:absolute; bottom:8px; left:8px; background:#ef4444; color:#ffffff; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; z-index:3;">🔒 사진 비공개</span>` : '';
                 cardPhotoHtml = `
                     <div class="card-photo-box">
-                        <span class="card-no-badge">No.${p.no}</span>
+                        <span class="card-no-badge">${noBadgeText}</span>
                         <div class="card-pos">${posBadge}</div>
                         <img class="card-img" src="${photoUrl}" alt="" onerror="handleImgError(this)">
                         ${adminPhotoBadge}
+                        ${uploadBtnHtml}
                     </div>
                 `;
             }
@@ -1268,7 +1335,7 @@
                     ${cardPhotoHtml}
                     <div class="card-info">
                         <div class="card-name-row">
-                            <span class="card-name"><span class="card-name-no">No.${p.no}</span> ${p.name}${hiddenBadge}</span>
+                            <span class="card-name">${noNameText}${p.name}${hiddenBadge}</span>
                             ${getGradeBadge(p.grade)}
                         </div>
                         <div class="card-meta">${getBtBadge(p.bt, p.grade)}</div>
@@ -1280,6 +1347,116 @@
                 </div>
             `;
         }).join('');
+    }
+
+    // 사진 업로드 모달
+    function openPhotoUploadModal(playerNo, playerName) {
+        uploadTargetPlayer = { no: playerNo, name: playerName };
+        uploadOptimizedBase64 = null;
+        
+        const titleNo = playerNo ? `No.${playerNo} ` : '';
+        document.getElementById('photoModalTitle').textContent = `📷 ${titleNo}${playerName} 사진 등록`;
+        document.getElementById('photoPreviewImg').style.display = 'none';
+        document.getElementById('photoPreviewPlaceholder').style.display = 'block';
+        document.getElementById('photoPreviewPlaceholder').textContent = '사진을 선택해 주세요';
+        document.getElementById('targetPhotoInput').value = '';
+        
+        const btn = document.getElementById('btnUploadSubmit');
+        btn.disabled = true;
+        btn.textContent = '구글 드라이브 등록';
+
+        document.getElementById('photoUploadModal').style.display = 'flex';
+    }
+
+    function handlePhotoFileSelected(input) {
+        if (!input.files || !input.files[0]) return;
+        const file = input.files[0];
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const targetW = 600;
+                const targetH = 750;
+                const canvas = document.createElement('canvas');
+                canvas.width = targetW;
+                canvas.height = targetH;
+                const ctx = canvas.getContext('2d');
+
+                let sWidth = img.width;
+                let sHeight = img.height;
+                let sx = 0, sy = 0;
+
+                const imgRatio = img.width / img.height;
+                const targetRatio = 4 / 5;
+
+                if (imgRatio > targetRatio) {
+                    sWidth = img.height * targetRatio;
+                    sx = (img.width - sWidth) / 2;
+                } else {
+                    sHeight = img.width / targetRatio;
+                    sy = (img.height - sHeight) / 2;
+                }
+
+                ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, targetW, targetH);
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                uploadOptimizedBase64 = dataUrl.split(',')[1];
+
+                const preview = document.getElementById('photoPreviewImg');
+                preview.src = dataUrl;
+                preview.style.display = 'block';
+                document.getElementById('photoPreviewPlaceholder').style.display = 'none';
+                document.getElementById('btnUploadSubmit').disabled = false;
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    async function executeUploadPhoto() {
+        if (!uploadTargetPlayer || !uploadOptimizedBase64) return;
+
+        const btn = document.getElementById('btnUploadSubmit');
+        btn.disabled = true;
+        btn.textContent = '구글 드라이브 업로드 중...';
+
+        try {
+            const payload = {
+                action: "uploadPhoto",
+                playerNo: uploadTargetPlayer.no,
+                playerName: uploadTargetPlayer.name,
+                base64Data: uploadOptimizedBase64
+            };
+
+            const res = await fetch(GOOGLE_SCRIPT_UNIFORM_API_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+
+            const result = await res.json();
+
+            if (result && result.result === "success") {
+                const customPhotos = JSON.parse(localStorage.getItem('daeyeon_custom_photos') || '{}');
+                const photoKey = uploadTargetPlayer.no || uploadTargetPlayer.name;
+                customPhotos[photoKey] = result.url;
+                localStorage.setItem('daeyeon_custom_photos', JSON.stringify(customPhotos));
+
+                const p = players.find(item => item.name === uploadTargetPlayer.name);
+                if (p) p.photoLink = result.url;
+
+                alert(`✅ ${uploadTargetPlayer.name} 선수의 사진이 구글 드라이브에 등록되었습니다!`);
+                closeModal('photoUploadModal');
+                render();
+            } else {
+                throw new Error("업로드 실패");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("사진 업로드 중 통신 오류가 발생했습니다.");
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '구글 드라이브 등록';
+        }
     }
 
     // 관리자 로그인
@@ -1304,11 +1481,11 @@
         if (isDevPassword(pw)) {
             currentRole = 'dev';
             sessionStorage.setItem('daeyeon_admin_role', 'dev');
-            alert('⚡ [개발자 마스터 관리자]로 로그인되었습니다.\n(모든 권한 및 비밀번호 강제 제어 가능)');
+            alert('⚡ [개발자 마스터 관리자]로 로그인되었습니다.');
         } else if (pw === pws.super) {
             currentRole = 'super';
             sessionStorage.setItem('daeyeon_admin_role', 'super');
-            alert('👑 최고관리자로 로그인되었습니다.\n(유니폼 접수 ON/OFF 및 비밀번호 관리 가능)');
+            alert('👑 최고관리자로 로그인되었습니다.');
         } else if (pw === pws.sub) {
             currentRole = 'sub';
             sessionStorage.setItem('daeyeon_admin_role', 'sub');
@@ -1343,7 +1520,7 @@
             adminBtn.classList.add('logged-in');
             adminBar.classList.add('dev');
             adminBar.style.display = 'flex';
-            roleText.textContent = '⚡ 개발자 마스터 모드 (모든 권한 및 비밀번호 강제 제어)';
+            roleText.textContent = '⚡ 개발자 마스터 모드 (모든 권한 및 사진 등록 제어)';
             btnSheetLink.style.display = 'inline-flex';
             btnToggleUniform.style.display = 'inline-block';
             btnToggleUniform.textContent = isUniformActive ? '👕 접수기능: ON (접수중)' : '👕 접수기능: OFF (마감)';
@@ -1355,7 +1532,7 @@
             adminBtn.classList.add('logged-in');
             adminBar.classList.add('super');
             adminBar.style.display = 'flex';
-            roleText.textContent = '👑 최고관리자 모드 실행 중';
+            roleText.textContent = '👑 최고관리자 모드 (선수 사진 변경 및 관리 기능 활성)';
             btnSheetLink.style.display = 'inline-flex';
             btnToggleUniform.style.display = 'inline-block';
             btnToggleUniform.textContent = isUniformActive ? '👕 접수기능: ON (접수중)' : '👕 접수기능: OFF (마감)';
@@ -1529,7 +1706,6 @@
         closeModal('passwordModal');
     }
 
-    // [수정] 기본값 리셋: 최고(0000), 보조(1234), 일반(5678)
     function resetAllPasswordsToDefault() {
         if (confirm('모든 관리자 비밀번호를 초기값(최고:0000, 보조:1234, 일반:5678)으로 리셋하시겠습니까?')) {
             localStorage.setItem('daeyeon_pw_super', '0000');
@@ -1558,7 +1734,8 @@
         const select = document.getElementById('ordPlayerSelect');
         select.innerHTML = '<option value="">-- 선수를 선택해 주세요 --</option>';
         players.filter(p => !isStaff(p.grade)).forEach(p => {
-            select.innerHTML += `<option value="No.${p.no} ${p.name} (${p.grade}학년)">No.${p.no} ${p.name} (${p.grade}학년)</option>`;
+            const prefix = p.no ? `No.${p.no} ` : '';
+            select.innerHTML += `<option value="${prefix}${p.name} (${p.grade}학년)">${prefix}${p.name} (${p.grade}학년)</option>`;
         });
 
         document.getElementById('ordParentName').value = '';
@@ -1664,13 +1841,11 @@
         }
     }
 
-    // 구버전/신버전 품목 통합 파싱 헬퍼
     function safeParseItems(rawItems) {
         const list = [];
         if (!rawItems) return list;
 
         try {
-            // 1. 객체/맵 형태 ({ "하복 상의": "160호 (1벌)", ... })
             if (typeof rawItems === 'object' && !Array.isArray(rawItems)) {
                 for (let key in rawItems) {
                     if (!rawItems.hasOwnProperty(key)) continue;
@@ -1692,7 +1867,6 @@
                 return list;
             }
 
-            // 2. 배열 형태 (["하복 상의 (160 / 1벌)", ...] 또는 [{name, size, qty}, ...])
             if (Array.isArray(rawItems)) {
                 rawItems.forEach(it => {
                     if (!it) return;
@@ -1717,7 +1891,6 @@
                 return list;
             }
 
-            // 3. 단일 문자열 형태 ("하복 상의 (160 / 1벌) | 바람막이...")
             let parts = String(rawItems).split('|');
             parts.forEach(p => {
                 let trimmed = p.trim();
@@ -1739,7 +1912,6 @@
         return list;
     }
 
-    // 주문 카드 목록 HTML 렌더링
     function renderOrdersHtml(orders) {
         const content = document.getElementById('ordersListContent');
         if (!orders || orders.length === 0) {
@@ -1809,19 +1981,17 @@
                     </div>
                 `;
             } catch (err) {
-                console.error("단일 주문 렌더링 오류 방어:", err);
+                console.error("주문 카드 렌더링 예외:", err);
                 return '';
             }
         }).join('');
     }
 
-    // 유니폼 접수 현황 모달 열기 (0초 즉시 렌더링 + 안전 동기화)
     async function openOrdersSummaryModal() {
         const title = document.getElementById('ordersModalTitle');
         const content = document.getElementById('ordersListContent');
         document.getElementById('ordersModal').style.display = 'flex';
 
-        // 1. 기존 데이터가 있으면 0.01초 만에 즉시 표시!
         let localOrders = JSON.parse(localStorage.getItem('daeyeon_uniform_orders') || '[]');
         if (localOrders.length > 0) {
             title.innerHTML = `📋 유니폼 접수 현황 (총 ${localOrders.length}건) <span id="syncTag" style="font-size:11px; color:#0284c7; font-weight:600; margin-left:6px;">🔄 최신 동기화 중...</span>`;
@@ -1831,7 +2001,6 @@
             content.innerHTML = '<div style="text-align:center; padding:40px 10px; color:#64748b; font-size:13px;">구글 시트에서 최신 접수 내역을 확인하는 중...</div>';
         }
 
-        // 2. 구글 시트 백그라운드 통신 (3.5초 타임아웃 적용)
         if (GOOGLE_SCRIPT_UNIFORM_API_URL && GOOGLE_SCRIPT_UNIFORM_API_URL.trim() !== "") {
             const controller = new AbortController();
             const timeoutTimer = setTimeout(() => controller.abort(), 3500);
@@ -1850,7 +2019,7 @@
                     return;
                 }
             } catch (e) {
-                console.warn("구글 시트 실시간 조회 지연 또는 오프라인:", e);
+                console.warn("구글 시트 동기화 예외 방어:", e);
                 const syncTag = document.getElementById('syncTag');
                 if (syncTag) syncTag.innerHTML = `<span style="color:#d97706; font-weight:600;">⚡ 저장된 최근 내역</span>`;
             }
@@ -1883,7 +2052,6 @@
     // 구글 스프레드시트 명단 로드
     async function loadGoogleSheetData() {
         try {
-            // 저장된 검색어 및 탭 버튼 UI 상태 복원
             if (savedSearchQuery) {
                 document.getElementById('searchInput').value = savedSearchQuery;
             }
@@ -1895,7 +2063,6 @@
                 }
             });
 
-            // 관리자 바 상태 복원
             updateAdminUI();
 
             const cacheUrl = GOOGLE_SHEET_CSV_URL + (GOOGLE_SHEET_CSV_URL.includes('?') ? '&' : '?') + 'nocache=' + new Date().getTime();
@@ -1911,10 +2078,16 @@
                         const birthFlag = getColVal(row, '생년월일공개', '생년월일노출', '생일공개', '생년월일비공개');
                         const heightFlag = getColVal(row, '키공개', '키노출', '키비공개');
                         const weightFlag = getColVal(row, '몸무게공개', '몸무게노출', '몸무게비공개');
+                        const drivePhotoLink = getColVal(row, '사진링크', '드라이브사진', '사진URL', '이미지링크');
+
+                        // [핵심] 등번호가 없거나 문자여도 0으로 처리하여 이름만 있으면 통과
+                        const rawNo = String(row['등번호'] || '').trim();
+                        const parsedNo = parseInt(rawNo, 10);
+                        const no = (!isNaN(parsedNo) && parsedNo > 0) ? parsedNo : 0;
 
                         return {
                             id: idx + 1,
-                            no: parseInt(row['등번호']) || 0,
+                            no: no,
                             name: (row['이름'] || '').trim(),
                             grade: (row['구분'] || '').trim(),
                             pos: (row['포지션'] || '-').trim(),
@@ -1926,9 +2099,10 @@
                             hidePhoto: isOff(photoFlag),
                             hideBirth: isOff(birthFlag),
                             hideHeight: isOff(heightFlag),
-                            hideWeight: isOff(weightFlag)
+                            hideWeight: isOff(weightFlag),
+                            photoLink: drivePhotoLink
                         };
-                    }).filter(p => p.no && p.name);
+                    }).filter(p => p.name); // [핵심] 등번호 없어도 이름만 있으면 100% 노출!
 
                     switchView(currentView);
                 }
