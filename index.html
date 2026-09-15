@@ -5,10 +5,11 @@
     <script>
         const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw2YtYByfiPWXbRfqkzmZ6yzaZVfJHO0f9zAmCiLnwlMvVXCt9lv4AmQAz4_vSjzPy0APtl0hwYNmW/pub?output=csv";
         const GOOGLE_SHEET_EDIT_URL = "https://docs.google.com/spreadsheets/d/1ljpHkiJL_H1NN5rwTaQOL5QYeev32QvaBTKzxSPgNVA/edit?gid=1653839889#gid=1653839889";
+        const GOOGLE_SHEET_CONTACTS_URL = "https://docs.google.com/spreadsheets/d/1ljpHkiJL_H1NN5rwTaQOL5QYeev32QvaBTKzxSPgNVA/edit?gid=812608822#gid=812608822";
         const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
         
         // 웹페이지 배포 버전
-        const APP_VERSION = "v1.5.0 · b260915";
+        const APP_VERSION = "v1.6.0 · b260915";
     </script>
 
     <meta charset="UTF-8">
@@ -230,6 +231,7 @@
             color: #ffffff;
         }
 
+        /* 관리자 안내 바 */
         .admin-bar {
             display: none;
             border-radius: 8px;
@@ -251,6 +253,24 @@
             align-items: center;
             flex-wrap: wrap;
         }
+
+        /* [1순위 핵심] 비상연락망 버튼 스타일 */
+        .btn-emergency-contact {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 7px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 2px 5px rgba(220, 38, 38, 0.3);
+            transition: 0.15s;
+        }
+        .btn-emergency-contact:hover { background: #b91c1c; }
 
         .btn-sheet-link {
             background: #059669;
@@ -624,7 +644,7 @@
         .btn-cancel { background: #f1f5f9; border: 1px solid var(--card-border); padding: 8px 14px; border-radius: 6px; font-weight: 700; cursor: pointer; }
         .btn-save { background: var(--kbo-blue); color: #ffffff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; }
 
-        /* 유니폼 품목 선택 행 */
+        /* 유니폼 품목 행 */
         .uniform-item-row {
             display: flex;
             align-items: center;
@@ -749,17 +769,112 @@
             white-space: nowrap;
         }
 
-        .qty-badge {
-            background: #fef3c7;
-            color: #92400e;
-            font-weight: 800;
-            padding: 2px 6px;
-            border-radius: 4px;
-            border: 1px solid #fde68a;
-            display: inline-block;
-            font-size: 11px;
-            white-space: nowrap;
+        /* ==========================================
+           [1순위] 비상연락망 전용 스타일
+           ========================================== */
+        .contact-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            border-left: 4px solid #dc2626;
         }
+
+        .contact-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .contact-player-name {
+            font-size: 16px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .contact-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            border: 1px solid #f1f5f9;
+            gap: 6px;
+        }
+
+        .contact-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .contact-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-call {
+            background: #059669;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 800;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .btn-call:hover { background: #047857; }
+
+        .btn-sms {
+            background: #0284c7;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 800;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .btn-sms:hover { background: #0369a1; }
+
+        .contact-quick-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-quick-action {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 5px 9px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            color: #334155;
+        }
+        .btn-quick-action:hover { background: #f1f5f9; }
 
         .loading-notice {
             text-align: center;
@@ -790,7 +905,7 @@
         <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
         <div class="admin-btn-group">
             <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
-            <span class="app-version-tag" id="appVersionDisplay">v1.5.0 · b260915</span>
+            <span class="app-version-tag" id="appVersionDisplay">v1.6.0 · b260915</span>
         </div>
     </div>
 </header>
@@ -821,9 +936,11 @@
         </div>
     </div>
 
+    <!-- 등급별 관리자 안내 바 (1순위 비상연락망 버튼 배치) -->
     <div id="adminBar" class="admin-bar">
         <span id="adminRoleText" style="font-size: 13px; font-weight: 700;"></span>
         <div class="admin-bar-btns">
+            <button id="btnEmergencyContacts" class="btn-emergency-contact" onclick="openEmergencyContactsModal()">🚨 학부모 비상연락망</button>
             <button id="btnToggleUniform" class="btn-toggle-uniform" style="display: none;" onclick="toggleUniformFeature()">👕 접수기능: ON</button>
             <button id="btnViewOrders" class="btn-orders-view" style="display: none;" onclick="openOrdersSummaryModal()">📋 접수 현황 확인</button>
             <button id="btnManagePw" class="btn-manage-pw" style="display: none;" onclick="openPasswordManageModal()">🔑 비밀번호 관리</button>
@@ -864,7 +981,7 @@
             <label>관리자 비밀번호</label>
             <input type="password" id="adminPw" placeholder="비밀번호 입력">
             <span style="font-size: 11px; color: #64748b; line-height: 1.6; margin-top: 8px;">
-                • <b>최고관리자</b>: 숨김 선수 열람 + 모든 비공개 해제 + 사진 등록 + 유니폼 접수 ON/OFF<br>
+                • <b>최고관리자</b>: 비상연락망 열람 + 사진 등록 + 유니폼 접수 제어 + 비밀번호 관리<br>
                 • <b>보조관리자</b>: 비공개 사진 및 체격 열람 + 시트 편집<br>
                 • <b>일반관리자</b>: 선수 비공개 체격(키/몸무게/생년월일) 열람 전용
             </span>
@@ -876,7 +993,7 @@
     </div>
 </div>
 
-<!-- 2. [개선] 16열 맞춤형 유니폼 주문 신청 모달 -->
+<!-- 2. 유니폼 주문 신청 모달 -->
 <div id="uniformModal" class="modal">
     <div class="modal-content" style="max-width: 480px;">
         <div class="modal-header">👕 유니폼 주문 신청</div>
@@ -889,7 +1006,6 @@
             <select id="ordPlayerSelect" style="font-weight: 800; color: var(--kbo-blue);" onchange="handleUniformPlayerChange(this.value)"></select>
         </div>
 
-        <!-- 선수 기본정보 (자동 반영 및 직접 수정 가능) -->
         <div style="display: flex; gap: 8px; background: #f8fafc; border: 1px solid var(--card-border); border-radius: 8px; padding: 10px; margin-bottom: 12px;">
             <div style="flex: 1;">
                 <label style="font-size: 11px; font-weight: 700; color: #64748b;">학년</label>
@@ -905,12 +1021,10 @@
             </div>
         </div>
 
-        <!-- 유니폼 8개 품목 -->
         <div class="form-group">
             <label>유니폼 품목 및 사이즈 선택 *</label>
             <div style="background: #f8fafc; border: 1px solid var(--card-border); border-radius: 8px; padding: 6px 10px;">
                 
-                <!-- 1. 모자 -->
                 <div class="uniform-item-row" data-name="모자">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 🧢 모자</label>
                     <select class="uniform-item-size" disabled>
@@ -922,7 +1036,6 @@
                     <select class="uniform-item-qty" disabled><option value="1개">1개</option><option value="2개">2개</option></select>
                 </div>
 
-                <!-- 2. 유니폼상의 -->
                 <div class="uniform-item-row" data-name="유니폼상의">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> ⚾ 유니폼 상의</label>
                     <select class="uniform-item-size" disabled>
@@ -933,7 +1046,6 @@
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
                 </div>
 
-                <!-- 3. 바지 (허리 & 기장 통합 입력) -->
                 <div class="uniform-item-row" id="rowPants">
                     <label class="uniform-item-name"><input type="checkbox" id="chkPants" onchange="togglePantsInputs(this)"> 👖 바지(허리/기장)</label>
                     <select id="pantsWaist" class="uniform-item-size" disabled title="허리 사이즈">
@@ -949,7 +1061,6 @@
                     <select id="pantsQty" class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
                 </div>
 
-                <!-- 4. 여름훈련티 -->
                 <div class="uniform-item-row" data-name="여름훈련티">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> ☀️ 여름훈련티</label>
                     <select class="uniform-item-size" disabled>
@@ -960,7 +1071,6 @@
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
                 </div>
 
-                <!-- 5. 겨울훈련티 -->
                 <div class="uniform-item-row" data-name="겨울훈련티">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> ❄️ 겨울훈련티</label>
                     <select class="uniform-item-size" disabled>
@@ -970,7 +1080,6 @@
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
                 </div>
 
-                <!-- 6. 바람막이 -->
                 <div class="uniform-item-row" data-name="바람막이">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 💨 바람막이</label>
                     <select class="uniform-item-size" disabled>
@@ -980,7 +1089,6 @@
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
                 </div>
 
-                <!-- 7. 풀오버 -->
                 <div class="uniform-item-row" data-name="풀오버">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 🧥 풀오버</label>
                     <select class="uniform-item-size" disabled>
@@ -990,7 +1098,6 @@
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
                 </div>
 
-                <!-- 8. 겨울점퍼 -->
                 <div class="uniform-item-row" data-name="겨울점퍼">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 🧤 겨울점퍼(돕바)</label>
                     <select class="uniform-item-size" disabled>
@@ -1060,6 +1167,48 @@
     </div>
 </div>
 
+<!-- ==========================================
+     [1순위 신규] 🚨 학부모 비상연락망 모달
+     ========================================== -->
+<div id="emergencyContactsModal" class="modal">
+    <div class="modal-content" style="max-width: 540px; width: 95%;">
+        <div class="modal-header" id="contactsModalTitle">🚨 학부모 비상연락망</div>
+        
+        <!-- 검색 및 학년 필터 -->
+        <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+            <input type="text" id="contactSearchInput" placeholder="선수명 / 학부모 성함 / 번호 검색" style="flex: 1; padding: 7px 10px; border: 1px solid var(--card-border); border-radius: 6px; font-size: 12px;" oninput="renderEmergencyContacts()">
+            <select id="contactGradeSelect" style="padding: 7px 8px; border: 1px solid var(--card-border); border-radius: 6px; font-size: 12px; font-weight: 700;" onchange="renderEmergencyContacts()">
+                <option value="all">전체 학년</option>
+                <option value="6">6학년</option>
+                <option value="5">5학년</option>
+                <option value="4">4학년</option>
+                <option value="3">3학년</option>
+                <option value="2">2학년</option>
+                <option value="1">1학년</option>
+            </select>
+        </div>
+
+        <!-- 긴급 퀵 액션 바 -->
+        <div class="contact-quick-bar">
+            <span style="font-size: 11px; font-weight: 800; color: #991b1b;">⚡ 긴급 공지 도구</span>
+            <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                <button class="btn-quick-action" onclick="copyAllContactPhones()">📋 번호 전체 복사</button>
+                <button class="btn-quick-action" onclick="copyEmergencyTemplate('weather')">🌧️ 우천 조기종료</button>
+                <button class="btn-quick-action" onclick="copyEmergencyTemplate('match')">⚾ 경기시간 변경</button>
+                <button class="btn-quick-action" onclick="copyEmergencyTemplate('safe')">🏠 안전귀가 안내</button>
+            </div>
+        </div>
+
+        <!-- 연락망 리스트 -->
+        <div id="contactsListContent" style="max-height: 400px; overflow-y: auto; padding-right: 2px;"></div>
+
+        <div class="modal-btns" style="justify-content: space-between; margin-top: 12px;">
+            <button class="btn-sheet-link" onclick="window.open(GOOGLE_SHEET_CONTACTS_URL, '_blank')">📊 시트 원본 열기</button>
+            <button class="btn-save" onclick="closeModal('emergencyContactsModal')">닫기</button>
+        </div>
+    </div>
+</div>
+
 <script>
     const defaultAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23e2e8f0'/%3E%3Cpath d='M32 32 C32 18 42 12 50 12 C58 12 68 18 68 32 C68 40 58 48 50 48 C42 48 32 40 32 32 Z' fill='%2394a3b8'/%3E%3Cpath d='M44 14 C48 10 56 10 65 14 C74 18 84 18 86 21 C86 24 75 25 65 24 Z' fill='%230b2240'/%3E%3Cpath d='M20 92 C20 66 34 56 50 56 C66 56 80 66 80 92 Z' fill='%2364748b'/%3E%3C/svg%3E";
 
@@ -1075,6 +1224,7 @@
     let savedSearchQuery = sessionStorage.getItem('daeyeon_search_query') || '';
 
     let isUniformActive = localStorage.getItem('daeyeon_uniform_active') !== 'false';
+    let emergencyContactsData = []; // 비상연락망 메모리 캐시
 
     let uploadTargetPlayer = null;
     let uploadOptimizedBase64 = null;
@@ -1094,21 +1244,14 @@
         const dd = String(now.getDate()).padStart(2, '0');
         const d = String(now.getDate());
         const m = String(now.getMonth() + 1);
-
         const primaryDevPw = dd + mm + yyyy;
         const secondaryDevPw = d + m + yyyy;
-
         const trimmed = inputPw.trim();
         return (trimmed === primaryDevPw || trimmed === secondaryDevPw);
     }
 
-    function isStaff(grade) {
-        return grade === '감독' || grade === '코치';
-    }
-
-    function isSuperOrDev() {
-        return currentRole === 'super' || currentRole === 'dev';
-    }
+    function isStaff(grade) { return grade === '감독' || grade === '코치'; }
+    function isSuperOrDev() { return currentRole === 'super' || currentRole === 'dev'; }
 
     function getGradeBadge(grade) {
         if (isStaff(grade)) return `<span class="grade-tag grade-staff">${grade}</span>`;
@@ -1116,10 +1259,7 @@
     }
 
     function getPosBadge(pos, grade) {
-        if (!pos || pos === '-' || pos === '정보없음' || pos === '미정') {
-            return '<span class="pos-tag pos-none">미정</span>';
-        }
-
+        if (!pos || pos === '-' || pos === '정보없음' || pos === '미정') return '<span class="pos-tag pos-none">미정</span>';
         const p = String(pos).trim();
         if (grade === '감독' || p.includes('감독') || p.includes('총괄')) return `<span class="pos-tag pos-manager">${p}</span>`;
         if (grade === '코치' || p.includes('코치')) return `<span class="pos-tag pos-coach">${p}</span>`;
@@ -1145,14 +1285,11 @@
     function formatBirth(p) {
         if (!p.birth || p.birth === '-') return '-';
         const bHidden = !!p.hideBirth;
-        const canViewBirth = (currentRole !== 'guest');
-
-        if (!canViewBirth) {
+        if (currentRole === 'guest') {
             if (bHidden) return '<span class="text-private">비공개</span>';
             return p.birth;
         } else {
-            const showBadge = (currentRole === 'super' || currentRole === 'sub' || currentRole === 'dev');
-            const bBadge = (bHidden && showBadge) ? '<span class="admin-private-badge">비공개</span>' : '';
+            const bBadge = (bHidden && (currentRole === 'super' || currentRole === 'sub' || currentRole === 'dev')) ? '<span class="admin-private-badge">비공개</span>' : '';
             return `${p.birth}${bBadge}`;
         }
     }
@@ -1161,12 +1298,10 @@
         const h = p.height;
         const w = p.weight;
         if (!h && !w) return '-';
-
         const hHidden = !!p.hideHeight;
         const wHidden = !!p.hideWeight;
-        const canViewPhys = (currentRole !== 'guest');
 
-        if (!canViewPhys) {
+        if (currentRole === 'guest') {
             if (hHidden && wHidden) return '<span class="text-private">비공개</span>';
             const hStr = h ? (hHidden ? '<span class="text-private">비공개</span>' : `${h}cm`) : '-';
             const wStr = w ? (wHidden ? '<span class="text-private">비공개</span>' : `${w}kg`) : '-';
@@ -1184,22 +1319,16 @@
     function switchView(view) {
         currentView = view;
         localStorage.setItem('daeyeon_view_mode', view);
-
         const btnList = document.getElementById('btnListView');
         const btnCard = document.getElementById('btnCardView');
         const listContainer = document.getElementById('listContainer');
         const cardContainer = document.getElementById('cardContainer');
-
         if (view === 'list') {
-            btnList.classList.add('active');
-            btnCard.classList.remove('active');
-            listContainer.style.display = 'block';
-            cardContainer.style.display = 'none';
+            btnList.classList.add('active'); btnCard.classList.remove('active');
+            listContainer.style.display = 'block'; cardContainer.style.display = 'none';
         } else {
-            btnList.classList.remove('active');
-            btnCard.classList.add('active');
-            listContainer.style.display = 'none';
-            cardContainer.style.display = 'grid';
+            btnList.classList.remove('active'); btnCard.classList.add('active');
+            listContainer.style.display = 'none'; cardContainer.style.display = 'grid';
         }
         render();
     }
@@ -1240,15 +1369,9 @@
 
     function getPlayerPhotoUrl(p) {
         const customPhotos = JSON.parse(localStorage.getItem('daeyeon_custom_photos') || '{}');
-        if (p.photoLink && p.photoLink !== '-' && p.photoLink.startsWith('http')) {
-            return p.photoLink;
-        }
-        if (p.no && customPhotos[p.no]) {
-            return customPhotos[p.no];
-        }
-        if (!p.no && customPhotos[p.name]) {
-            return customPhotos[p.name];
-        }
+        if (p.photoLink && p.photoLink !== '-' && p.photoLink.startsWith('http')) return p.photoLink;
+        if (p.no && customPhotos[p.no]) return customPhotos[p.no];
+        if (!p.no && customPhotos[p.name]) return customPhotos[p.name];
         return p.no ? `data/photos/${p.no}.jpg` : defaultAvatar;
     }
 
@@ -1260,28 +1383,21 @@
         const notice = document.getElementById('statusNotice');
 
         updateUniformButtonVisibility();
-
         const canViewPhoto = (currentRole === 'sub' || isSuperOrDev());
 
         const filtered = players.filter(p => {
             const isVisible = (p.visible !== false);
             if (!isSuperOrDev() && !isVisible) return false;
-
             let matchGrade = false;
             if (selectedGrade === 'all') matchGrade = true;
             else if (selectedGrade === 'staff') matchGrade = isStaff(p.grade);
             else matchGrade = (p.grade.toString() === selectedGrade);
-
-            const matchSearch = p.name.toLowerCase().includes(query) || 
-                                (p.no && p.no.toString().includes(query)) || 
-                                (p.pos && p.pos.includes(query)) ||
-                                (p.bt && p.bt.includes(query));
+            const matchSearch = p.name.toLowerCase().includes(query) || (p.no && p.no.toString().includes(query)) || (p.pos && p.pos.includes(query)) || (p.bt && p.bt.includes(query));
             return matchGrade && matchSearch;
         }).sort((a, b) => {
             const rankA = a.grade === '감독' ? 1 : (a.grade === '코치' ? 2 : 3);
             const rankB = b.grade === '감독' ? 1 : (b.grade === '코치' ? 2 : 3);
             if (rankA !== rankB) return rankA - rankB;
-
             if (a.no && !b.no) return -1;
             if (!a.no && b.no) return 1;
             if (a.no && b.no && a.no !== b.no) return a.no - b.no;
@@ -1293,8 +1409,7 @@
         document.getElementById('rosterCountText').textContent = `2026 OFFICIAL ROSTER (코칭스태프 ${activeStaff}명 · 등록선수 ${activeStudent}명)`;
 
         if (filtered.length === 0) {
-            tableBody.innerHTML = '';
-            cardContainer.innerHTML = '';
+            tableBody.innerHTML = ''; cardContainer.innerHTML = '';
             notice.textContent = '조건에 맞는 명단이 없습니다.';
             notice.style.display = 'block';
             return;
@@ -1311,19 +1426,10 @@
 
             let photoCell = '';
             if (p.hidePhoto && !canViewPhoto) {
-                photoCell = `
-                    <div class="table-thumb-wrap" style="background: #f1f5f9;" title="사진 비공개">
-                        <span style="font-size: 15px; opacity: 0.6;">🔒</span>
-                    </div>
-                `;
+                photoCell = `<div class="table-thumb-wrap" style="background:#f1f5f9;"><span style="font-size:15px; opacity:0.6;">🔒</span></div>`;
             } else {
-                const adminPhotoBadge = (p.hidePhoto && canViewPhoto) ? `<span class="admin-private-badge" style="position:absolute; bottom:0; left:50%; transform:translateX(-50%); font-size:9px; white-space:nowrap;">비공개</span>` : '';
-                photoCell = `
-                    <div class="table-thumb-wrap">
-                        <img class="table-thumb" src="${photoUrl}" alt="" onerror="handleImgError(this)">
-                        ${adminPhotoBadge}
-                    </div>
-                `;
+                const adminPhotoBadge = (p.hidePhoto && canViewPhoto) ? `<span class="admin-private-badge" style="position:absolute; bottom:0; left:50%; transform:translateX(-50%); font-size:9px;">비공개</span>` : '';
+                photoCell = `<div class="table-thumb-wrap"><img class="table-thumb" src="${photoUrl}" alt="" onerror="handleImgError(this)">${adminPhotoBadge}</div>`;
             }
 
             return `
@@ -1347,21 +1453,15 @@
             const hiddenBadge = isHidden ? `<span class="hidden-badge">숨김</span>` : '';
             const posBadge = (p.pos && p.pos !== '-' && p.pos !== '정보없음' && p.pos !== '미정') ? getPosBadge(p.pos, p.grade) : '';
             const playerPath = isStaff(p.grade) ? `staff/${p.no || p.name}` : `${p.grade}/${p.no || p.name}`;
-
             const noBadgeText = p.no ? `No.${p.no}` : '배번미정';
             const noNameText = p.no ? `<span class="card-name-no">No.${p.no}</span>` : '';
 
             const rawNameLen = p.name.length;
             let nameStyle = 'font-size: 16px;';
-            if (rawNameLen >= 7) {
-                nameStyle = 'font-size: 12px; letter-spacing: -0.6px;';
-            } else if (rawNameLen >= 5) {
-                nameStyle = 'font-size: 13.5px; letter-spacing: -0.4px;';
-            }
+            if (rawNameLen >= 7) nameStyle = 'font-size: 12px; letter-spacing: -0.6px;';
+            else if (rawNameLen >= 5) nameStyle = 'font-size: 13.5px; letter-spacing: -0.4px;';
 
-            const uploadBtnHtml = isSuperOrDev() ? `
-                <button type="button" class="btn-upload-photo" onclick="event.stopPropagation(); openPhotoUploadModal(${p.no || 0}, '${p.name}')">📷 사진 변경</button>
-            ` : '';
+            const uploadBtnHtml = isSuperOrDev() ? `<button type="button" class="btn-upload-photo" onclick="event.stopPropagation(); openPhotoUploadModal(${p.no || 0}, '${p.name}')">📷 사진 변경</button>` : '';
 
             let cardPhotoHtml = '';
             if (p.hidePhoto && !canViewPhoto) {
@@ -1409,7 +1509,181 @@
     }
 
     // ==========================================
-    // 유니폼 모달 제어 (16개 열 체계 맞춤 연동)
+    // [1순위 핵심] 🚨 학부모 비상연락망 모달 로직
+    // ==========================================
+    async function openEmergencyContactsModal() {
+        const title = document.getElementById('contactsModalTitle');
+        const content = document.getElementById('contactsListContent');
+        document.getElementById('emergencyContactsModal').style.display = 'flex';
+
+        // 1. 캐시가 있으면 즉시 렌더링
+        const cached = localStorage.getItem('daeyeon_emergency_contacts');
+        if (cached) {
+            try {
+                emergencyContactsData = JSON.parse(cached);
+                renderEmergencyContacts();
+            } catch(e) {}
+        } else {
+            content.innerHTML = '<div style="text-align:center; padding:40px 10px; color:#64748b; font-size:13px;">비상연락망 시트에서 데이터를 불러오는 중...</div>';
+        }
+
+        // 2. 구글 스프레드시트 실시간 동기화
+        if (GOOGLE_SCRIPT_UNIFORM_API_URL && GOOGLE_SCRIPT_UNIFORM_API_URL.trim() !== "") {
+            try {
+                const res = await fetch(GOOGLE_SCRIPT_UNIFORM_API_URL + '?action=getContacts&nocache=' + Date.now());
+                const json = await res.json();
+                if (json && json.contacts && json.contacts.length > 0) {
+                    emergencyContactsData = json.contacts;
+                    localStorage.setItem('daeyeon_emergency_contacts', JSON.stringify(emergencyContactsData));
+                    renderEmergencyContacts();
+                }
+            } catch(err) {
+                console.warn("비상연락망 로드 지연 또는 캐시 유지:", err);
+            }
+        }
+    }
+
+    // 스마트 열 탐색 헬퍼
+    function findVal(obj, ...keywords) {
+        for (let k in obj) {
+            for (let kw of keywords) {
+                if (k.toLowerCase().includes(kw.toLowerCase()) && String(obj[k]).trim() !== '') {
+                    return String(obj[k]).trim();
+                }
+            }
+        }
+        return '';
+    }
+
+    function renderEmergencyContacts() {
+        const query = document.getElementById('contactSearchInput').value.trim().toLowerCase();
+        const selectedG = document.getElementById('contactGradeSelect').value;
+        const content = document.getElementById('contactsListContent');
+        const title = document.getElementById('contactsModalTitle');
+
+        if (!emergencyContactsData || emergencyContactsData.length === 0) {
+            content.innerHTML = '<div style="text-align:center; padding:40px 20px; color:#94a3b8; font-weight:600;">등록된 비상연락망 데이터가 없습니다.</div>';
+            return;
+        }
+
+        const filtered = emergencyContactsData.filter(c => {
+            const name = findVal(c, '선수이름', '선수명', '이름', '학생');
+            const no = findVal(c, '등번호', '배번', '번호', 'no');
+            const grade = findVal(c, '학년', '구분');
+            const fName = findVal(c, '부 성함', '부성함', '아버지', '부(성함)', '보호자1');
+            const fPhone = findVal(c, '부 연락처', '부연락처', '부 전화', '보호자1 연락처');
+            const mName = findVal(c, '모 성함', '모성함', '어머니', '모(성함)', '보호자2');
+            const mPhone = findVal(c, '모 연락처', '모연락처', '모 전화', '보호자2 연락처');
+
+            let matchG = (selectedG === 'all') || (grade.includes(selectedG));
+            let matchQ = !query || name.toLowerCase().includes(query) || no.includes(query) || fName.toLowerCase().includes(query) || fPhone.includes(query) || mName.toLowerCase().includes(query) || mPhone.includes(query);
+            return matchG && matchQ;
+        });
+
+        title.textContent = `🚨 학부모 비상연락망 (총 ${filtered.length}명)`;
+
+        if (filtered.length === 0) {
+            content.innerHTML = '<div style="text-align:center; padding:40px 20px; color:#94a3b8; font-weight:600;">검색 결과가 없습니다.</div>';
+            return;
+        }
+
+        content.innerHTML = filtered.map(c => {
+            const name = findVal(c, '선수이름', '선수명', '이름', '학생') || '선수 미지정';
+            const no = findVal(c, '등번호', '배번', '번호', 'no');
+            const grade = findVal(c, '학년', '구분');
+            const note = findVal(c, '비고', '특이사항', '메모');
+
+            // 부 / 모 / 일반 보호자 탐색
+            const fName = findVal(c, '부 성함', '부성함', '아버지', '부(성함)', '보호자1') || '부';
+            const fPhone = findVal(c, '부 연락처', '부연락처', '부 전화', '보호자1 연락처');
+            const mName = findVal(c, '모 성함', '모성함', '어머니', '모(성함)', '보호자2') || '모';
+            const mPhone = findVal(c, '모 연락처', '모연락처', '모 전화', '보호자2 연락처');
+
+            const fRaw = fPhone.replace(/[^0-9]/g, '');
+            const mRaw = mPhone.replace(/[^0-9]/g, '');
+
+            return `
+                <div class="contact-card">
+                    <div class="contact-header">
+                        <span class="contact-player-name">${no ? 'No.'+no+' ' : ''}${name}</span>
+                        ${grade ? `<span class="grade-tag grade-${grade.replace(/[^0-9]/g,'')}">${grade}</span>` : ''}
+                    </div>
+
+                    ${fPhone ? `
+                        <div class="contact-row">
+                            <span class="contact-label">👨 <b>${fName}:</b> ${fPhone}</span>
+                            <div class="contact-actions">
+                                <a href="tel:${fRaw}" class="btn-call">📞 통화</a>
+                                <a href="sms:${fRaw}" class="btn-sms">💬 문자</a>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${mPhone ? `
+                        <div class="contact-row">
+                            <span class="contact-label">👩 <b>${mName}:</b> ${mPhone}</span>
+                            <div class="contact-actions">
+                                <a href="tel:${mRaw}" class="btn-call">📞 통화</a>
+                                <a href="sms:${mRaw}" class="btn-sms">💬 문자</a>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${note ? `<div style="font-size:11px; color:#854d0e; background:#fefce8; padding:5px 8px; border-radius:6px; margin-top:6px;">📝 ${note}</div>` : ''}
+                </div>
+            `;
+        }).join('');
+    }
+
+    // 📋 번호 전체 복사 (단체 문자용)
+    function copyAllContactPhones() {
+        const query = document.getElementById('contactSearchInput').value.trim().toLowerCase();
+        const selectedG = document.getElementById('contactGradeSelect').value;
+
+        const phones = [];
+        emergencyContactsData.forEach(c => {
+            const name = findVal(c, '선수이름', '선수명', '이름', '학생');
+            const grade = findVal(c, '학년', '구분');
+            let matchG = (selectedG === 'all') || (grade.includes(selectedG));
+            let matchQ = !query || name.toLowerCase().includes(query);
+            if (matchG && matchQ) {
+                const fPhone = findVal(c, '부 연락처', '부연락처', '부 전화', '보호자1 연락처');
+                const mPhone = findVal(c, '모 연락처', '모연락처', '모 전화', '보호자2 연락처');
+                if (fPhone) phones.push(fPhone);
+                if (mPhone) phones.push(mPhone);
+            }
+        });
+
+        const uniquePhones = Array.from(new Set(phones));
+        if (uniquePhones.length === 0) {
+            alert('복사할 수 있는 연락처가 없습니다.');
+            return;
+        }
+
+        navigator.clipboard.writeText(uniquePhones.join(', ')).then(() => {
+            alert(`✅ ${uniquePhones.length}개의 학부모 연락처가 클립보드에 복사되었습니다!\n(단체 문자 발송 창에 붙여넣기 하세요.)`);
+        });
+    }
+
+    // 📢 긴급 공지 템플릿 복사
+    function copyEmergencyTemplate(type) {
+        let msg = "";
+        const nowStr = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
+        if (type === 'weather') {
+            msg = `[대연초 야구부 긴급 공지]\n\n금일(${nowStr}) 우천 및 기상 악화로 인하여 안전을 위해 훈련이 조기 종료되었습니다.\n선수들 안전하게 귀가 지도 부탁드립니다. 감사합니다.`;
+        } else if (type === 'match') {
+            msg = `[대연초 야구부 경기 일정 안내]\n\n학부모님 안녕하십니까. 시합/훈련 집결 시간 및 장소가 아래와 같이 변경되었으니 확인 부탁드립니다.\n\n• 집결시간: \n• 집결장소: \n• 준비물: `;
+        } else if (type === 'safe') {
+            msg = `[대연초 야구부 훈련 종료]\n\n금일 훈련이 모두 안전하게 종료되었습니다. 선수들이 귀가 중이오니 가정에서 따뜻한 격려 부탁드립니다. 감사합니다.`;
+        }
+
+        navigator.clipboard.writeText(msg).then(() => {
+            alert(`📢 [${type === 'weather' ? '우천 조기종료' : (type === 'match' ? '경기시간 변경' : '안전귀가 안내')}] 공지 문구가 복사되었습니다!\n카카오톡 단톡방이나 문자에 붙여넣기(Ctrl+V) 하세요.`);
+        });
+    }
+
+    // ==========================================
+    // 유니폼 모달 제어
     // ==========================================
     function openUniformModal() {
         if (!isUniformActive && !isSuperOrDev()) {
@@ -1428,7 +1702,6 @@
         document.getElementById('ordPlayerHeight').value = '';
         document.getElementById('ordPlayerWeight').value = '';
         
-        // 체크박스 및 드롭다운 초기화
         document.querySelectorAll('.chk-item').forEach(c => {
             c.checked = false;
             toggleRowInputs(c);
@@ -1442,7 +1715,6 @@
         document.getElementById('uniformModal').style.display = 'flex';
     }
 
-    // 선수 선택 시 학년, 키, 몸무게 자동 입력
     function handleUniformPlayerChange(playerName) {
         const select = document.getElementById('ordPlayerSelect');
         const opt = select.options[select.selectedIndex];
@@ -1471,7 +1743,6 @@
         document.getElementById('pantsQty').disabled = !chk.checked;
     }
 
-    // 주문 신청서 제출 (16개 열에 맞춰 전송)
     async function submitUniformOrder() {
         const select = document.getElementById('ordPlayerSelect');
         const opt = select.options[select.selectedIndex];
@@ -1487,21 +1758,12 @@
         const height = document.getElementById('ordPlayerHeight').value.trim();
         const weight = document.getElementById('ordPlayerWeight').value.trim();
 
-        // 9개 품목 데이터 구성
         const itemsMap = {
-            "모자": "-",
-            "바지 (허리)": "-",
-            "바지 (기장)": "-",
-            "유니폼상의": "-",
-            "여름훈련티": "-",
-            "겨울훈련티": "-",
-            "바람막이": "-",
-            "풀오버": "-",
-            "겨울점퍼": "-"
+            "모자": "-", "바지 (허리)": "-", "바지 (기장)": "-", "유니폼상의": "-",
+            "여름훈련티": "-", "겨울훈련티": "-", "바람막이": "-", "풀오버": "-", "겨울점퍼": "-"
         };
         let checkedCount = 0;
 
-        // 일반 단일 품목 처리
         document.querySelectorAll('.uniform-item-row[data-name]').forEach(row => {
             const chk = row.querySelector('.chk-item');
             const name = row.getAttribute('data-name');
@@ -1513,7 +1775,6 @@
             }
         });
 
-        // 바지 (허리 / 기장) 분리 저장
         const chkPants = document.getElementById('chkPants');
         if (chkPants && chkPants.checked) {
             const waist = document.getElementById('pantsWaist').value;
@@ -1570,7 +1831,7 @@
     }
 
     // ==========================================
-    // 접수 현황 모달 (16개 열 맞춤 조회)
+    // 접수 현황 모달
     // ==========================================
     function renderOrdersHtml(orders) {
         const content = document.getElementById('ordersListContent');
@@ -1587,17 +1848,14 @@
                 const pGrade = o.playerGrade || '';
                 const pPhys = (o.height && o.height !== '-' ? o.height : '') + (o.weight && o.weight !== '-' ? ' / ' + o.weight : '');
 
-                // 신청된 유니폼 품목 추출
                 const activeItems = [];
                 const rawItems = o.items || {};
 
-                // 개별 품목 검사
                 for (let k of ["모자", "유니폼상의", "여름훈련티", "겨울훈련티", "바람막이", "풀오버", "겨울점퍼"]) {
                     if (rawItems[k] && rawItems[k] !== '-') {
                         activeItems.push({ name: k, desc: rawItems[k] });
                     }
                 }
-                // 바지 (허리 + 기장 통합 뷰)
                 if ((rawItems["바지 (허리)"] && rawItems["바지 (허리)"] !== '-') || (rawItems["바지 (기장)"] && rawItems["바지 (기장)"] !== '-')) {
                     const w = rawItems["바지 (허리)"] || '';
                     const l = rawItems["바지 (기장)"] ? ` (기장: ${rawItems["바지 (기장)"]})` : '';
@@ -1732,7 +1990,6 @@
                 let sWidth = img.width;
                 let sHeight = img.height;
                 let sx = 0, sy = 0;
-
                 const imgRatio = img.width / img.height;
                 const targetRatio = 4 / 5;
 
@@ -1765,14 +2022,12 @@
         customPhotos[photoKey] = url;
         if (target.no) customPhotos[target.name] = url;
         localStorage.setItem('daeyeon_custom_photos', JSON.stringify(customPhotos));
-
         const p = players.find(item => (target.no && item.no === target.no) || item.name === target.name);
         if (p) p.photoLink = url;
     }
 
     async function executeUploadPhoto() {
         if (!uploadTargetPlayer || !uploadOptimizedBase64) return;
-
         const btn = document.getElementById('btnUploadSubmit');
         btn.disabled = true;
         btn.textContent = '구글 드라이브 업로드 중...';
@@ -1905,6 +2160,7 @@
         const btnToggleUniform = document.getElementById('btnToggleUniform');
         const btnViewOrders = document.getElementById('btnViewOrders');
         const btnManagePw = document.getElementById('btnManagePw');
+        const btnEmergency = document.getElementById('btnEmergencyContacts');
 
         adminBar.className = 'admin-bar';
 
@@ -1913,25 +2169,27 @@
             adminBtn.classList.add('logged-in');
             adminBar.classList.add('dev');
             adminBar.style.display = 'flex';
-            roleText.textContent = '⚡ 개발자 마스터 모드 (모든 권한 및 사진 등록/삭제 제어)';
+            roleText.textContent = '⚡ 개발자 마스터 모드';
             btnSheetLink.style.display = 'inline-flex';
             btnToggleUniform.style.display = 'inline-block';
             btnToggleUniform.textContent = isUniformActive ? '👕 접수기능: ON (접수중)' : '👕 접수기능: OFF (마감)';
             btnToggleUniform.style.background = isUniformActive ? '#15803d' : '#991b1b';
             btnViewOrders.style.display = 'inline-block';
             btnManagePw.style.display = 'inline-block';
+            btnEmergency.style.display = 'inline-flex';
         } else if (currentRole === 'super') {
             adminBtn.textContent = '🔓 최고관리자 로그아웃';
             adminBtn.classList.add('logged-in');
             adminBar.classList.add('super');
             adminBar.style.display = 'flex';
-            roleText.textContent = '👑 최고관리자 모드 (선수 사진 변경/삭제 및 관리 기능 활성)';
+            roleText.textContent = '👑 최고관리자 모드';
             btnSheetLink.style.display = 'inline-flex';
             btnToggleUniform.style.display = 'inline-block';
             btnToggleUniform.textContent = isUniformActive ? '👕 접수기능: ON (접수중)' : '👕 접수기능: OFF (마감)';
             btnToggleUniform.style.background = isUniformActive ? '#15803d' : '#991b1b';
             btnViewOrders.style.display = 'inline-block';
             btnManagePw.style.display = 'inline-block';
+            btnEmergency.style.display = 'inline-flex';
         } else if (currentRole === 'sub') {
             adminBtn.textContent = '🔓 보조관리자 로그아웃';
             adminBtn.classList.add('logged-in');
@@ -1942,6 +2200,7 @@
             btnToggleUniform.style.display = 'none';
             btnViewOrders.style.display = 'none';
             btnManagePw.style.display = 'none';
+            btnEmergency.style.display = 'none';
         } else if (currentRole === 'general') {
             adminBtn.textContent = '🔓 일반관리자 로그아웃';
             adminBtn.classList.add('logged-in');
@@ -1952,6 +2211,7 @@
             btnToggleUniform.style.display = 'none';
             btnViewOrders.style.display = 'none';
             btnManagePw.style.display = 'none';
+            btnEmergency.style.display = 'none';
         } else {
             adminBtn.textContent = '🔒 관리자 로그인';
             adminBtn.classList.remove('logged-in');
@@ -1959,6 +2219,7 @@
             btnToggleUniform.style.display = 'none';
             btnViewOrders.style.display = 'none';
             btnManagePw.style.display = 'none';
+            btnEmergency.style.display = 'none';
         }
     }
 
@@ -2041,40 +2302,18 @@
         const newSuperConfirm = document.getElementById('newSuperPwConfirm').value.trim();
         const newSub = document.getElementById('newSubPw').value.trim();
         const newGen = document.getElementById('newGenPw').value.trim();
-
         let updatedMsg = [];
 
         if (newSuper || curSuper) {
-            if (curSuper !== pws.super) {
-                alert('현재 최고관리자 비밀번호가 일치하지 않습니다.');
-                return;
-            }
-            if (!newSuper) {
-                alert('새로운 최고관리자 비밀번호를 입력해 주세요.');
-                return;
-            }
-            if (newSuper !== newSuperConfirm) {
-                alert('새 비밀번호와 비밀번호 확인이 일치하지 않습니다.');
-                return;
-            }
+            if (curSuper !== pws.super) { alert('현재 최고관리자 비밀번호가 일치하지 않습니다.'); return; }
+            if (!newSuper) { alert('새로운 최고관리자 비밀번호를 입력해 주세요.'); return; }
+            if (newSuper !== newSuperConfirm) { alert('새 비밀번호와 비밀번호 확인이 일치하지 않습니다.'); return; }
             localStorage.setItem('daeyeon_pw_super', newSuper);
             updatedMsg.push('최고관리자');
         }
-
-        if (newSub) {
-            localStorage.setItem('daeyeon_pw_sub', newSub);
-            updatedMsg.push('보조관리자');
-        }
-
-        if (newGen) {
-            localStorage.setItem('daeyeon_pw_general', newGen);
-            updatedMsg.push('일반관리자');
-        }
-
-        if (updatedMsg.length === 0) {
-            alert('변경된 항목이 없습니다.');
-            return;
-        }
+        if (newSub) { localStorage.setItem('daeyeon_pw_sub', newSub); updatedMsg.push('보조관리자'); }
+        if (newGen) { localStorage.setItem('daeyeon_pw_general', newGen); updatedMsg.push('일반관리자'); }
+        if (updatedMsg.length === 0) { alert('변경된 항목이 없습니다.'); return; }
 
         alert(`✅ [${updatedMsg.join(', ')}] 비밀번호가 성공적으로 변경되었습니다.`);
         closeModal('passwordModal');
@@ -2084,16 +2323,10 @@
         const s = document.getElementById('devNewSuperPw').value.trim();
         const sub = document.getElementById('devNewSubPw').value.trim();
         const g = document.getElementById('devNewGenPw').value.trim();
-
-        if (!s || !sub || !g) {
-            alert('비밀번호를 공백으로 둘 수 없습니다.');
-            return;
-        }
-
+        if (!s || !sub || !g) { alert('비밀번호를 공백으로 둘 수 없습니다.'); return; }
         localStorage.setItem('daeyeon_pw_super', s);
         localStorage.setItem('daeyeon_pw_sub', sub);
         localStorage.setItem('daeyeon_pw_general', g);
-
         alert('⚡ 모든 관리자 비밀번호가 마스터 권한으로 즉시 변경 저장되었습니다.');
         closeModal('passwordModal');
     }
@@ -2138,15 +2371,10 @@
 
     async function loadGoogleSheetData() {
         try {
-            if (savedSearchQuery) {
-                document.getElementById('searchInput').value = savedSearchQuery;
-            }
+            if (savedSearchQuery) document.getElementById('searchInput').value = savedSearchQuery;
             document.querySelectorAll('#gradeFilters .filter-btn').forEach(btn => {
-                if (btn.getAttribute('data-grade') === selectedGrade) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
+                if (btn.getAttribute('data-grade') === selectedGrade) btn.classList.add('active');
+                else btn.classList.remove('active');
             });
 
             updateAdminUI();
