@@ -10,8 +10,8 @@
         const GOOGLE_SHEET_CONTACTS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw2YtYByfiPWXbRfqkzmZ6yzaZVfJHO0f9zAmCiLnwlMvVXCt9lv4AmQAz4_vSjzPy0APtl0hwYNmW/pub?gid=812608822&single=true&output=csv";
         const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
         
-        // 웹페이지 배포 버전 (선수 이름 연락처 표기 v1.9.3)
-        const APP_VERSION = "v1.9.3 · b260915";
+        // 웹페이지 배포 버전 (사진 등록 복구 v1.9.4)
+        const APP_VERSION = "v1.9.4 · b260915";
     </script>
 
     <meta charset="UTF-8">
@@ -1132,7 +1132,7 @@
         <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
         <div class="admin-btn-group">
             <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
-            <span class="app-version-tag" id="appVersionDisplay">v1.9.3 · b260915</span>
+            <span class="app-version-tag" id="appVersionDisplay">v1.9.4 · b260915</span>
         </div>
     </div>
 </header>
@@ -2235,7 +2235,7 @@
     }
 
     // ==========================================================
-    // 🚨 비상연락망 모달 로직 & ★ 상세 비상연락망 복사 기능
+    // 🚨 비상연락망 모달 로직 & 선수 본인 이름 표기
     // ==========================================================
     async function openEmergencyContactsModal() {
         document.getElementById('emergencyContactsModal').style.display = 'flex';
@@ -2377,7 +2377,7 @@
                         </div>
                     ` : ''}
 
-                    <!-- ★ '학생' 대신 선수 본인의 이름으로 표기 (예: 📱 류태영) -->
+                    <!-- '학생' 대신 선수 본인의 이름으로 표기 (예: 📱 류태영) -->
                     ${sPhone ? `
                         <div class="contact-row" style="background:#eff6ff;">
                             <div class="contact-left-info">
@@ -2403,7 +2403,6 @@
         }).join('');
     }
 
-    // ★ [상세 비상연락망 클립보드 복사 엔진]
     function copyAllContactPhones() {
         const query = document.getElementById('contactSearchInput') ? document.getElementById('contactSearchInput').value.trim().toLowerCase() : '';
         const selectedG = document.getElementById('contactGradeSelect') ? document.getElementById('contactGradeSelect').value : 'all';
@@ -2452,7 +2451,6 @@
             text += `\n${idx + 1}. ${noText}${name}${gradeText}`;
             if (fPhone) text += `\n  • 아버님: ${fPhone}`;
             if (mPhone) text += `\n  • 어머님: ${mPhone}`;
-            // 복사 시에도 선수 이름으로 표기
             if (sPhone) text += `\n  • ${name}: ${sPhone}`;
             if (address) text += `\n  • 주소: ${address}`;
             if (note) text += `\n  • 비고: ${note}`;
@@ -2481,7 +2479,7 @@
     }
 
     // ==========================================
-    // 사진 모달 제어
+    // 📷 사진 모달 제어 (★ imgRatio 버그 완벽 수정)
     // ==========================================
     function openPhotoUploadModal(playerNo, playerName) {
         uploadTargetPlayer = { no: playerNo, name: playerName };
@@ -2494,7 +2492,7 @@
         document.getElementById('targetPhotoInput').value = '';
         
         const btn = document.getElementById('btnUploadSubmit');
-        btn.disabled = true;
+        btn.disabled = false;
         btn.textContent = '구글 드라이브 등록';
 
         const p = players.find(item => item.name === playerName);
@@ -2521,10 +2519,12 @@
                 canvas.height = targetH;
                 const ctx = canvas.getContext('2d');
 
+                // ★ [버그 완벽 해결] imgRatio 계산 변수 복구
+                const imgRatio = img.width / img.height;
+                const targetRatio = 4 / 5;
                 let sWidth = img.width;
                 let sHeight = img.height;
                 let sx = 0, sy = 0;
-                const targetRatio = 4 / 5;
 
                 if (imgRatio > targetRatio) {
                     sWidth = img.height * targetRatio;
@@ -2535,14 +2535,13 @@
                 }
 
                 ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, targetW, targetH);
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
                 uploadOptimizedBase64 = dataUrl.split(',')[1];
 
                 const preview = document.getElementById('photoPreviewImg');
                 preview.src = dataUrl;
                 preview.style.display = 'block';
                 document.getElementById('photoPreviewPlaceholder').style.display = 'none';
-                document.getElementById('btnUploadSubmit').disabled = false;
             };
             img.src = e.target.result;
         };
@@ -2560,7 +2559,16 @@
     }
 
     async function executeUploadPhoto() {
-        if (!uploadTargetPlayer || !uploadOptimizedBase64) return;
+        if (!uploadTargetPlayer) {
+            alert('선수 정보가 지정되지 않았습니다.');
+            return;
+        }
+        // 사진을 고르지 않고 눌렀을 때의 알림 방어 처리
+        if (!uploadOptimizedBase64) {
+            alert('먼저 [📁 새 사진 앨범/카메라에서 선택] 버튼을 눌러 등록할 사진을 선택해 주세요.');
+            return;
+        }
+
         const btn = document.getElementById('btnUploadSubmit');
         btn.disabled = true;
         btn.textContent = '구글 드라이브 업로드 중...';
