@@ -11,7 +11,7 @@
         const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
         
         // 웹페이지 배포 버전
-        const APP_VERSION = "v1.7.5 · b260915";
+        const APP_VERSION = "v1.7.6 · b260915";
     </script>
 
     <meta charset="UTF-8">
@@ -1023,7 +1023,7 @@
         <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
         <div class="admin-btn-group">
             <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
-            <span class="app-version-tag" id="appVersionDisplay">v1.7.5 · b260915</span>
+            <span class="app-version-tag" id="appVersionDisplay">v1.7.6 · b260915</span>
         </div>
     </div>
 </header>
@@ -1389,7 +1389,6 @@
 
     function isSuperOrDev() { return currentRole === 'super' || currentRole === 'dev'; }
 
-    // ★ 직책 랭킹 엔진 (감독 -> 수석코치 -> 투수코치 -> 기타 코치 -> 학생)
     function getStaffRank(p) {
         const grade = String(p.grade || '').trim();
         const pos = String(p.pos || '').trim();
@@ -1523,7 +1522,7 @@
         return p.no ? `data/photos/${p.no}.jpg` : defaultAvatar;
     }
 
-    // ★ [등번호 미정 선수 맨 아래 배치 정렬 알고리즘] ★
+    // ★ [키 공백 제거 및 등번호 우선 정렬 완벽 적용 엔진] ★
     function render() {
         const searchEl = document.getElementById('searchInput');
         const query = searchEl.value.trim().toLowerCase();
@@ -1544,12 +1543,11 @@
             const matchSearch = p.name.toLowerCase().includes(query) || (p.no && p.no.toString().includes(query)) || (p.pos && p.pos.includes(query)) || (p.bt && p.bt.includes(query));
             return matchGrade && matchSearch;
         }).sort((a, b) => {
-            // [0단계] 코칭스태프 직책 랭킹 비교 (감독 1, 수석코치 2, 투수코치 3 ...)
+            // [0단계] 코칭스태프 직책 랭킹 비교
             const rankA = getStaffRank(a);
             const rankB = getStaffRank(b);
             if (rankA !== rankB) return rankA - rankB;
 
-            // 지도자 내부 순서
             if (rankA < 10) {
                 if (a.no && b.no && a.no !== b.no) return a.no - b.no;
                 if (a.no && !b.no) return -1;
@@ -1561,24 +1559,23 @@
             const hasNoA = Boolean(a.no && a.no > 0);
             const hasNoB = Boolean(b.no && b.no > 0);
 
-            // ★ 등번호 배정 안 된 선수는 무조건 맨 아래(최하단)로 이동!
-            if (hasNoA && !hasNoB) return -1; // a가 번호 있고 b가 없으면 a가 위
-            if (!hasNoA && hasNoB) return 1;  // a가 번호 없고 b가 있으면 b가 위
+            // 1순위: 등번호가 있는 선수를 무조건 위로, 없는 선수는 맨 아래로
+            if (hasNoA && !hasNoB) return -1;
+            if (!hasNoA && hasNoB) return 1;
 
-            // 1. 둘 다 등번호가 있는 경우: 등번호 오름차순
+            // 2순위: 둘 다 번호가 있으면 등번호 오름차순 (2, 5, 8, 10, 13, 14, 18, 21, 23, 29, 30, 37, 47...)
             if (hasNoA && hasNoB) {
                 return a.no - b.no;
             }
 
-            // 2. 둘 다 등번호가 없는 경우 (맨 아래 그룹):
-            // 고학년 순 (6학년 -> 1학년)
+            // 3순위: 둘 다 번호가 없으면 학년 높은 순 (6 -> 1)
             const gradeA = parseInt(String(a.grade).replace(/[^0-9]/g, ''), 10) || 0;
             const gradeB = parseInt(String(b.grade).replace(/[^0-9]/g, ''), 10) || 0;
             if (gradeA !== gradeB) {
                 return gradeB - gradeA;
             }
 
-            // 학년도 같으면 이름 가나다순
+            // 4순위: 학년도 같으면 이름 가나다순
             return a.name.localeCompare(b.name, 'ko');
         });
 
@@ -2243,7 +2240,7 @@
                 let sx = 0, sy = 0;
                 const targetRatio = 4 / 5;
 
-                if (imgRatio > targetRatio) {
+                if (img.width / img.height > targetRatio) {
                     sWidth = img.height * targetRatio;
                     sx = (img.width - sWidth) / 2;
                 } else {
@@ -2576,9 +2573,15 @@
 
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     function isOff(val) { if (!val) return false; const v = String(val).toUpperCase().trim(); return v === 'OFF' || v === '비공개'; }
+    
+    // ★ [키 정규화 헬퍼] CSV 헤더나 값에 있는 보이지 않는 공백을 자동으로 제거
     function getColVal(row, ...keys) {
         for (let k of keys) {
-            if (row[k] !== undefined && row[k] !== null && String(row[k]).trim() !== '') return String(row[k]).trim();
+            for (let prop in row) {
+                if (prop.trim() === k && row[prop] !== undefined && row[prop] !== null && String(row[prop]).trim() !== '') {
+                    return String(row[prop]).trim();
+                }
+            }
         }
         return '';
     }
@@ -2601,7 +2604,13 @@
                 header: true,
                 skipEmptyLines: true,
                 complete: function(results) {
-                    players = results.data.map((row, idx) => {
+                    players = results.data.map((rawRow, idx) => {
+                        // 행 데이터의 모든 키(컬럼명) 공백 제거
+                        const row = {};
+                        Object.keys(rawRow).forEach(k => {
+                            row[k.trim()] = rawRow[k];
+                        });
+
                         const photoFlag = getColVal(row, '사진공개', '사진노출', '사진비공개', '사진ON/OFF');
                         const birthFlag = getColVal(row, '생년월일공개', '생년월일노출', '생일공개', '생년월일비공개');
                         const heightFlag = getColVal(row, '키공개', '키노출', '키비공개');
