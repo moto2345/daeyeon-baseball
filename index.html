@@ -11,7 +11,7 @@
         const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
         
         // 웹페이지 배포 버전
-        const APP_VERSION = "v1.7.6 · b260915";
+        const APP_VERSION = "v1.7.7 · b260915";
     </script>
 
     <meta charset="UTF-8">
@@ -1023,7 +1023,7 @@
         <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
         <div class="admin-btn-group">
             <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
-            <span class="app-version-tag" id="appVersionDisplay">v1.7.6 · b260915</span>
+            <span class="app-version-tag" id="appVersionDisplay">v1.7.7 · b260915</span>
         </div>
     </div>
 </header>
@@ -1143,7 +1143,6 @@
             <label>유니폼 품목 및 사이즈 선택 *</label>
             <div style="background: #f8fafc; border: 1px solid var(--card-border); border-radius: 8px; padding: 6px 10px;">
                 
-                <!-- 1. 모자 -->
                 <div class="uniform-item-row" data-name="모자">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 🧢 모자</label>
                     <select class="uniform-item-size" disabled>
@@ -1155,7 +1154,6 @@
                     <select class="uniform-item-qty" disabled><option value="1개">1개</option><option value="2개">2개</option></select>
                 </div>
 
-                <!-- 2. 유니폼 상의 -->
                 <div class="uniform-item-row" data-name="유니폼상의">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> ⚾ 유니폼 상의</label>
                     <select class="uniform-item-size" disabled>
@@ -1166,7 +1164,6 @@
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
                 </div>
 
-                <!-- 3. 바지(허리/기장) -->
                 <div class="uniform-item-row" id="rowPants">
                     <label class="uniform-item-name"><input type="checkbox" id="chkPants" onchange="togglePantsInputs(this)"> 👖 바지(허리/기장)</label>
                     <div class="pants-double-box">
@@ -1184,7 +1181,6 @@
                     <select id="pantsQty" class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
                 </div>
 
-                <!-- 4. 여름훈련티 -->
                 <div class="uniform-item-row" data-name="여름훈련티">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> ☀️ 여름훈련티</label>
                     <select class="uniform-item-size" disabled>
@@ -1195,7 +1191,6 @@
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
                 </div>
 
-                <!-- 5. 겨울훈련티 -->
                 <div class="uniform-item-row" data-name="겨울훈련티">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> ❄️ 겨울훈련티</label>
                     <select class="uniform-item-size" disabled>
@@ -1206,7 +1201,6 @@
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
                 </div>
 
-                <!-- 6. 바람막이 -->
                 <div class="uniform-item-row" data-name="바람막이">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 💨 바람막이</label>
                     <select class="uniform-item-size" disabled>
@@ -1216,7 +1210,6 @@
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
                 </div>
 
-                <!-- 7. 풀오버 -->
                 <div class="uniform-item-row" data-name="풀오버">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 🧥 풀오버</label>
                     <select class="uniform-item-size" disabled>
@@ -1226,7 +1219,6 @@
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
                 </div>
 
-                <!-- 8. 겨울점퍼 -->
                 <div class="uniform-item-row" data-name="겨울점퍼">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 🧤 겨울점퍼</label>
                     <select class="uniform-item-size" disabled>
@@ -1522,7 +1514,7 @@
         return p.no ? `data/photos/${p.no}.jpg` : defaultAvatar;
     }
 
-    // ★ [키 공백 제거 및 등번호 우선 정렬 완벽 적용 엔진] ★
+    // ★ [등번호 철저 우선 순차 정렬 엔진] ★
     function render() {
         const searchEl = document.getElementById('searchInput');
         const query = searchEl.value.trim().toLowerCase();
@@ -1559,23 +1551,23 @@
             const hasNoA = Boolean(a.no && a.no > 0);
             const hasNoB = Boolean(b.no && b.no > 0);
 
-            // 1순위: 등번호가 있는 선수를 무조건 위로, 없는 선수는 맨 아래로
+            // 1단계: 등번호가 있는 선수를 무조건 위로, 없는 선수는 맨 아래로
             if (hasNoA && !hasNoB) return -1;
             if (!hasNoA && hasNoB) return 1;
 
-            // 2순위: 둘 다 번호가 있으면 등번호 오름차순 (2, 5, 8, 10, 13, 14, 18, 21, 23, 29, 30, 37, 47...)
+            // 2단계: 둘 다 번호가 있으면 '숫자 크기 순서'대로 정확히 오름차순 (10, 21, 22, 31, 44 등이 중간에 끼지 않고 47 앞으로 정렬됨)
             if (hasNoA && hasNoB) {
-                return a.no - b.no;
+                return Number(a.no) - Number(b.no);
             }
 
-            // 3순위: 둘 다 번호가 없으면 학년 높은 순 (6 -> 1)
+            // 3단계: 둘 다 번호가 없으면 학년 높은 순 (6 -> 1)
             const gradeA = parseInt(String(a.grade).replace(/[^0-9]/g, ''), 10) || 0;
             const gradeB = parseInt(String(b.grade).replace(/[^0-9]/g, ''), 10) || 0;
             if (gradeA !== gradeB) {
                 return gradeB - gradeA;
             }
 
-            // 4순위: 학년도 같으면 이름 가나다순
+            // 4단계: 학년도 같으면 이름 가나다순
             return a.name.localeCompare(b.name, 'ko');
         });
 
@@ -2240,7 +2232,7 @@
                 let sx = 0, sy = 0;
                 const targetRatio = 4 / 5;
 
-                if (img.width / img.height > targetRatio) {
+                if (imgRatio > targetRatio) {
                     sWidth = img.height * targetRatio;
                     sx = (img.width - sWidth) / 2;
                 } else {
@@ -2337,7 +2329,7 @@
             delete customPhotos[uploadTargetPlayer.name];
             localStorage.setItem('daeyeon_custom_photos', JSON.stringify(customPhotos));
 
-            const p = players.find(item => (uploadTargetPlayer.no && item.no === uploadTargetPlayer.no) || item.name === uploadTargetPlayer.name);
+            const p = players.find(item => (uploadTargetPlayer.no && item.no === uploadTargetPlayer.no) || item.name === target.name);
             if (p) p.photoLink = "";
 
             alert(`✅ ${uploadTargetPlayer.name} 선수의 사진이 삭제되어 기본 이미지로 복원되었습니다.`);
@@ -2573,15 +2565,9 @@
 
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     function isOff(val) { if (!val) return false; const v = String(val).toUpperCase().trim(); return v === 'OFF' || v === '비공개'; }
-    
-    // ★ [키 정규화 헬퍼] CSV 헤더나 값에 있는 보이지 않는 공백을 자동으로 제거
     function getColVal(row, ...keys) {
         for (let k of keys) {
-            for (let prop in row) {
-                if (prop.trim() === k && row[prop] !== undefined && row[prop] !== null && String(row[prop]).trim() !== '') {
-                    return String(row[prop]).trim();
-                }
-            }
+            if (row[k] !== undefined && row[k] !== null && String(row[k]).trim() !== '') return String(row[k]).trim();
         }
         return '';
     }
@@ -2605,7 +2591,6 @@
                 skipEmptyLines: true,
                 complete: function(results) {
                     players = results.data.map((rawRow, idx) => {
-                        // 행 데이터의 모든 키(컬럼명) 공백 제거
                         const row = {};
                         Object.keys(rawRow).forEach(k => {
                             row[k.trim()] = rawRow[k];
@@ -2617,8 +2602,9 @@
                         const weightFlag = getColVal(row, '몸무게공개', '몸무게노출', '몸무게비공개');
                         const drivePhotoLink = getColVal(row, '사진링크', '드라이브사진', '사진URL', '이미지링크');
 
-                        const rawNo = String(row['등번호'] || '').trim();
-                        const parsedNo = parseInt(rawNo, 10);
+                        // ★ [등번호 강제 숫자 정규화] 문자, 기호, 띄어쓰기 전부 제거 후 숫자로만 변환
+                        const rawNoStr = String(row['등번호'] || '').replace(/[^0-9]/g, '');
+                        const parsedNo = parseInt(rawNoStr, 10);
                         const no = (!isNaN(parsedNo) && parsedNo > 0) ? parsedNo : 0;
 
                         return {
