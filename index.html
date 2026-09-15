@@ -8,7 +8,7 @@
         const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
         
         // 웹페이지 배포 버전
-        const APP_VERSION = "v1.4.2 · b260915";
+        const APP_VERSION = "v1.4.3 · b260915";
     </script>
 
     <meta charset="UTF-8">
@@ -800,7 +800,7 @@
         <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
         <div class="admin-btn-group">
             <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
-            <span class="app-version-tag" id="appVersionDisplay">v1.4.2 · b260915</span>
+            <span class="app-version-tag" id="appVersionDisplay">v1.4.3 · b260915</span>
         </div>
     </div>
 </header>
@@ -1005,12 +1005,12 @@
     </div>
 </div>
 
-<!-- 5. 선수 사진 업로드 모달 -->
+<!-- 5. 선수 사진 업로드 및 삭제 모달 -->
 <div id="photoUploadModal" class="modal">
     <div class="modal-content" style="max-width: 400px; text-align: center;">
         <div class="modal-header" id="photoModalTitle">📷 선수 프로필 사진 등록</div>
         <p style="font-size: 12px; color: #64748b; margin-bottom: 14px;">
-            사진을 선택하시면 구글 드라이브에 저장되고 구글 시트와 웹페이지에 즉시 반영됩니다.
+            새 사진을 등록하거나, 등록된 사진을 삭제하여 기본 이미지로 복원할 수 있습니다.
         </p>
         
         <div style="width: 160px; aspect-ratio: 4 / 5; margin: 0 auto 14px; background: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative;">
@@ -1019,8 +1019,13 @@
         </div>
 
         <input type="file" id="targetPhotoInput" accept="image/*" style="display: none;" onchange="handlePhotoFileSelected(this)">
-        <button type="button" class="btn-cancel" style="width: 100%; padding: 10px; font-size: 13px; font-weight: 800; border-color: #0284c7; color: #0284c7; margin-bottom: 10px;" onclick="document.getElementById('targetPhotoInput').click()">
-            📁 사진 앨범/카메라에서 선택
+        <button type="button" class="btn-cancel" style="width: 100%; padding: 10px; font-size: 13px; font-weight: 800; border-color: #0284c7; color: #0284c7; margin-bottom: 8px;" onclick="document.getElementById('targetPhotoInput').click()">
+            📁 새 사진 앨범/카메라에서 선택
+        </button>
+
+        <!-- [신규: 사진 삭제 버튼] -->
+        <button type="button" id="btnDeletePhoto" class="btn-cancel" style="width: 100%; padding: 8px; font-size: 12px; font-weight: 700; border-color: #fecaca; color: #b91c1c; background: #fff5f5; margin-bottom: 14px; display: none;" onclick="executeDeletePhoto()">
+            🗑️ 등록된 사진 삭제 (기본 이미지 복원)
         </button>
 
         <div class="modal-btns" style="justify-content: space-between;">
@@ -1368,20 +1373,32 @@
         }).join('');
     }
 
+    // 사진 모달 열기 (기존 사진이 있으면 삭제 버튼 노출)
     function openPhotoUploadModal(playerNo, playerName) {
         uploadTargetPlayer = { no: playerNo, name: playerName };
         uploadOptimizedBase64 = null;
         
         const titleNo = playerNo ? `No.${playerNo} ` : '';
-        document.getElementById('photoModalTitle').textContent = `📷 ${titleNo}${playerName} 사진 등록`;
+        document.getElementById('photoModalTitle').textContent = `📷 ${titleNo}${playerName} 사진 관리`;
         document.getElementById('photoPreviewImg').style.display = 'none';
         document.getElementById('photoPreviewPlaceholder').style.display = 'block';
-        document.getElementById('photoPreviewPlaceholder').textContent = '사진을 선택해 주세요';
+        document.getElementById('photoPreviewPlaceholder').textContent = '새 사진을 선택해 주세요';
         document.getElementById('targetPhotoInput').value = '';
         
         const btn = document.getElementById('btnUploadSubmit');
         btn.disabled = true;
         btn.textContent = '구글 드라이브 등록';
+
+        // 기존 사진 존재 여부 검사 후 삭제 버튼 표시
+        const p = players.find(item => item.name === playerName);
+        const currentPhoto = p ? getPlayerPhotoUrl(p) : '';
+        const hasCustomPhoto = currentPhoto && !currentPhoto.includes('data:image/svg');
+        const delBtn = document.getElementById('btnDeletePhoto');
+        if (hasCustomPhoto) {
+            delBtn.style.display = 'block';
+        } else {
+            delBtn.style.display = 'none';
+        }
 
         document.getElementById('photoUploadModal').style.display = 'flex';
     }
@@ -1442,7 +1459,6 @@
         if (p) p.photoLink = url;
     }
 
-    // ★ [CORS 방어 + 100% 성공 보장 업로드 엔진] ★
     async function executeUploadPhoto() {
         if (!uploadTargetPlayer || !uploadOptimizedBase64) return;
 
@@ -1461,46 +1477,67 @@
         };
 
         try {
-            // 1차 시도: 일반 전송
-            const res = await fetch(GOOGLE_SCRIPT_UNIFORM_API_URL, {
+            await fetch(GOOGLE_SCRIPT_UNIFORM_API_URL, {
                 method: 'POST',
+                mode: 'no-cors',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify(payload)
             });
 
-            const resText = await res.text();
-            let result;
-            try {
-                result = JSON.parse(resText);
-            } catch(e) {}
-
-            const finalUrl = (result && result.url) ? result.url : dataUrl;
-            savePhotoLocally(uploadTargetPlayer, finalUrl);
-            alert(`✅ ${uploadTargetPlayer.name} 선수의 사진이 등록되었습니다!`);
+            savePhotoLocally(uploadTargetPlayer, dataUrl);
+            alert(`✅ ${uploadTargetPlayer.name} 선수의 사진이 구글 드라이브에 등록되었습니다!`);
             closeModal('photoUploadModal');
             render();
         } catch (err) {
-            console.warn("1차 통신 예외, no-cors 우회 시도:", err);
-            try {
-                // 2차 시도: no-cors 완벽 우회 전송 (CORS Failed to fetch 차단 방어)
-                await fetch(GOOGLE_SCRIPT_UNIFORM_API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload)
-                });
-
-                savePhotoLocally(uploadTargetPlayer, dataUrl);
-                alert(`✅ ${uploadTargetPlayer.name} 선수의 사진이 구글 드라이브로 정상 전송되었습니다!`);
-                closeModal('photoUploadModal');
-                render();
-            } catch(fallbackErr) {
-                console.error("최종 실패:", fallbackErr);
-                alert("사진 업로드 중 오류가 발생했습니다.\n\n원인: " + err.message + "\n\n(구글 Apps Script 편집기에서 testDriveAuth를 실행하여 드라이브 권한을 허용했는지 확인해 주세요.)");
-            }
+            console.error("업로드 에러:", err);
+            alert("사진 업로드 중 오류가 발생했습니다: " + err.message);
         } finally {
             btn.disabled = false;
             btn.textContent = '구글 드라이브 등록';
+        }
+    }
+
+    // ★ [신규] 등록된 사진 삭제 및 기본 이미지 복원 실행 함수 ★
+    async function executeDeletePhoto() {
+        if (!uploadTargetPlayer) return;
+        if (!confirm(`${uploadTargetPlayer.name} 선수의 등록된 사진을 삭제하고 기본 이미지로 복원하시겠습니까?`)) return;
+
+        const delBtn = document.getElementById('btnDeletePhoto');
+        delBtn.disabled = true;
+        delBtn.textContent = '사진 삭제 중...';
+
+        const payload = {
+            action: "deletePhoto",
+            playerNo: uploadTargetPlayer.no || 0,
+            playerName: uploadTargetPlayer.name
+        };
+
+        try {
+            await fetch(GOOGLE_SCRIPT_UNIFORM_API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            });
+
+            // 로컬 캐시 삭제
+            const customPhotos = JSON.parse(localStorage.getItem('daeyeon_custom_photos') || '{}');
+            if (uploadTargetPlayer.no) delete customPhotos[uploadTargetPlayer.no];
+            delete customPhotos[uploadTargetPlayer.name];
+            localStorage.setItem('daeyeon_custom_photos', JSON.stringify(customPhotos));
+
+            const p = players.find(item => (uploadTargetPlayer.no && item.no === uploadTargetPlayer.no) || item.name === uploadTargetPlayer.name);
+            if (p) p.photoLink = "";
+
+            alert(`✅ ${uploadTargetPlayer.name} 선수의 사진이 삭제되어 기본 이미지로 복원되었습니다.`);
+            closeModal('photoUploadModal');
+            render();
+        } catch (err) {
+            console.error("삭제 에러:", err);
+            alert("사진 삭제 중 오류가 발생했습니다: " + err.message);
+        } finally {
+            delBtn.disabled = false;
+            delBtn.textContent = '🗑️ 등록된 사진 삭제 (기본 이미지 복원)';
         }
     }
 
@@ -1565,7 +1602,7 @@
             adminBtn.classList.add('logged-in');
             adminBar.classList.add('dev');
             adminBar.style.display = 'flex';
-            roleText.textContent = '⚡ 개발자 마스터 모드 (모든 권한 및 사진 등록 제어)';
+            roleText.textContent = '⚡ 개발자 마스터 모드 (모든 권한 및 사진 등록/삭제 제어)';
             btnSheetLink.style.display = 'inline-flex';
             btnToggleUniform.style.display = 'inline-block';
             btnToggleUniform.textContent = isUniformActive ? '👕 접수기능: ON (접수중)' : '👕 접수기능: OFF (마감)';
@@ -1577,7 +1614,7 @@
             adminBtn.classList.add('logged-in');
             adminBar.classList.add('super');
             adminBar.style.display = 'flex';
-            roleText.textContent = '👑 최고관리자 모드 (선수 사진 변경 및 관리 기능 활성)';
+            roleText.textContent = '👑 최고관리자 모드 (선수 사진 변경/삭제 및 관리 기능 활성)';
             btnSheetLink.style.display = 'inline-flex';
             btnToggleUniform.style.display = 'inline-block';
             btnToggleUniform.textContent = isUniformActive ? '👕 접수기능: ON (접수중)' : '👕 접수기능: OFF (마감)';
