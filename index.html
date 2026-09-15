@@ -10,8 +10,8 @@
         const GOOGLE_SHEET_CONTACTS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw2YtYByfiPWXbRfqkzmZ6yzaZVfJHO0f9zAmCiLnwlMvVXCt9lv4AmQAz4_vSjzPy0APtl0hwYNmW/pub?gid=812608822&single=true&output=csv";
         const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
         
-        // 웹페이지 배포 버전 (보안 잠금 장치 v1.8.1)
-        const APP_VERSION = "v1.8.1 · b260915";
+        // 웹페이지 배포 버전 (모바일 모달 스크롤 최적화 v1.8.2)
+        const APP_VERSION = "v1.8.2 · b260915";
     </script>
 
     <meta charset="UTF-8">
@@ -45,9 +45,7 @@
             padding-bottom: 70px;
         }
 
-        /* ===================================================
-           🔒 보안 잠금 오버레이 (블러 강도 낮춤: 12px ➔ 4px)
-           =================================================== */
+        /* 🔒 보안 잠금 오버레이 */
         #lockOverlay {
             position: fixed;
             inset: 0;
@@ -657,23 +655,48 @@
             padding: 16px;
         }
 
+        /* ★ [모바일 완벽 최적화] 모달 내부에 스크롤바 부여 및 버튼 고정 */
         .modal-content {
             background: #ffffff;
             width: 100%;
             max-width: 480px;
-            max-height: 90vh;
-            overflow-y: auto;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
             border-radius: 14px;
-            padding: 20px;
+            padding: 18px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             box-sizing: border-box;
+            overflow: hidden;
         }
 
-        .modal-header { font-size: 18px; font-weight: 800; margin-bottom: 12px; }
+        .modal-header { 
+            font-size: 18px; 
+            font-weight: 800; 
+            margin-bottom: 10px; 
+            flex-shrink: 0;
+        }
+
+        .modal-scroll-body {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 2px;
+        }
+
         .form-group { margin-bottom: 11px; display: flex; flex-direction: column; gap: 4px; }
         .form-group label { font-size: 12px; font-weight: 700; color: #475569; }
         .form-group input, .form-group select, .form-group textarea { padding: 8px 10px; border: 1px solid var(--card-border); border-radius: 6px; font-size: 13px; outline: none; }
-        .modal-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+        
+        .modal-btns { 
+            display: flex; 
+            justify-content: flex-end; 
+            gap: 8px; 
+            margin-top: 12px; 
+            padding-top: 10px; 
+            border-top: 1px solid #f1f5f9;
+            flex-shrink: 0;
+        }
+
         .btn-cancel { background: #f1f5f9; border: 1px solid var(--card-border); padding: 8px 14px; border-radius: 6px; font-weight: 700; cursor: pointer; }
         .btn-save { background: var(--kbo-blue); color: #ffffff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; }
 
@@ -735,6 +758,7 @@
             border-bottom: 2px solid #e2e8f0;
             margin-bottom: 12px;
             gap: 6px;
+            flex-shrink: 0;
         }
 
         .order-tab-btn {
@@ -1049,7 +1073,7 @@
 <body>
 
 <!-- ===================================================
-     🔒 인터벌 보안 잠금 팝업 (블러 강도 낮춤: 12px ➔ 4px, 힌트 제거)
+     🔒 인터벌 보안 잠금 팝업 (블러 4px, 힌트 없음)
      =================================================== -->
 <div id="lockOverlay">
     <div class="lock-card">
@@ -1075,7 +1099,7 @@
         <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
         <div class="admin-btn-group">
             <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
-            <span class="app-version-tag" id="appVersionDisplay">v1.8.1 · b260915</span>
+            <span class="app-version-tag" id="appVersionDisplay">v1.8.2 · b260915</span>
         </div>
     </div>
 </header>
@@ -1145,16 +1169,18 @@
 
 <!-- 1. 관리자 로그인 모달 -->
 <div id="loginModal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content" style="overflow: visible;">
         <div class="modal-header">관리자 등급 로그인</div>
-        <div class="form-group">
-            <label>관리자 비밀번호</label>
-            <input type="password" id="adminPw" placeholder="비밀번호 입력">
-            <span style="font-size: 11px; color: #64748b; line-height: 1.6; margin-top: 8px;">
-                • <b>최고관리자</b>: 비상연락망 + 유니폼 발주 집계 + 사진 등록 + 유니폼 접수 ON/OFF<br>
-                • <b>보조관리자</b>: 비공개 사진 및 체격 열람 + 시트 편집<br>
-                • <b>일반관리자</b>: 선수 비공개 체격(키/몸무게/생년월일) 열람 전용
-            </span>
+        <div class="modal-scroll-body">
+            <div class="form-group">
+                <label>관리자 비밀번호</label>
+                <input type="password" id="adminPw" placeholder="비밀번호 입력">
+                <span style="font-size: 11px; color: #64748b; line-height: 1.6; margin-top: 8px;">
+                    • <b>최고관리자</b>: 비상연락망 + 유니폼 발주 집계 + 사진 등록 + 유니폼 접수 ON/OFF<br>
+                    • <b>보조관리자</b>: 비공개 사진 및 체격 열람 + 시트 편집<br>
+                    • <b>일반관리자</b>: 선수 비공개 체격(키/몸무게/생년월일) 열람 전용
+                </span>
+            </div>
         </div>
         <div class="modal-btns">
             <button class="btn-cancel" onclick="closeModal('loginModal')">취소</button>
@@ -1163,123 +1189,126 @@
     </div>
 </div>
 
-<!-- 2. 유니폼 주문 신청 모달 -->
+<!-- 2. 유니폼 주문 신청 모달 (스크롤 바디 분리) -->
 <div id="uniformModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">👕 유니폼 주문 신청</div>
-        <p style="font-size: 12px; color: #64748b; margin-bottom: 12px; line-height: 1.4;">
-            선수를 선택하시면 학년과 체격이 자동 입력됩니다. 필요한 의류에 체크하고 사이즈를 선택해 주세요.
-        </p>
+        
+        <div class="modal-scroll-body">
+            <p style="font-size: 12px; color: #64748b; margin-bottom: 12px; line-height: 1.4;">
+                선수를 선택하시면 학년과 체격이 자동 입력됩니다. 필요한 의류에 체크하고 사이즈를 선택해 주세요.
+            </p>
 
-        <div class="form-group">
-            <label>대상 선수 선택 *</label>
-            <select id="ordPlayerSelect" style="font-weight: 800; color: var(--kbo-blue);" onchange="handleUniformPlayerChange(this.value)"></select>
-        </div>
+            <div class="form-group">
+                <label>대상 선수 선택 *</label>
+                <select id="ordPlayerSelect" style="font-weight: 800; color: var(--kbo-blue);" onchange="handleUniformPlayerChange(this.value)"></select>
+            </div>
 
-        <div style="display: flex; gap: 8px; background: #f8fafc; border: 1px solid var(--card-border); border-radius: 8px; padding: 10px; margin-bottom: 12px;">
-            <div style="flex: 1;">
-                <label style="font-size: 11px; font-weight: 700; color: #64748b;">학년</label>
-                <input type="text" id="ordPlayerGrade" style="width: 100%; font-weight: 800;" placeholder="학년" readonly>
-            </div>
-            <div style="flex: 1.2;">
-                <label style="font-size: 11px; font-weight: 700; color: #64748b;">키 (cm)</label>
-                <input type="number" id="ordPlayerHeight" style="width: 100%;" placeholder="예: 153">
-            </div>
-            <div style="flex: 1.2;">
-                <label style="font-size: 11px; font-weight: 700; color: #64748b;">몸무게 (kg)</label>
-                <input type="number" id="ordPlayerWeight" style="width: 100%;" placeholder="예: 46">
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>유니폼 품목 및 사이즈 선택 *</label>
-            <div style="background: #f8fafc; border: 1px solid var(--card-border); border-radius: 8px; padding: 6px 10px;">
-                
-                <div class="uniform-item-row" data-name="모자">
-                    <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 🧢 모자</label>
-                    <select class="uniform-item-size" disabled>
-                        <option value="52호">52호</option><option value="53호">53호</option><option value="54호">54호</option>
-                        <option value="55호">55호</option><option value="56호" selected>56호</option><option value="57호">57호</option>
-                        <option value="58호">58호</option><option value="59호">59호</option><option value="60호">60호</option>
-                        <option value="프리">프리</option>
-                    </select>
-                    <select class="uniform-item-qty" disabled><option value="1개">1개</option><option value="2개">2개</option></select>
+            <div style="display: flex; gap: 8px; background: #f8fafc; border: 1px solid var(--card-border); border-radius: 8px; padding: 10px; margin-bottom: 12px;">
+                <div style="flex: 1;">
+                    <label style="font-size: 11px; font-weight: 700; color: #64748b;">학년</label>
+                    <input type="text" id="ordPlayerGrade" style="width: 100%; font-weight: 800;" placeholder="학년" readonly>
                 </div>
-
-                <div class="uniform-item-row" data-name="유니폼상의">
-                    <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> ⚾ 유니폼 상의</label>
-                    <select class="uniform-item-size" disabled>
-                        <option value="80">80</option><option value="85">85</option><option value="90">90</option>
-                        <option value="95" selected>95</option><option value="100">100</option><option value="105">105</option>
-                        <option value="110">110</option>
-                    </select>
-                    <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
+                <div style="flex: 1.2;">
+                    <label style="font-size: 11px; font-weight: 700; color: #64748b;">키 (cm)</label>
+                    <input type="number" id="ordPlayerHeight" style="width: 100%;" placeholder="예: 153">
                 </div>
+                <div style="flex: 1.2;">
+                    <label style="font-size: 11px; font-weight: 700; color: #64748b;">몸무게 (kg)</label>
+                    <input type="number" id="ordPlayerWeight" style="width: 100%;" placeholder="예: 46">
+                </div>
+            </div>
 
-                <div class="uniform-item-row" id="rowPants">
-                    <label class="uniform-item-name"><input type="checkbox" id="chkPants" onchange="togglePantsInputs(this)"> 👖 바지(허리/기장)</label>
-                    <div class="pants-double-box">
-                        <select id="pantsWaist" disabled title="허리 사이즈">
-                            <option value="24">24인치</option><option value="25">25인치</option><option value="26">26인치</option>
-                            <option value="27">27인치</option><option value="28" selected>28인치</option><option value="29">29인치</option>
-                            <option value="30">30인치</option><option value="32">32인치</option><option value="34">34인치</option>
+            <div class="form-group">
+                <label>유니폼 품목 및 사이즈 선택 *</label>
+                <div style="background: #f8fafc; border: 1px solid var(--card-border); border-radius: 8px; padding: 6px 10px;">
+                    
+                    <div class="uniform-item-row" data-name="모자">
+                        <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 🧢 모자</label>
+                        <select class="uniform-item-size" disabled>
+                            <option value="52호">52호</option><option value="53호">53호</option><option value="54호">54호</option>
+                            <option value="55호">55호</option><option value="56호" selected>56호</option><option value="57호">57호</option>
+                            <option value="58호">58호</option><option value="59호">59호</option><option value="60호">60호</option>
+                            <option value="프리">프리</option>
                         </select>
-                        <select id="pantsLength" disabled title="기장 옵션">
-                            <option value="기본" selected>기본</option>
-                            <option value="+3cm">+3cm</option><option value="+5cm">+5cm</option><option value="+7cm">+7cm</option>
-                            <option value="-3cm">-3cm</option><option value="-5cm">-5cm</option>
-                        </select>
+                        <select class="uniform-item-qty" disabled><option value="1개">1개</option><option value="2개">2개</option></select>
                     </div>
-                    <select id="pantsQty" class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
-                </div>
 
-                <div class="uniform-item-row" data-name="여름훈련티">
-                    <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> ☀️ 여름훈련티</label>
-                    <select class="uniform-item-size" disabled>
-                        <option value="80">80</option><option value="85">85</option><option value="90">90</option>
-                        <option value="95" selected>95</option><option value="100">100</option><option value="105">105</option>
-                        <option value="110">110</option>
-                    </select>
-                    <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
-                </div>
+                    <div class="uniform-item-row" data-name="유니폼상의">
+                        <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> ⚾ 유니폼 상의</label>
+                        <select class="uniform-item-size" disabled>
+                            <option value="80">80</option><option value="85">85</option><option value="90">90</option>
+                            <option value="95" selected>95</option><option value="100">100</option><option value="105">105</option>
+                            <option value="110">110</option>
+                        </select>
+                        <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
+                    </div>
 
-                <div class="uniform-item-row" data-name="겨울훈련티">
-                    <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> ❄️ 겨울훈련티</label>
-                    <select class="uniform-item-size" disabled>
-                        <option value="80">80</option><option value="85">85</option><option value="90">90</option>
-                        <option value="95" selected>95</option><option value="100">100</option><option value="105">105</option>
-                        <option value="110">110</option>
-                    </select>
-                    <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
-                </div>
+                    <div class="uniform-item-row" id="rowPants">
+                        <label class="uniform-item-name"><input type="checkbox" id="chkPants" onchange="togglePantsInputs(this)"> 👖 바지(허리/기장)</label>
+                        <div class="pants-double-box">
+                            <select id="pantsWaist" disabled title="허리 사이즈">
+                                <option value="24">24인치</option><option value="25">25인치</option><option value="26">26인치</option>
+                                <option value="27">27인치</option><option value="28" selected>28인치</option><option value="29">29인치</option>
+                                <option value="30">30인치</option><option value="32">32인치</option><option value="34">34인치</option>
+                            </select>
+                            <select id="pantsLength" disabled title="기장 옵션">
+                                <option value="기본" selected>기본</option>
+                                <option value="+3cm">+3cm</option><option value="+5cm">+5cm</option><option value="+7cm">+7cm</option>
+                                <option value="-3cm">-3cm</option><option value="-5cm">-5cm</option>
+                            </select>
+                        </div>
+                        <select id="pantsQty" class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
+                    </div>
 
-                <div class="uniform-item-row" data-name="바람막이">
-                    <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 💨 바람막이</label>
-                    <select class="uniform-item-size" disabled>
-                        <option value="85">85</option><option value="90">90</option><option value="95" selected>95</option>
-                        <option value="100">100</option><option value="105">105</option><option value="115">115</option>
-                    </select>
-                    <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
-                </div>
+                    <div class="uniform-item-row" data-name="여름훈련티">
+                        <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> ☀️ 여름훈련티</label>
+                        <select class="uniform-item-size" disabled>
+                            <option value="80">80</option><option value="85">85</option><option value="90">90</option>
+                            <option value="95" selected>95</option><option value="100">100</option><option value="105">105</option>
+                            <option value="110">110</option>
+                        </select>
+                        <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
+                    </div>
 
-                <div class="uniform-item-row" data-name="풀오버">
-                    <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 🧥 풀오버</label>
-                    <select class="uniform-item-size" disabled>
-                        <option value="85">85</option><option value="90">90</option><option value="95" selected>95</option>
-                        <option value="100">100</option><option value="105">105</option><option value="115">115</option>
-                    </select>
-                    <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
-                </div>
+                    <div class="uniform-item-row" data-name="겨울훈련티">
+                        <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> ❄️ 겨울훈련티</label>
+                        <select class="uniform-item-size" disabled>
+                            <option value="80">80</option><option value="85">85</option><option value="90">90</option>
+                            <option value="95" selected>95</option><option value="100">100</option><option value="105">105</option>
+                            <option value="110">110</option>
+                        </select>
+                        <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
+                    </div>
 
-                <div class="uniform-item-row" data-name="겨울점퍼">
-                    <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 🧤 겨울점퍼</label>
-                    <select class="uniform-item-size" disabled>
-                        <option value="85">85</option><option value="90">90</option><option value="95" selected>95</option>
-                        <option value="100">100</option><option value="105">105</option><option value="115">115</option>
-                    </select>
-                    <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
-                </div>
+                    <div class="uniform-item-row" data-name="바람막이">
+                        <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 💨 바람막이</label>
+                        <select class="uniform-item-size" disabled>
+                            <option value="85">85</option><option value="90">90</option><option value="95" selected>95</option>
+                            <option value="100">100</option><option value="105">105</option><option value="115">115</option>
+                        </select>
+                        <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
+                    </div>
 
+                    <div class="uniform-item-row" data-name="풀오버">
+                        <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 🧥 풀오버</label>
+                        <select class="uniform-item-size" disabled>
+                            <option value="85">85</option><option value="90">90</option><option value="95" selected>95</option>
+                            <option value="100">100</option><option value="105">105</option><option value="115">115</option>
+                        </select>
+                        <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
+                    </div>
+
+                    <div class="uniform-item-row" data-name="겨울점퍼">
+                        <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 🧤 겨울점퍼</label>
+                        <select class="uniform-item-size" disabled>
+                            <option value="85">85</option><option value="90">90</option><option value="95" selected>95</option>
+                            <option value="100">100</option><option value="105">105</option><option value="115">115</option>
+                        </select>
+                        <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
+                    </div>
+
+                </div>
             </div>
         </div>
 
@@ -1293,7 +1322,7 @@
 <!-- 3. 유니폼 접수 & 발주 집계 모달 -->
 <div id="ordersModal" class="modal">
     <div class="modal-content" style="max-width: 520px; width: 95%;">
-        <div class="modal-header" id="ordersModalTitle">📋 유니폼 주문 현황 & 발주 관리</div>
+        <div class="modal-header">📋 유니폼 주문 현황 & 발주 관리</div>
         
         <div class="order-modal-tabs">
             <button class="order-tab-btn active" id="tabBtnPlayerOrders" onclick="switchOrderModalTab('players')">선수별 내역</button>
@@ -1301,9 +1330,9 @@
             <button class="order-tab-btn" id="tabBtnUnordered" onclick="switchOrderModalTab('unordered')">⚠️ 미신청자 (<span id="unorderedCount">0</span>)</button>
         </div>
 
-        <div id="ordersListContent" style="max-height: 420px; overflow-y: auto;"></div>
+        <div class="modal-scroll-body" id="ordersListContent"></div>
 
-        <div class="modal-btns" style="justify-content: space-between; margin-top: 14px;">
+        <div class="modal-btns" style="justify-content: space-between;">
             <button class="btn-sheet-link" onclick="window.open(GOOGLE_SHEET_UNIFORM_URL, '_blank')">📊 시트 편집창 열기</button>
             <button class="btn-save" onclick="closeModal('ordersModal')">닫기</button>
         </div>
@@ -1314,7 +1343,7 @@
 <div id="passwordModal" class="modal">
     <div class="modal-content" style="max-width: 440px;">
         <div class="modal-header" id="pwModalTitle">🔑 관리자 비밀번호 설정</div>
-        <div id="pwModalBody"></div>
+        <div class="modal-scroll-body" id="pwModalBody"></div>
         <div class="modal-btns" id="pwModalBtns"></div>
     </div>
 </div>
@@ -1323,23 +1352,25 @@
 <div id="photoUploadModal" class="modal">
     <div class="modal-content" style="max-width: 400px; text-align: center;">
         <div class="modal-header" id="photoModalTitle">📷 선수 프로필 사진 등록</div>
-        <p style="font-size: 12px; color: #64748b; margin-bottom: 14px;">
-            새 사진을 등록하거나, 등록된 사진을 삭제하여 기본 이미지로 복원할 수 있습니다.
-        </p>
-        
-        <div style="width: 160px; aspect-ratio: 4 / 5; margin: 0 auto 14px; background: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative;">
-            <img id="photoPreviewImg" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
-            <span id="photoPreviewPlaceholder" style="font-size: 12px; color: #94a3b8; font-weight: 700;">사진을 선택해 주세요</span>
+        <div class="modal-scroll-body">
+            <p style="font-size: 12px; color: #64748b; margin-bottom: 14px;">
+                새 사진을 등록하거나, 등록된 사진을 삭제하여 기본 이미지로 복원할 수 있습니다.
+            </p>
+            
+            <div style="width: 160px; aspect-ratio: 4 / 5; margin: 0 auto 14px; background: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative;">
+                <img id="photoPreviewImg" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                <span id="photoPreviewPlaceholder" style="font-size: 12px; color: #94a3b8; font-weight: 700;">사진을 선택해 주세요</span>
+            </div>
+
+            <input type="file" id="targetPhotoInput" accept="image/*" style="display: none;" onchange="handlePhotoFileSelected(this)">
+            <button type="button" class="btn-cancel" style="width: 100%; padding: 10px; font-size: 13px; font-weight: 800; border-color: #0284c7; color: #0284c7; margin-bottom: 8px;" onclick="document.getElementById('targetPhotoInput').click()">
+                📁 새 사진 앨범/카메라에서 선택
+            </button>
+
+            <button type="button" id="btnDeletePhoto" class="btn-cancel" style="width: 100%; padding: 8px; font-size: 12px; font-weight: 700; border-color: #fecaca; color: #b91c1c; background: #fff5f5; margin-bottom: 14px; display: none;" onclick="executeDeletePhoto()">
+                🗑️ 등록된 사진 삭제 (기본 이미지 복원)
+            </button>
         </div>
-
-        <input type="file" id="targetPhotoInput" accept="image/*" style="display: none;" onchange="handlePhotoFileSelected(this)">
-        <button type="button" class="btn-cancel" style="width: 100%; padding: 10px; font-size: 13px; font-weight: 800; border-color: #0284c7; color: #0284c7; margin-bottom: 8px;" onclick="document.getElementById('targetPhotoInput').click()">
-            📁 새 사진 앨범/카메라에서 선택
-        </button>
-
-        <button type="button" id="btnDeletePhoto" class="btn-cancel" style="width: 100%; padding: 8px; font-size: 12px; font-weight: 700; border-color: #fecaca; color: #b91c1c; background: #fff5f5; margin-bottom: 14px; display: none;" onclick="executeDeletePhoto()">
-            🗑️ 등록된 사진 삭제 (기본 이미지 복원)
-        </button>
 
         <div class="modal-btns" style="justify-content: space-between;">
             <button class="btn-cancel" onclick="closeModal('photoUploadModal')">취소</button>
@@ -1351,9 +1382,9 @@
 <!-- 6. 학부모 비상연락망 모달 -->
 <div id="emergencyContactsModal" class="modal">
     <div class="modal-content" style="max-width: 480px; width: 95%;">
-        <div class="modal-header" id="contactsModalTitle">🚨 학부모 비상연락망</div>
+        <div class="modal-header">🚨 학부모 비상연락망</div>
         
-        <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+        <div style="display: flex; gap: 6px; margin-bottom: 8px; flex-shrink: 0;">
             <input type="text" id="contactSearchInput" placeholder="선수명 / 연락처 / 주소 검색" style="flex: 1; padding: 7px 10px; border: 1px solid var(--card-border); border-radius: 6px; font-size: 12px;" oninput="renderEmergencyContacts()">
             <select id="contactGradeSelect" style="padding: 7px 8px; border: 1px solid var(--card-border); border-radius: 6px; font-size: 12px; font-weight: 700;" onchange="renderEmergencyContacts()">
                 <option value="all">전체</option>
@@ -1366,7 +1397,7 @@
             </select>
         </div>
 
-        <div class="contact-quick-bar">
+        <div class="contact-quick-bar" style="flex-shrink: 0;">
             <span style="font-size: 11px; font-weight: 800; color: #991b1b; white-space: nowrap;">⚡ 긴급 공지</span>
             <div style="display: flex; gap: 3px; flex-wrap: wrap;">
                 <button class="btn-quick-action" onclick="copyAllContactPhones()">📋 번호복사</button>
@@ -1376,9 +1407,9 @@
             </div>
         </div>
 
-        <div id="contactsListContent" style="max-height: 420px; overflow-y: auto; padding-right: 2px;"></div>
+        <div class="modal-scroll-body" id="contactsListContent"></div>
 
-        <div class="modal-btns" style="justify-content: space-between; margin-top: 12px;">
+        <div class="modal-btns" style="justify-content: space-between;">
             <button class="btn-sheet-link" onclick="window.open(GOOGLE_SHEET_CONTACTS_URL, '_blank')">📊 시트 원본</button>
             <button class="btn-save" onclick="closeModal('emergencyContactsModal')">닫기</button>
         </div>
@@ -1387,7 +1418,7 @@
 
 <script>
     // ==========================================================
-    // 🔒 [보안 잠금 체크 및 인증 로직] (페이지 로드 시 즉시 실행)
+    // 🔒 [보안 잠금 체크 및 인증 로직] (힌트 삭제 완료)
     // ==========================================================
     (function checkPageAuth() {
         const authExpire = localStorage.getItem('daeyeon_auth_expire');
@@ -2539,7 +2570,7 @@
                 <div class="form-group"><label>일반관리자 새 비밀번호</label><input type="text" id="devNewGenPw" value="${pws.general}"></div>
             `;
             btns.innerHTML = `
-                <button class="btn-cancel" style="color:#b91c1c; border-color:#fecaca;" onclick="resetAllPasswordsToDefault()">기본값 리셋</button>
+                <button class="btn-cancel" style="color:#b91c1c; border-color:#fca5a5;" onclick="resetAllPasswordsToDefault()">기본값 리셋</button>
                 <button class="btn-cancel" onclick="closeModal('passwordModal')">취소</button>
                 <button class="btn-save" style="background:#7c3aed;" onclick="saveDevPasswords()">전체 저장</button>
             `;
