@@ -10,8 +10,8 @@
         const GOOGLE_SHEET_CONTACTS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw2YtYByfiPWXbRfqkzmZ6yzaZVfJHO0f9zAmCiLnwlMvVXCt9lv4AmQAz4_vSjzPy0APtl0hwYNmW/pub?gid=812608822&single=true&output=csv";
         const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
         
-        // 웹페이지 배포 버전 (개발자 명령어 통일 v1.8.7)
-        const APP_VERSION = "v1.8.7 · b260915";
+        // 웹페이지 배포 버전 (신청 수량 반영 v1.9.0)
+        const APP_VERSION = "v1.9.0 · b260915";
     </script>
 
     <meta charset="UTF-8">
@@ -1132,7 +1132,7 @@
         <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
         <div class="admin-btn-group">
             <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
-            <span class="app-version-tag" id="appVersionDisplay">v1.8.7 · b260915</span>
+            <span class="app-version-tag" id="appVersionDisplay">v1.9.0 · b260915</span>
         </div>
     </div>
 </header>
@@ -1256,27 +1256,27 @@
                 <label>유니폼 품목 및 사이즈 선택 *</label>
                 <div style="background: #f8fafc; border: 1px solid var(--card-border); border-radius: 8px; padding: 6px 10px;">
                     
+                    <!-- 1. 모자 -->
                     <div class="uniform-item-row" data-name="모자">
                         <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 🧢 모자</label>
                         <select class="uniform-item-size" disabled>
-                            <option value="52호">52호</option><option value="53호">53호</option><option value="54호">54호</option>
-                            <option value="55호">55호</option><option value="56호" selected>56호</option><option value="57호">57호</option>
-                            <option value="58호">58호</option><option value="59호">59호</option><option value="60호">60호</option>
-                            <option value="프리">프리</option>
+                            <option value="프리" selected>프리</option>
                         </select>
-                        <select class="uniform-item-qty" disabled><option value="1개">1개</option><option value="2개">2개</option></select>
+                        <select class="uniform-item-qty" disabled><option value="1개">1개</option><option value="2개">2개</option><option value="3개">3개</option></select>
                     </div>
 
+                    <!-- 2. 유니폼 상의 -->
                     <div class="uniform-item-row" data-name="유니폼상의">
                         <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> ⚾ 유니폼 상의</label>
                         <select class="uniform-item-size" disabled>
                             <option value="80">80</option><option value="85">85</option><option value="90">90</option>
                             <option value="95" selected>95</option><option value="100">100</option><option value="105">105</option>
-                            <option value="110">110</option>
+                            <option value="110">110</option><option value="115">115</option>
                         </select>
                         <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
                     </div>
 
+                    <!-- 3. 바지(허리/기장) -->
                     <div class="uniform-item-row" id="rowPants">
                         <label class="uniform-item-name"><input type="checkbox" id="chkPants" onchange="togglePantsInputs(this)"> 👖 바지(허리/기장)</label>
                         <div class="pants-double-box">
@@ -1294,51 +1294,59 @@
                         <select id="pantsQty" class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
                     </div>
 
+                    <!-- 4. 여름훈련티 -->
                     <div class="uniform-item-row" data-name="여름훈련티">
                         <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> ☀️ 여름훈련티</label>
                         <select class="uniform-item-size" disabled>
                             <option value="80">80</option><option value="85">85</option><option value="90">90</option>
                             <option value="95" selected>95</option><option value="100">100</option><option value="105">105</option>
-                            <option value="110">110</option>
+                            <option value="110">110</option><option value="115">115</option>
                         </select>
                         <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
                     </div>
 
+                    <!-- 5. 겨울훈련티 -->
                     <div class="uniform-item-row" data-name="겨울훈련티">
                         <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> ❄️ 겨울훈련티</label>
                         <select class="uniform-item-size" disabled>
                             <option value="80">80</option><option value="85">85</option><option value="90">90</option>
                             <option value="95" selected>95</option><option value="100">100</option><option value="105">105</option>
-                            <option value="110">110</option>
+                            <option value="110">110</option><option value="115">115</option>
                         </select>
-                        <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
+                        <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
                     </div>
 
+                    <!-- 6. 바람막이 -->
                     <div class="uniform-item-row" data-name="바람막이">
                         <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 💨 바람막이</label>
                         <select class="uniform-item-size" disabled>
-                            <option value="85">85</option><option value="90">90</option><option value="95" selected>95</option>
-                            <option value="100">100</option><option value="105">105</option><option value="115">115</option>
+                            <option value="80">80</option><option value="85">85</option><option value="90">90</option>
+                            <option value="95" selected>95</option><option value="100">100</option><option value="105">105</option>
+                            <option value="110">110</option><option value="115">115</option>
                         </select>
-                        <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
+                        <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
                     </div>
 
+                    <!-- 7. 풀오버 -->
                     <div class="uniform-item-row" data-name="풀오버">
                         <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 🧥 풀오버</label>
                         <select class="uniform-item-size" disabled>
-                            <option value="85">85</option><option value="90">90</option><option value="95" selected>95</option>
-                            <option value="100">100</option><option value="105">105</option><option value="115">115</option>
+                            <option value="80">80</option><option value="85">85</option><option value="90">90</option>
+                            <option value="95" selected>95</option><option value="100">100</option><option value="105">105</option>
+                            <option value="110">110</option><option value="115">115</option>
                         </select>
-                        <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
+                        <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
                     </div>
 
+                    <!-- 8. 겨울점퍼 -->
                     <div class="uniform-item-row" data-name="겨울점퍼">
                         <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 🧤 겨울점퍼</label>
                         <select class="uniform-item-size" disabled>
-                            <option value="85">85</option><option value="90">90</option><option value="95" selected>95</option>
-                            <option value="100">100</option><option value="105">105</option><option value="115">115</option>
+                            <option value="80">80</option><option value="85">85</option><option value="90">90</option>
+                            <option value="95" selected>95</option><option value="100">100</option><option value="105">105</option>
+                            <option value="110">110</option><option value="115">115</option>
                         </select>
-                        <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
+                        <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
                     </div>
 
                 </div>
@@ -1532,7 +1540,7 @@
         const ddmmyyyy = dd + mm + yyyy; // 일월년 (예: 15092026)
         const dm_yyyy = d + m + yyyy;   // 일월년 단일자리 대응
 
-        // ★ 개발자 명령어 통일: 연월일 또는 일월년 입력 시 둘 다 당일 정오(12:00)까지 해제
+        // ★ 개발자 명령어: 연월일 또는 일월년 입력 시 둘 다 당일 정오(12:00)까지 해제
         if (inputVal === yyyymmdd || inputVal === ddmmyyyy || inputVal === dm_yyyy) {
             let noonDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
             if (now.getTime() >= noonDate.getTime()) {
@@ -2087,7 +2095,7 @@
     }
 
     // ==========================================
-    // 유니폼 주문 신청 모달 로직
+    // 유니폼 주문 신청 모달 로직 (수량 표기 반영)
     // ==========================================
     function openUniformModal() {
         if (!isUniformActive && !isSuperOrDev()) {
@@ -2168,20 +2176,29 @@
         };
         let checkedCount = 0;
 
+        // ★ 모자, 상의, 훈련티, 아우터류: "사이즈 (갯수)" 또는 모자는 "프리 (갯수)" 형식으로 저장
         document.querySelectorAll('.uniform-item-row[data-name]').forEach(row => {
             const chk = row.querySelector('.chk-item');
             const name = row.getAttribute('data-name');
             if (chk && chk.checked && name) {
                 const size = row.querySelector('.uniform-item-size').value;
-                itemsMap[name] = size;
+                const qty = row.querySelector('.uniform-item-qty').value;
+                if (name === "모자") {
+                    itemsMap[name] = qty === "1개" ? "프리" : `프리 (${qty})`;
+                } else {
+                    itemsMap[name] = `${size} (${qty})`;
+                }
                 checkedCount++;
             }
         });
 
+        // ★ 바지: 허리는 숫자/인치, 기장은 "기장옵션 (갯수)" 형식으로 저장
         const chkPants = document.getElementById('chkPants');
         if (chkPants && chkPants.checked) {
             itemsMap["바지 (허리)"] = document.getElementById('pantsWaist').value;
-            itemsMap["바지 (기장)"] = document.getElementById('pantsLength').value;
+            const lengthVal = document.getElementById('pantsLength').value;
+            const qtyVal = document.getElementById('pantsQty').value;
+            itemsMap["바지 (기장)"] = `${lengthVal} (${qtyVal})`;
             checkedCount++;
         }
 
