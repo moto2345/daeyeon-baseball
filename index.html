@@ -1023,7 +1023,7 @@
         <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
         <div class="admin-btn-group">
             <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
-            <span class="app-version-tag" id="appVersionDisplay">v1.7.2 · b260915</span>
+            <span class="app-version-tag" id="appVersionDisplay">v1.7.9 · b260915</span>
         </div>
     </div>
 </header>
@@ -1088,7 +1088,7 @@
     <!-- 2. 이미지형 -->
     <div class="roster-grid" id="cardContainer"></div>
 
-    <div id="statusNotice" class="loading-notice">선수 명단을 실시간으로 불러오고 있습니다...</li>
+    <div id="statusNotice" class="loading-notice">선수 명단을 실시간으로 불러오고 있습니다...</div>
 </div>
 
 <!-- 1. 관리자 로그인 모달 -->
@@ -1541,10 +1541,11 @@
                 return a.name.localeCompare(b.name, 'ko');
             }
 
-            // 2. v1.7.2 원본의 완벽하고 안정적인 선수 정렬 로직 복원
-            if (a.no && !b.no) return -1;
-            if (!a.no && b.no) return 1;
-            if (a.no && b.no && a.no !== b.no) return a.no - b.no;
+            // 2. v1.7.2 원본의 완벽하고 안정적인 선수 정렬 로직 복원 (등번호 크기순 정확한 정렬)
+            const noA = (a.no && a.no > 0) ? a.no : 9999;
+            const noB = (b.no && b.no > 0) ? b.no : 9999;
+            if (noA !== noB) return noA - noB;
+
             return a.name.localeCompare(b.name, 'ko');
         });
 
