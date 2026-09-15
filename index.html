@@ -1,15 +1,20 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+    <!-- 구글 연동 설정 (CSV 주소, 편집창 주소, 유니폼 API) -->
     <script>
         const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw2YtYByfiPWXbRfqkzmZ6yzaZVfJHO0f9zAmCiLnwlMvVXCt9lv4AmQAz4_vSjzPy0APtl0hwYNmW/pub?output=csv";
         const GOOGLE_SHEET_EDIT_URL = "https://docs.google.com/spreadsheets/d/1ljpHkiJL_H1NN5rwTaQOL5QYeev32QvaBTKzxSPgNVA/edit?gid=1653839889#gid=1653839889";
         const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
+        
+        // 웹페이지 배포 버전 (업데이트 시 변경)
+        const APP_VERSION = "v1.4.0 · b260915";
     </script>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>대연초 야구부 명단</title>
+    <!-- CSV 파싱 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <style>
@@ -37,10 +42,11 @@
             padding-bottom: 70px;
         }
 
+        /* 헤더 */
         header {
             background-color: var(--kbo-blue);
             color: white;
-            padding: 26px 16px 22px;
+            padding: 24px 16px 20px;
             text-align: center;
             border-bottom: 5px solid var(--kbo-red);
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
@@ -66,10 +72,28 @@
             top: 14px;
             right: 14px;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 8px;
             flex-wrap: wrap;
             justify-content: flex-end;
+        }
+
+        /* 우측 상단 관리자 박스 */
+        .admin-btn-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 3px;
+        }
+
+        /* [신규 1안] 은은한 버전 텍스트 스타일 */
+        .app-version-tag {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.45);
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            padding-right: 2px;
+            user-select: none;
         }
 
         .btn-uniform-cta {
@@ -86,6 +110,7 @@
             align-items: center;
             gap: 4px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            height: 31px;
         }
 
         .btn-uniform-cta:hover { background: #d97706; }
@@ -100,6 +125,7 @@
             font-weight: 700;
             cursor: pointer;
             transition: 0.2s;
+            height: 31px;
         }
 
         .admin-toggle-btn:hover { background: rgba(255,255,255,0.25); }
@@ -115,6 +141,7 @@
             padding: 0 16px;
         }
 
+        /* 컨트롤 패널 */
         .control-card {
             background: #ffffff;
             border: 1px solid var(--card-border);
@@ -207,6 +234,7 @@
             color: #ffffff;
         }
 
+        /* 관리자 안내 바 */
         .admin-bar {
             display: none;
             border-radius: 8px;
@@ -276,7 +304,9 @@
             font-weight: 700;
             cursor: pointer;
         }
+        .btn-manage-pw:hover { background: #0369a1; }
 
+        /* 리스트형 메인 명단 테이블 */
         .table-wrap {
             background: #ffffff;
             border-radius: 8px;
@@ -758,6 +788,7 @@
             header { padding: 20px 12px 18px; }
             .header-title { font-size: 21px; }
             .header-actions { position: static; margin-top: 12px; justify-content: center; }
+            .admin-btn-group { align-items: center; }
             .control-top { flex-direction: column; align-items: stretch; }
             .control-right { justify-content: space-between; }
             .search-box input { width: 140px; }
@@ -773,7 +804,11 @@
     
     <div class="header-actions">
         <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
-        <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
+        <!-- 관리자 로그인 버튼 및 은은한 버전 표기 (1안 구현) -->
+        <div class="admin-btn-group">
+            <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
+            <span class="app-version-tag" id="appVersionDisplay">v1.4.0 · b260915</span>
+        </div>
     </div>
 </header>
 
@@ -1404,7 +1439,6 @@
         reader.readAsDataURL(file);
     }
 
-    // ★ [핵심] 초고속 안전 업로드 (CORS Preflight 차단) ★
     async function executeUploadPhoto() {
         if (!uploadTargetPlayer || !uploadOptimizedBase64) return;
 
@@ -1420,7 +1454,6 @@
                 base64Data: uploadOptimizedBase64
             };
 
-            // text/plain 명시로 OPTIONS 사전 요청(Preflight) 원천 차단
             const res = await fetch(GOOGLE_SCRIPT_UNIFORM_API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
