@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- 구글 연동 설정 (CSV 주소, 편집창 주소, 유니폼 API) -->
     <script>
         const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw2YtYByfiPWXbRfqkzmZ6yzaZVfJHO0f9zAmCiLnwlMvVXCt9lv4AmQAz4_vSjzPy0APtl0hwYNmW/pub?output=csv";
         const GOOGLE_SHEET_EDIT_URL = "https://docs.google.com/spreadsheets/d/1ljpHkiJL_H1NN5rwTaQOL5QYeev32QvaBTKzxSPgNVA/edit?gid=1653839889#gid=1653839889";
@@ -11,7 +10,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>대연초 야구부 명단</title>
-    <!-- CSV 파싱 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <style>
@@ -39,7 +37,6 @@
             padding-bottom: 70px;
         }
 
-        /* 헤더 */
         header {
             background-color: var(--kbo-blue);
             color: white;
@@ -118,7 +115,6 @@
             padding: 0 16px;
         }
 
-        /* 컨트롤 패널 */
         .control-card {
             background: #ffffff;
             border: 1px solid var(--card-border);
@@ -211,7 +207,6 @@
             color: #ffffff;
         }
 
-        /* 관리자 안내 바 */
         .admin-bar {
             display: none;
             border-radius: 8px;
@@ -281,9 +276,7 @@
             font-weight: 700;
             cursor: pointer;
         }
-        .btn-manage-pw:hover { background: #0369a1; }
 
-        /* 리스트형 메인 명단 테이블 */
         .table-wrap {
             background: #ffffff;
             border-radius: 8px;
@@ -1232,7 +1225,6 @@
             const rankB = b.grade === '감독' ? 1 : (b.grade === '코치' ? 2 : 3);
             if (rankA !== rankB) return rankA - rankB;
 
-            // [개선] 등번호 있는 선수가 앞쪽 번호순 정렬, 미정 선수는 맨 뒤 이름순 정렬
             if (a.no && !b.no) return -1;
             if (!a.no && b.no) return 1;
             if (a.no && b.no && a.no !== b.no) return a.no - b.no;
@@ -1349,7 +1341,6 @@
         }).join('');
     }
 
-    // 사진 업로드 모달
     function openPhotoUploadModal(playerNo, playerName) {
         uploadTargetPlayer = { no: playerNo, name: playerName };
         uploadOptimizedBase64 = null;
@@ -1413,6 +1404,7 @@
         reader.readAsDataURL(file);
     }
 
+    // ★ [핵심] 초고속 안전 업로드 (CORS Preflight 차단) ★
     async function executeUploadPhoto() {
         if (!uploadTargetPlayer || !uploadOptimizedBase64) return;
 
@@ -1428,12 +1420,21 @@
                 base64Data: uploadOptimizedBase64
             };
 
+            // text/plain 명시로 OPTIONS 사전 요청(Preflight) 원천 차단
             const res = await fetch(GOOGLE_SCRIPT_UNIFORM_API_URL, {
                 method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify(payload)
             });
 
-            const result = await res.json();
+            const resText = await res.text();
+            let result;
+            try {
+                result = JSON.parse(resText);
+            } catch(pe) {
+                console.error("서버 반환값:", resText);
+                throw new Error("서버 응답 오류 (구글 스크립트 권한 승인 필요)");
+            }
 
             if (result && result.result === "success") {
                 const customPhotos = JSON.parse(localStorage.getItem('daeyeon_custom_photos') || '{}');
@@ -1444,15 +1445,15 @@
                 const p = players.find(item => item.name === uploadTargetPlayer.name);
                 if (p) p.photoLink = result.url;
 
-                alert(`✅ ${uploadTargetPlayer.name} 선수의 사진이 구글 드라이브에 등록되었습니다!`);
+                alert(`✅ ${uploadTargetPlayer.name} 선수의 사진이 구글 드라이브에 성공적으로 등록되었습니다!`);
                 closeModal('photoUploadModal');
                 render();
             } else {
-                throw new Error("업로드 실패");
+                throw new Error(result.message || "업로드 실패");
             }
         } catch (err) {
-            console.error(err);
-            alert("사진 업로드 중 통신 오류가 발생했습니다.");
+            console.error("사진 업로드 에러:", err);
+            alert("사진 업로드 중 오류가 발생했습니다.\n\n원인: " + err.message + "\n\n(구글 Apps Script 편집기에서 testDriveAuth를 선택하고 [▷ 실행]을 눌러 드라이브 권한을 승인했는지 확인해 주세요.)");
         } finally {
             btn.disabled = false;
             btn.textContent = '구글 드라이브 등록';
@@ -1481,11 +1482,11 @@
         if (isDevPassword(pw)) {
             currentRole = 'dev';
             sessionStorage.setItem('daeyeon_admin_role', 'dev');
-            alert('⚡ [개발자 마스터 관리자]로 로그인되었습니다.');
+            alert('⚡ [개발자 마스터 관리자]로 로그인되었습니다.\n(모든 권한 및 사진 등록 가능)');
         } else if (pw === pws.super) {
             currentRole = 'super';
             sessionStorage.setItem('daeyeon_admin_role', 'super');
-            alert('👑 최고관리자로 로그인되었습니다.');
+            alert('👑 최고관리자로 로그인되었습니다.\n(선수 사진 등록 및 유니폼 접수 제어 가능)');
         } else if (pw === pws.sub) {
             currentRole = 'sub';
             sessionStorage.setItem('daeyeon_admin_role', 'sub');
@@ -1569,7 +1570,6 @@
         }
     }
 
-    // 비밀번호 관리 모달
     function openPasswordManageModal() {
         const body = document.getElementById('pwModalBody');
         const btns = document.getElementById('pwModalBtns');
@@ -1820,8 +1820,7 @@
             if (GOOGLE_SCRIPT_UNIFORM_API_URL && GOOGLE_SCRIPT_UNIFORM_API_URL.trim() !== "") {
                 await fetch(GOOGLE_SCRIPT_UNIFORM_API_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(orderData)
                 });
             }
@@ -2049,7 +2048,6 @@
         return '';
     }
 
-    // 구글 스프레드시트 명단 로드
     async function loadGoogleSheetData() {
         try {
             if (savedSearchQuery) {
@@ -2080,7 +2078,6 @@
                         const weightFlag = getColVal(row, '몸무게공개', '몸무게노출', '몸무게비공개');
                         const drivePhotoLink = getColVal(row, '사진링크', '드라이브사진', '사진URL', '이미지링크');
 
-                        // [핵심] 등번호가 없거나 문자여도 0으로 처리하여 이름만 있으면 통과
                         const rawNo = String(row['등번호'] || '').trim();
                         const parsedNo = parseInt(rawNo, 10);
                         const no = (!isNaN(parsedNo) && parsedNo > 0) ? parsedNo : 0;
@@ -2102,7 +2099,7 @@
                             hideWeight: isOff(weightFlag),
                             photoLink: drivePhotoLink
                         };
-                    }).filter(p => p.name); // [핵심] 등번호 없어도 이름만 있으면 100% 노출!
+                    }).filter(p => p.name);
 
                     switchView(currentView);
                 }
