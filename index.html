@@ -10,8 +10,8 @@
         const GOOGLE_SHEET_CONTACTS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw2YtYByfiPWXbRfqkzmZ6yzaZVfJHO0f9zAmCiLnwlMvVXCt9lv4AmQAz4_vSjzPy0APtl0hwYNmW/pub?gid=812608822&single=true&output=csv";
         const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
         
-        // 웹페이지 배포 버전 (비상연락망 렌더링 정상화 v1.9.1)
-        const APP_VERSION = "v1.9.1 · b260915";
+        // 웹페이지 배포 버전 (비상연락망 상세복사 업그레이드 v1.9.2)
+        const APP_VERSION = "v1.9.2 · b260915";
     </script>
 
     <meta charset="UTF-8">
@@ -1132,7 +1132,7 @@
         <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
         <div class="admin-btn-group">
             <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
-            <span class="app-version-tag" id="appVersionDisplay">v1.9.1 · b260915</span>
+            <span class="app-version-tag" id="appVersionDisplay">v1.9.2 · b260915</span>
         </div>
     </div>
 </header>
@@ -1420,7 +1420,7 @@
     </div>
 </div>
 
-<!-- 6. 학부모 비상연락망 모달 (★ ID 정상 복구: id="contactsModalTitle") -->
+<!-- 6. 학부모 비상연락망 모달 (ID 정상 복구: id="contactsModalTitle") -->
 <div id="emergencyContactsModal" class="modal">
     <div class="modal-content" style="max-width: 480px; width: 95%;">
         <div class="modal-header" id="contactsModalTitle">🚨 학부모 비상연락망</div>
@@ -1441,7 +1441,8 @@
         <div class="contact-quick-bar" style="flex-shrink: 0;">
             <span style="font-size: 11px; font-weight: 800; color: #991b1b; white-space: nowrap;">⚡ 긴급 공지</span>
             <div style="display: flex; gap: 3px; flex-wrap: wrap;">
-                <button class="btn-quick-action" onclick="copyAllContactPhones()">📋 번호복사</button>
+                <!-- ★ 상세 복사 버튼 -->
+                <button class="btn-quick-action" onclick="copyAllContactPhones()">📋 비상연락망 복사</button>
                 <button class="btn-quick-action" onclick="copyEmergencyTemplate('weather')">🌧️ 우천취소</button>
                 <button class="btn-quick-action" onclick="copyEmergencyTemplate('match')">⚾ 경기시간</button>
                 <button class="btn-quick-action" onclick="copyEmergencyTemplate('safe')">🏠 안전귀가</button>
@@ -1767,7 +1768,7 @@
     }
 
     // ==========================================================
-    // ★ [완벽 복원] v1.7.2 정렬 기반 + 감독/수석/투수코치 순서 고정
+    // ★ 코칭스태프 직책 고정 및 선수 정렬 엔진
     // ==========================================================
     function getStaffRank(p) {
         const grade = String(p.grade || '').trim();
@@ -2234,9 +2235,9 @@
         }
     }
 
-    // ==========================================
-    // 🚨 비상연락망 모달 로직 (정상 렌더링 복원)
-    // ==========================================
+    // ==========================================================
+    // 🚨 비상연락망 모달 로직 & ★ 상세 비상연락망 복사 기능
+    // ==========================================================
     async function openEmergencyContactsModal() {
         document.getElementById('emergencyContactsModal').style.display = 'flex';
         const content = document.getElementById('contactsListContent');
@@ -2402,32 +2403,63 @@
         }).join('');
     }
 
+    // ★ [상세 비상연락망 클립보드 복사 엔진]
     function copyAllContactPhones() {
         const query = document.getElementById('contactSearchInput') ? document.getElementById('contactSearchInput').value.trim().toLowerCase() : '';
         const selectedG = document.getElementById('contactGradeSelect') ? document.getElementById('contactGradeSelect').value : 'all';
 
-        const phones = [];
-        emergencyContactsData.forEach(c => {
+        const filtered = emergencyContactsData.filter(c => {
             const name = getVal(c, '선수이름', '이름', '선수명');
+            const no = getVal(c, '배번', '등번호', '번호');
             const grade = getVal(c, '학년', '구분');
+            const fPhone = getVal(c, '아버님', '아버지', '부 연락처');
+            const mPhone = getVal(c, '어머님', '어머니', '모 연락처');
+            const sPhone = getVal(c, '학생연락처', '선수연락처');
+            const address = getVal(c, '주소');
+
+            if (!name) return false;
+
             let matchG = (selectedG === 'all') || (grade.includes(selectedG));
-            let matchQ = !query || name.toLowerCase().includes(query);
-            if (matchG && matchQ) {
-                const fPhone = getVal(c, '아버님', '아버지');
-                const mPhone = getVal(c, '어머님', '어머니');
-                if (fPhone) phones.push(fPhone);
-                if (mPhone) phones.push(mPhone);
-            }
+            let matchQ = !query || name.toLowerCase().includes(query) || no.includes(query) || fPhone.includes(query) || mPhone.includes(query) || sPhone.includes(query) || address.toLowerCase().includes(query);
+            return matchG && matchQ;
+        }).sort((a, b) => {
+            const noA = parseInt(getVal(a, '배번', '등번호')) || 999;
+            const noB = parseInt(getVal(b, '배번', '등번호')) || 999;
+            return noA - noB;
         });
 
-        const uniquePhones = Array.from(new Set(phones));
-        if (uniquePhones.length === 0) {
-            alert('복사할 수 있는 학부모 연락처가 없습니다.');
+        if (filtered.length === 0) {
+            alert('복사할 수 있는 학부모 비상연락망 데이터가 없습니다.');
             return;
         }
 
-        navigator.clipboard.writeText(uniquePhones.join(', ')).then(() => {
-            alert(`✅ 총 ${uniquePhones.length}개의 학부모 연락처가 복사되었습니다!`);
+        const gradeLabel = selectedG === 'all' ? '전체' : `${selectedG}학년`;
+        let text = `[대연초 야구부 학부모 비상연락망]\n(대상: ${gradeLabel} ${filtered.length}명)\n`;
+
+        filtered.forEach((c, idx) => {
+            const name = getVal(c, '선수이름', '이름', '선수명') || '선수 미지정';
+            const no = getVal(c, '배번', '등번호');
+            const grade = getVal(c, '학년', '구분');
+            const fPhone = getVal(c, '아버님', '아버지');
+            const mPhone = getVal(c, '어머님', '어머니');
+            const sPhone = getVal(c, '학생연락처', '선수연락처');
+            const address = getVal(c, '주소');
+            const note = getVal(c, '비고', '메모');
+
+            const noText = no ? `No.${no} ` : '';
+            const gradeText = grade ? ` (${grade.includes('학년') ? grade : grade + '학년'})` : '';
+
+            text += `\n${idx + 1}. ${noText}${name}${gradeText}`;
+            if (fPhone) text += `\n  • 아버님: ${fPhone}`;
+            if (mPhone) text += `\n  • 어머님: ${mPhone}`;
+            if (sPhone) text += `\n  • 학생: ${sPhone}`;
+            if (address) text += `\n  • 주소: ${address}`;
+            if (note) text += `\n  • 비고: ${note}`;
+            text += `\n`;
+        });
+
+        navigator.clipboard.writeText(text.trim()).then(() => {
+            alert(`📋 ${filtered.length}명의 학부모 상세 비상연락망이 복사되었습니다!\n카카오톡이나 메모장에 바로 붙여넣기 하세요.`);
         });
     }
 
