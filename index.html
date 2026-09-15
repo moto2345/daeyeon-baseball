@@ -10,8 +10,8 @@
         const GOOGLE_SHEET_CONTACTS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw2YtYByfiPWXbRfqkzmZ6yzaZVfJHO0f9zAmCiLnwlMvVXCt9lv4AmQAz4_vSjzPy0APtl0hwYNmW/pub?gid=812608822&single=true&output=csv";
         const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
         
-        // 웹페이지 배포 버전 (화면 잠금 버튼 좌측 이동 v1.9.7)
-        const APP_VERSION = "v1.9.7 · b260915";
+        // 웹페이지 배포 버전 (사진 삭제 버그 수정 v1.9.8)
+        const APP_VERSION = "v1.9.8 · b260915";
     </script>
 
     <meta charset="UTF-8">
@@ -100,7 +100,7 @@
             letter-spacing: 0.5px;
         }
 
-        /* 좌측 상단 타이머 및 잠금 버튼 영역 */
+        /* 좌측 상단 타이머 영역 */
         .header-left-actions {
             position: absolute;
             top: 14px;
@@ -1132,7 +1132,7 @@
         <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
         <div class="admin-btn-group">
             <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
-            <span class="app-version-tag" id="appVersionDisplay">v1.9.6 · b260915</span>
+            <span class="app-version-tag" id="appVersionDisplay">v1.9.8 · b260915</span>
         </div>
     </div>
 </header>
@@ -1171,7 +1171,7 @@
             <button id="btnToggleUniform" class="btn-toggle-uniform" style="display: none;" onclick="toggleUniformFeature()">👕 접수기능: ON</button>
             <button id="btnViewOrders" class="btn-orders-view" style="display: none;" onclick="openOrdersSummaryModal()">📋 유니폼 접수 & 발주 집계</button>
             <button id="btnManagePw" class="btn-manage-pw" style="display: none;" onclick="openPasswordManageModal()">🔑 비밀번호 관리</button>
-            <button id="btnSheetLink" class="btn-sheet-link" style="display: none;" onclick="window.open(GOOGLE_SHEET_EDIT_URL, '_blank')">📊 구글 시트 편집창 열기</button>
+            <button id="btnSheetLink" class="btn-sheet-link" style="display: none;" onclick="window.open(GOOGLE_SHEET_EDIT_URL, '_blank')">📊 시트 편집창 열기</button>
         </div>
     </div>
 
@@ -1525,7 +1525,7 @@
 
     function verifyLockPassword() {
         const inputVal = document.getElementById('lockPasswordInput').value.trim();
-        const pws = getStoredPasswords(); // { super: '0000', sub: '1111', general: '2222' }
+        const pws = getStoredPasswords();
 
         const now = new Date();
         const yyyy = String(now.getFullYear());
@@ -1535,17 +1535,16 @@
         const d = String(now.getDate());
         const m = String(now.getMonth() + 1);
 
-        // 개발자 날짜 조합 (4자리/2자리 연도 + 연월일/일월년)
         const devCodes = [
-            yyyy + mm + dd, // 20260915
-            dd + mm + yyyy, // 15092026
-            d + m + yyyy,   // 1592026
-            yy + mm + dd,   // 260915
-            dd + mm + yy,   // 150926
-            d + m + yy      // 15926
+            yyyy + mm + dd,
+            dd + mm + yyyy,
+            d + m + yyyy,
+            yy + mm + dd,
+            dd + mm + yy,
+            d + m + yy
         ];
 
-        // 1. 개발자 히든 명령어 (당일 정오까지 해제)
+        // 1. 개발자 명령어 (정오까지 해제)
         if (devCodes.includes(inputVal)) {
             let noonDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
             if (now.getTime() >= noonDate.getTime()) {
@@ -2639,7 +2638,8 @@
             delete customPhotos[uploadTargetPlayer.name];
             localStorage.setItem('daeyeon_custom_photos', JSON.stringify(customPhotos));
 
-            const p = players.find(item => (uploadTargetPlayer.no && item.no === target.no) || item.name === target.name);
+            // ★ [오류 해결] target.no -> uploadTargetPlayer.no 로 수정 완료
+            const p = players.find(item => (uploadTargetPlayer.no && item.no === uploadTargetPlayer.no) || item.name === uploadTargetPlayer.name);
             if (p) p.photoLink = "";
 
             alert(`✅ ${uploadTargetPlayer.name} 선수의 사진이 삭제되어 기본 이미지로 복원되었습니다.`);
@@ -2678,7 +2678,7 @@
         if (isDevPassword(pw)) {
             currentRole = 'dev';
             sessionStorage.setItem('daeyeon_admin_role', 'dev');
-            alert('⚡ [개발자]로 로그인되었습니다.');
+            alert('⚡ [개발자 마스터 관리자]로 로그인되었습니다.');
         } else if (pw === pws.super) {
             currentRole = 'super';
             sessionStorage.setItem('daeyeon_admin_role', 'super');
