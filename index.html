@@ -11,7 +11,7 @@
         const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
         
         // 웹페이지 배포 버전
-        const APP_VERSION = "v1.6.1 · b260915";
+        const APP_VERSION = "v1.6.2 · b260915";
     </script>
 
     <meta charset="UTF-8">
@@ -255,7 +255,6 @@
             flex-wrap: wrap;
         }
 
-        /* 🚨 학부모 비상연락망 버튼 */
         .btn-emergency-contact {
             background: #dc2626;
             color: white;
@@ -769,14 +768,19 @@
             white-space: nowrap;
         }
 
-        /* ==========================================
-           [1순위] 비상연락망 전용 스타일
-           ========================================== */
+        /* ===================================================
+           [모바일 완벽 최적화] 🚨 비상연락망 전용 스타일
+           =================================================== */
+        #emergencyContactsModal .modal-content {
+            padding: 16px 14px !important;
+            max-width: 480px;
+        }
+
         .contact-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 12px;
+            border-radius: 10px;
+            padding: 10px 12px;
             margin-bottom: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.03);
             border-left: 4px solid #dc2626;
@@ -787,7 +791,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 8px;
-            padding-bottom: 6px;
+            padding-bottom: 5px;
             border-bottom: 1px solid #f1f5f9;
         }
 
@@ -795,8 +799,10 @@
             font-size: 15px;
             font-weight: 800;
             color: #0f172a;
+            white-space: nowrap;
         }
 
+        /* 연락처 한 줄 (절대 줄바꿈 방지) */
         .contact-row {
             display: flex;
             justify-content: space-between;
@@ -807,47 +813,73 @@
             margin-bottom: 5px;
             border: 1px solid #f1f5f9;
             gap: 6px;
+            flex-wrap: nowrap; /* 세로 줄바꿈 방지 */
         }
 
-        .contact-label {
-            font-size: 12px;
-            font-weight: 700;
-            color: #334155;
+        .contact-left-info {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
+            min-width: 0;
+            white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+            overflow: hidden;
+        }
+
+        .contact-role-badge {
+            font-size: 11px;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .role-father { background: #eff6ff; color: #1d4ed8; }
+        .role-mother { background: #fdf2f8; color: #db2777; }
+        .role-student { background: #f0fdf4; color: #166534; }
+
+        .contact-phone-text {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e293b;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            white-space: nowrap;
+            letter-spacing: -0.2px;
         }
 
         .contact-actions {
             display: flex;
             gap: 4px;
+            flex-shrink: 0; /* 버튼 찌그러짐 방지 */
+            white-space: nowrap;
         }
 
         .btn-call {
             background: #059669;
             color: white;
-            padding: 4px 8px;
+            padding: 4px 8px !important;
             border-radius: 5px;
-            font-size: 11px;
+            font-size: 11px !important;
             font-weight: 800;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 2px;
+            white-space: nowrap !important;
         }
         .btn-call:hover { background: #047857; }
 
         .btn-sms {
             background: #0284c7;
             color: white;
-            padding: 4px 8px;
+            padding: 4px 8px !important;
             border-radius: 5px;
-            font-size: 11px;
+            font-size: 11px !important;
             font-weight: 800;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 2px;
+            white-space: nowrap !important;
         }
         .btn-sms:hover { background: #0369a1; }
 
@@ -868,22 +900,23 @@
             align-items: center;
             background: #fef2f2;
             border: 1px solid #fecaca;
-            padding: 8px 10px;
+            padding: 6px 8px;
             border-radius: 8px;
             margin-bottom: 10px;
-            gap: 6px;
+            gap: 4px;
             flex-wrap: wrap;
         }
 
         .btn-quick-action {
             background: #ffffff;
             border: 1px solid #cbd5e1;
-            padding: 4px 8px;
+            padding: 4px 7px;
             border-radius: 5px;
             font-size: 11px;
             font-weight: 700;
             cursor: pointer;
             color: #334155;
+            white-space: nowrap;
         }
         .btn-quick-action:hover { background: #f1f5f9; }
 
@@ -916,7 +949,7 @@
         <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
         <div class="admin-btn-group">
             <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
-            <span class="app-version-tag" id="appVersionDisplay">v1.6.1 · b260915</span>
+            <span class="app-version-tag" id="appVersionDisplay">v1.6.2 · b260915</span>
         </div>
     </div>
 </header>
@@ -1178,18 +1211,18 @@
     </div>
 </div>
 
-<!-- ==========================================
-     [1순위] 🚨 학부모 비상연락망 모달 (실제 시트 헤더 100% 매핑)
-     ========================================== -->
+<!-- ===================================================
+     [모바일 최적화 완결판] 🚨 학부모 비상연락망 모달
+     =================================================== -->
 <div id="emergencyContactsModal" class="modal">
-    <div class="modal-content" style="max-width: 540px; width: 95%;">
+    <div class="modal-content" style="max-width: 480px; width: 95%;">
         <div class="modal-header" id="contactsModalTitle">🚨 학부모 비상연락망</div>
         
         <!-- 검색 및 학년 필터 -->
         <div style="display: flex; gap: 6px; margin-bottom: 8px;">
-            <input type="text" id="contactSearchInput" placeholder="선수명 / 아버님·어머님 연락처 / 주소 검색" style="flex: 1; padding: 7px 10px; border: 1px solid var(--card-border); border-radius: 6px; font-size: 12px;" oninput="renderEmergencyContacts()">
+            <input type="text" id="contactSearchInput" placeholder="선수명 / 연락처 / 주소 검색" style="flex: 1; padding: 7px 10px; border: 1px solid var(--card-border); border-radius: 6px; font-size: 12px;" oninput="renderEmergencyContacts()">
             <select id="contactGradeSelect" style="padding: 7px 8px; border: 1px solid var(--card-border); border-radius: 6px; font-size: 12px; font-weight: 700;" onchange="renderEmergencyContacts()">
-                <option value="all">전체 학년</option>
+                <option value="all">전체</option>
                 <option value="6">6학년</option>
                 <option value="5">5학년</option>
                 <option value="4">4학년</option>
@@ -1201,12 +1234,12 @@
 
         <!-- 긴급 퀵 액션 바 -->
         <div class="contact-quick-bar">
-            <span style="font-size: 11px; font-weight: 800; color: #991b1b;">⚡ 긴급 공지 도구</span>
-            <div style="display: flex; gap: 4px; flex-wrap: wrap;">
-                <button class="btn-quick-action" onclick="copyAllContactPhones()">📋 번호 전체 복사</button>
-                <button class="btn-quick-action" onclick="copyEmergencyTemplate('weather')">🌧️ 우천 조기종료</button>
-                <button class="btn-quick-action" onclick="copyEmergencyTemplate('match')">⚾ 경기시간 변경</button>
-                <button class="btn-quick-action" onclick="copyEmergencyTemplate('safe')">🏠 안전귀가 안내</button>
+            <span style="font-size: 11px; font-weight: 800; color: #991b1b; white-space: nowrap;">⚡ 긴급 공지</span>
+            <div style="display: flex; gap: 3px; flex-wrap: wrap;">
+                <button class="btn-quick-action" onclick="copyAllContactPhones()">📋 번호복사</button>
+                <button class="btn-quick-action" onclick="copyEmergencyTemplate('weather')">🌧️ 우천취소</button>
+                <button class="btn-quick-action" onclick="copyEmergencyTemplate('match')">⚾ 경기시간</button>
+                <button class="btn-quick-action" onclick="copyEmergencyTemplate('safe')">🏠 안전귀가</button>
             </div>
         </div>
 
@@ -1214,7 +1247,7 @@
         <div id="contactsListContent" style="max-height: 420px; overflow-y: auto; padding-right: 2px;"></div>
 
         <div class="modal-btns" style="justify-content: space-between; margin-top: 12px;">
-            <button class="btn-sheet-link" onclick="window.open(GOOGLE_SHEET_CONTACTS_URL, '_blank')">📊 시트 원본 열기</button>
+            <button class="btn-sheet-link" onclick="window.open(GOOGLE_SHEET_CONTACTS_URL, '_blank')">📊 시트 원본</button>
             <button class="btn-save" onclick="closeModal('emergencyContactsModal')">닫기</button>
         </div>
     </div>
@@ -1519,15 +1552,15 @@
         }).join('');
     }
 
-    // ==========================================
-    // [1순위 핵심] 🚨 학부모 비상연락망 모달 로직
-    // ==========================================
+    // ===================================================
+    // [모바일 완벽 최적화] 🚨 학부모 비상연락망 모달 로직
+    // ===================================================
     async function openEmergencyContactsModal() {
         const title = document.getElementById('contactsModalTitle');
         const content = document.getElementById('contactsListContent');
         document.getElementById('emergencyContactsModal').style.display = 'flex';
 
-        // 1. 캐시가 있으면 즉시 렌더링
+        // 1. 로컬 캐시 즉시 렌더링
         const cached = localStorage.getItem('daeyeon_emergency_contacts');
         if (cached) {
             try {
@@ -1538,7 +1571,7 @@
             content.innerHTML = '<div style="text-align:center; padding:40px 10px; color:#64748b; font-size:13px;">비상연락망 시트에서 데이터를 불러오는 중...</div>';
         }
 
-        // 2. [가장 빠름] 구글 시트 3번째 탭 CSV 직접 파싱 시도 (0.1초 로드)
+        // 2. [가장 빠름] 구글 시트 3번째 탭 CSV 직접 파싱 (0.1초 로드)
         try {
             const csvRes = await fetch(GOOGLE_SHEET_CONTACTS_CSV_URL + '&nocache=' + Date.now());
             const csvText = await csvRes.text();
@@ -1557,10 +1590,10 @@
                 return;
             }
         } catch(csvErr) {
-            console.warn("CSV 직접 조회 지연, Apps Script API로 조회 전환:", csvErr);
+            console.warn("CSV 직접 조회 지연, Apps Script API로 전환:", csvErr);
         }
 
-        // 3. [예비용] 구글 Apps Script API 백그라운드 호출
+        // 3. [예비용] Apps Script API 백그라운드 호출
         if (GOOGLE_SCRIPT_UNIFORM_API_URL && GOOGLE_SCRIPT_UNIFORM_API_URL.trim() !== "") {
             try {
                 const res = await fetch(GOOGLE_SCRIPT_UNIFORM_API_URL + '?action=getContacts&nocache=' + Date.now());
@@ -1571,12 +1604,11 @@
                     renderEmergencyContacts();
                 }
             } catch(err) {
-                console.warn("비상연락망 로드 지연 또는 캐시 유지:", err);
+                console.warn("비상연락망 로드 지연:", err);
             }
         }
     }
 
-    // 스마트 속성 탐색 헬퍼 (시트의 실제 헤더와 완벽 매핑)
     function getVal(obj, ...keys) {
         if (!obj) return '';
         for (let k of keys) {
@@ -1621,7 +1653,7 @@
             return noA - noB;
         });
 
-        title.textContent = `🚨 학부모 비상연락망 (총 ${filtered.length}명)`;
+        title.textContent = `🚨 학부모 비상연락망 (${filtered.length}명)`;
 
         if (filtered.length === 0) {
             content.innerHTML = '<div style="text-align:center; padding:40px 20px; color:#94a3b8; font-weight:600;">검색 결과가 없습니다.</div>';
@@ -1651,7 +1683,10 @@
 
                     ${fPhone ? `
                         <div class="contact-row">
-                            <span class="contact-label">👨 <b>아버님:</b> ${fPhone}</span>
+                            <div class="contact-left-info">
+                                <span class="contact-role-badge role-father">👨 아버님</span>
+                                <span class="contact-phone-text">${fPhone}</span>
+                            </div>
                             <div class="contact-actions">
                                 <a href="tel:${fRaw}" class="btn-call">📞 통화</a>
                                 <a href="sms:${fRaw}" class="btn-sms">💬 문자</a>
@@ -1661,7 +1696,10 @@
 
                     ${mPhone ? `
                         <div class="contact-row">
-                            <span class="contact-label">👩 <b>어머님:</b> ${mPhone}</span>
+                            <div class="contact-left-info">
+                                <span class="contact-role-badge role-mother">👩 어머님</span>
+                                <span class="contact-phone-text">${mPhone}</span>
+                            </div>
                             <div class="contact-actions">
                                 <a href="tel:${mRaw}" class="btn-call">📞 통화</a>
                                 <a href="sms:${mRaw}" class="btn-sms">💬 문자</a>
@@ -1671,7 +1709,10 @@
 
                     ${sPhone ? `
                         <div class="contact-row" style="background:#eff6ff;">
-                            <span class="contact-label" style="color:#1d4ed8;">📱 <b>학생:</b> ${sPhone}</span>
+                            <div class="contact-left-info">
+                                <span class="contact-role-badge role-student">📱 학생</span>
+                                <span class="contact-phone-text" style="color:#1d4ed8;">${sPhone}</span>
+                            </div>
                             <div class="contact-actions">
                                 <a href="tel:${sRaw}" class="btn-call" style="background:#2563eb;">📞 통화</a>
                                 <a href="sms:${sRaw}" class="btn-sms">💬 문자</a>
