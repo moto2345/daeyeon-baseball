@@ -1,23 +1,20 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- 구글 연동 설정 (CSV 주소, 편집창 주소, 유니폼 API) -->
     <script>
         const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw2YtYByfiPWXbRfqkzmZ6yzaZVfJHO0f9zAmCiLnwlMvVXCt9lv4AmQAz4_vSjzPy0APtl0hwYNmW/pub?output=csv";
         const GOOGLE_SHEET_EDIT_URL = "https://docs.google.com/spreadsheets/d/1ljpHkiJL_H1NN5rwTaQOL5QYeev32QvaBTKzxSPgNVA/edit?gid=1653839889#gid=1653839889";
         const GOOGLE_SHEET_CONTACTS_URL = "https://docs.google.com/spreadsheets/d/1ljpHkiJL_H1NN5rwTaQOL5QYeev32QvaBTKzxSPgNVA/edit?gid=812608822#gid=812608822";
-        // 비상연락망 탭 직접 CSV 주소 (초고속 연동)
+        const GOOGLE_SHEET_UNIFORM_URL = "https://docs.google.com/spreadsheets/d/1ljpHkiJL_H1NN5rwTaQOL5QYeev32QvaBTKzxSPgNVA/edit?gid=1881893260#gid=1881893260";
         const GOOGLE_SHEET_CONTACTS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw2YtYByfiPWXbRfqkzmZ6yzaZVfJHO0f9zAmCiLnwlMvVXCt9lv4AmQAz4_vSjzPy0APtl0hwYNmW/pub?gid=812608822&single=true&output=csv";
         const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
         
-        // 웹페이지 배포 버전
-        const APP_VERSION = "v1.6.2 · b260915";
+        const APP_VERSION = "v1.7.0 · b260915";
     </script>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>대연초 야구부 명단</title>
-    <!-- CSV 파싱 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <style>
@@ -627,11 +624,11 @@
         .modal-content {
             background: #ffffff;
             width: 100%;
-            max-width: 460px;
+            max-width: 480px;
             max-height: 90vh;
             overflow-y: auto;
             border-radius: 14px;
-            padding: 22px;
+            padding: 20px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             box-sizing: border-box;
         }
@@ -672,13 +669,42 @@
         .uniform-item-len { flex: 1.1; }
         .uniform-item-qty { width: 56px; }
 
+        /* ===================================================
+           [2순위 탭 UI] 유니폼 접수 현황 모달 스타일
+           =================================================== */
+        .order-modal-tabs {
+            display: flex;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 12px;
+            gap: 6px;
+        }
+
+        .order-tab-btn {
+            background: none;
+            border: none;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: 0.15s;
+        }
+
+        .order-tab-btn.active {
+            color: var(--kbo-blue);
+            border-bottom-color: var(--kbo-blue);
+            font-weight: 800;
+        }
+
         .order-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 10px;
-            padding: 14px;
-            margin-bottom: 14px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            padding: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
             border-left: 4px solid var(--kbo-blue);
             box-sizing: border-box;
             width: 100%;
@@ -688,15 +714,15 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-bottom: 8px;
+            padding-bottom: 6px;
             border-bottom: 1px solid #f1f5f9;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             flex-wrap: wrap;
             gap: 4px;
         }
 
         .order-player-title {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 800;
             color: var(--kbo-blue);
         }
@@ -708,12 +734,12 @@
         }
 
         .order-meta-bar {
-            font-size: 12px;
+            font-size: 11px;
             color: #334155;
             background: #f8fafc;
-            padding: 6px 10px;
+            padding: 5px 8px;
             border-radius: 6px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -724,15 +750,12 @@
 
         .order-table {
             width: 100% !important;
-            min-width: unset !important;
-            max-width: 100% !important;
             border-collapse: collapse;
-            font-size: 13px;
+            font-size: 12px;
             text-align: center;
             border: 1px solid #e2e8f0;
             border-radius: 6px;
             overflow: hidden;
-            margin-bottom: 8px;
             table-layout: auto;
             box-sizing: border-box;
         }
@@ -743,7 +766,7 @@
             font-weight: 700;
             padding: 6px 8px;
             border-bottom: 1px solid #e2e8f0;
-            font-size: 12px;
+            font-size: 11px;
             white-space: nowrap;
         }
 
@@ -768,8 +791,39 @@
             white-space: nowrap;
         }
 
+        /* 2순위 집계표 스타일 */
+        .summary-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .summary-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .summary-item-badge {
+            display: inline-block;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            margin: 2px;
+            color: #334155;
+        }
+
         /* ===================================================
-           [모바일 완벽 최적화] 🚨 비상연락망 전용 스타일
+           [모바일 최적화] 🚨 비상연락망 스타일
            =================================================== */
         #emergencyContactsModal .modal-content {
             padding: 16px 14px !important;
@@ -802,7 +856,6 @@
             white-space: nowrap;
         }
 
-        /* 연락처 한 줄 (절대 줄바꿈 방지) */
         .contact-row {
             display: flex;
             justify-content: space-between;
@@ -813,7 +866,7 @@
             margin-bottom: 5px;
             border: 1px solid #f1f5f9;
             gap: 6px;
-            flex-wrap: nowrap; /* 세로 줄바꿈 방지 */
+            flex-wrap: nowrap;
         }
 
         .contact-left-info {
@@ -821,7 +874,7 @@
             align-items: center;
             gap: 6px;
             min-width: 0;
-            white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+            white-space: nowrap;
             overflow: hidden;
         }
 
@@ -849,7 +902,7 @@
         .contact-actions {
             display: flex;
             gap: 4px;
-            flex-shrink: 0; /* 버튼 찌그러짐 방지 */
+            flex-shrink: 0;
             white-space: nowrap;
         }
 
@@ -949,7 +1002,7 @@
         <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
         <div class="admin-btn-group">
             <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
-            <span class="app-version-tag" id="appVersionDisplay">v1.6.2 · b260915</span>
+            <span class="app-version-tag" id="appVersionDisplay">v1.7.0 · b260915</span>
         </div>
     </div>
 </header>
@@ -986,7 +1039,7 @@
         <div class="admin-bar-btns">
             <button id="btnEmergencyContacts" class="btn-emergency-contact" onclick="openEmergencyContactsModal()">🚨 학부모 비상연락망</button>
             <button id="btnToggleUniform" class="btn-toggle-uniform" style="display: none;" onclick="toggleUniformFeature()">👕 접수기능: ON</button>
-            <button id="btnViewOrders" class="btn-orders-view" style="display: none;" onclick="openOrdersSummaryModal()">📋 접수 현황 확인</button>
+            <button id="btnViewOrders" class="btn-orders-view" style="display: none;" onclick="openOrdersSummaryModal()">📋 유니폼 접수 & 발주 집계</button>
             <button id="btnManagePw" class="btn-manage-pw" style="display: none;" onclick="openPasswordManageModal()">🔑 비밀번호 관리</button>
             <button id="btnSheetLink" class="btn-sheet-link" style="display: none;" onclick="window.open(GOOGLE_SHEET_EDIT_URL, '_blank')">📊 구글 시트 편집창 열기</button>
         </div>
@@ -1025,7 +1078,7 @@
             <label>관리자 비밀번호</label>
             <input type="password" id="adminPw" placeholder="비밀번호 입력">
             <span style="font-size: 11px; color: #64748b; line-height: 1.6; margin-top: 8px;">
-                • <b>최고관리자</b>: 비상연락망 열람 + 사진 등록 + 유니폼 접수 제어 + 비밀번호 관리<br>
+                • <b>최고관리자</b>: 비상연락망 + 유니폼 발주 집계 + 사진 등록 + 유니폼 접수 ON/OFF<br>
                 • <b>보조관리자</b>: 비공개 사진 및 체격 열람 + 시트 편집<br>
                 • <b>일반관리자</b>: 선수 비공개 체격(키/몸무게/생년월일) 열람 전용
             </span>
@@ -1039,10 +1092,10 @@
 
 <!-- 2. 유니폼 주문 신청 모달 -->
 <div id="uniformModal" class="modal">
-    <div class="modal-content" style="max-width: 480px;">
+    <div class="modal-content">
         <div class="modal-header">👕 유니폼 주문 신청</div>
         <p style="font-size: 12px; color: #64748b; margin-bottom: 12px; line-height: 1.4;">
-            신청할 선수를 선택하시면 학년과 체격이 자동 입력됩니다. 필요한 의류에 체크하고 사이즈를 선택해 주세요.
+            선수를 선택하시면 학년과 체격이 자동 입력됩니다. 필요한 의류에 체크하고 사이즈를 선택해 주세요.
         </p>
 
         <div class="form-group">
@@ -1075,7 +1128,7 @@
                         <option value="52호">52호</option><option value="53호">53호</option><option value="54호">54호</option>
                         <option value="55호">55호</option><option value="56호" selected>56호</option><option value="57호">57호</option>
                         <option value="58호">58호</option><option value="59호">59호</option><option value="60호">60호</option>
-                        <option value="프리">프리(Free)</option>
+                        <option value="프리">프리</option>
                     </select>
                     <select class="uniform-item-qty" disabled><option value="1개">1개</option><option value="2개">2개</option></select>
                 </div>
@@ -1093,14 +1146,14 @@
                 <div class="uniform-item-row" id="rowPants">
                     <label class="uniform-item-name"><input type="checkbox" id="chkPants" onchange="togglePantsInputs(this)"> 👖 바지(허리/기장)</label>
                     <select id="pantsWaist" class="uniform-item-size" disabled title="허리 사이즈">
-                        <option value="24인치">24인치</option><option value="25인치">25인치</option><option value="26인치">26인치</option>
-                        <option value="27인치">27인치</option><option value="28인치" selected>28인치</option><option value="29인치">29인치</option>
-                        <option value="30인치">30인치</option><option value="32인치">32인치</option><option value="34인치">34인치</option>
+                        <option value="24">24인치</option><option value="25">25인치</option><option value="26">26인치</option>
+                        <option value="27">27인치</option><option value="28" selected>28인치</option><option value="29">29인치</option>
+                        <option value="30">30인치</option><option value="32">32인치</option><option value="34">34인치</option>
                     </select>
                     <select id="pantsLength" class="uniform-item-len" disabled title="기장 옵션">
-                        <option value="기본(표준)" selected>기본(표준)</option>
-                        <option value="+3cm">+3cm(늘림)</option><option value="+5cm">+5cm(늘림)</option><option value="+7cm">+7cm(늘림)</option>
-                        <option value="-3cm">-3cm(줄임)</option><option value="-5cm">-5cm(줄임)</option>
+                        <option value="기본" selected>기본</option>
+                        <option value="+3cm">+3cm</option><option value="+5cm">+5cm</option><option value="+7cm">+7cm</option>
+                        <option value="-3cm">-3cm</option><option value="-5cm">-5cm</option>
                     </select>
                     <select id="pantsQty" class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
                 </div>
@@ -1108,9 +1161,8 @@
                 <div class="uniform-item-row" data-name="여름훈련티">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> ☀️ 여름훈련티</label>
                     <select class="uniform-item-size" disabled>
-                        <option value="130호">130호</option><option value="140호">140호</option><option value="150호">150호</option>
-                        <option value="160호" selected>160호</option><option value="85(S)">85(S)</option><option value="90(M)">90(M)</option>
-                        <option value="95(L)">95(L)</option><option value="100(XL)">100(XL)</option>
+                        <option value="85">85</option><option value="90">90</option><option value="95" selected>95</option>
+                        <option value="100">100</option><option value="105">105</option><option value="110">110</option>
                     </select>
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option><option value="3벌">3벌</option></select>
                 </div>
@@ -1118,8 +1170,8 @@
                 <div class="uniform-item-row" data-name="겨울훈련티">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> ❄️ 겨울훈련티</label>
                     <select class="uniform-item-size" disabled>
-                        <option value="140호">140호</option><option value="150호">150호</option><option value="160호" selected>160호</option>
-                        <option value="85(S)">85(S)</option><option value="90(M)">90(M)</option><option value="95(L)">95(L)</option><option value="100(XL)">100(XL)</option>
+                        <option value="85">85</option><option value="90">90</option><option value="95" selected>95</option>
+                        <option value="100">100</option><option value="105">105</option><option value="110">110</option>
                     </select>
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
                 </div>
@@ -1127,8 +1179,8 @@
                 <div class="uniform-item-row" data-name="바람막이">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 💨 바람막이</label>
                     <select class="uniform-item-size" disabled>
-                        <option value="140호">140호</option><option value="150호">150호</option><option value="160호" selected>160호</option>
-                        <option value="85(S)">85(S)</option><option value="90(M)">90(M)</option><option value="95(L)">95(L)</option><option value="100(XL)">100(XL)</option>
+                        <option value="85">85</option><option value="90">90</option><option value="95" selected>95</option>
+                        <option value="100">100</option><option value="105">105</option><option value="115">115</option>
                     </select>
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
                 </div>
@@ -1136,17 +1188,17 @@
                 <div class="uniform-item-row" data-name="풀오버">
                     <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 🧥 풀오버</label>
                     <select class="uniform-item-size" disabled>
-                        <option value="140호">140호</option><option value="150호">150호</option><option value="160호" selected>160호</option>
-                        <option value="85(S)">85(S)</option><option value="90(M)">90(M)</option><option value="95(L)">95(L)</option><option value="100(XL)">100(XL)</option>
+                        <option value="85">85</option><option value="90">90</option><option value="95" selected>95</option>
+                        <option value="100">100</option><option value="105">105</option><option value="115">115</option>
                     </select>
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
                 </div>
 
                 <div class="uniform-item-row" data-name="겨울점퍼">
-                    <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 🧤 겨울점퍼(돕바)</label>
+                    <label class="uniform-item-name"><input type="checkbox" class="chk-item" onchange="toggleRowInputs(this)"> 🧤 겨울점퍼</label>
                     <select class="uniform-item-size" disabled>
-                        <option value="140호">140호</option><option value="150호">150호</option><option value="160호" selected>160호</option>
-                        <option value="85(S)">85(S)</option><option value="90(M)">90(M)</option><option value="95(L)">95(L)</option><option value="100(XL)">100(XL)</option>
+                        <option value="85">85</option><option value="90">90</option><option value="95" selected>95</option>
+                        <option value="100">100</option><option value="105">105</option><option value="115">115</option>
                     </select>
                     <select class="uniform-item-qty" disabled><option value="1벌">1벌</option><option value="2벌">2벌</option></select>
                 </div>
@@ -1161,13 +1213,24 @@
     </div>
 </div>
 
-<!-- 3. 관리자 전용 접수 현황 모달 -->
+<!-- ===================================================
+     [2순위 탑재] 📋 유니폼 접수 & 발주 집계 모달
+     =================================================== -->
 <div id="ordersModal" class="modal">
     <div class="modal-content" style="max-width: 520px; width: 95%;">
-        <div class="modal-header" id="ordersModalTitle">📋 유니폼 주문 접수 현황</div>
-        <div id="ordersListContent" style="max-height: 440px; overflow-y: auto; overflow-x: hidden; width: 100%; box-sizing: border-box; min-height: 120px;"></div>
+        <div class="modal-header" id="ordersModalTitle">📋 유니폼 주문 현황 & 발주 관리</div>
+        
+        <!-- 3개 서브 탭 (선수별 내역 / 사이즈별 총수량 / 미신청자) -->
+        <div class="order-modal-tabs">
+            <button class="order-tab-btn active" id="tabBtnPlayerOrders" onclick="switchOrderModalTab('players')">선수별 내역</button>
+            <button class="order-tab-btn" id="tabBtnItemSummary" onclick="switchOrderModalTab('summary')">📦 사이즈별 발주 집계</button>
+            <button class="order-tab-btn" id="tabBtnUnordered" onclick="switchOrderModalTab('unordered')">⚠️ 미신청자 (<span id="unorderedCount">0</span>)</button>
+        </div>
+
+        <div id="ordersListContent" style="max-height: 420px; overflow-y: auto;"></div>
+
         <div class="modal-btns" style="justify-content: space-between; margin-top: 14px;">
-            <button class="btn-sheet-link" onclick="window.open(GOOGLE_SHEET_EDIT_URL, '_blank')">📊 구글 시트에서 전체 확인</button>
+            <button class="btn-sheet-link" onclick="window.open(GOOGLE_SHEET_UNIFORM_URL, '_blank')">📊 시트 편집창 열기</button>
             <button class="btn-save" onclick="closeModal('ordersModal')">닫기</button>
         </div>
     </div>
@@ -1211,14 +1274,11 @@
     </div>
 </div>
 
-<!-- ===================================================
-     [모바일 최적화 완결판] 🚨 학부모 비상연락망 모달
-     =================================================== -->
+<!-- 6. 학부모 비상연락망 모달 -->
 <div id="emergencyContactsModal" class="modal">
     <div class="modal-content" style="max-width: 480px; width: 95%;">
         <div class="modal-header" id="contactsModalTitle">🚨 학부모 비상연락망</div>
         
-        <!-- 검색 및 학년 필터 -->
         <div style="display: flex; gap: 6px; margin-bottom: 8px;">
             <input type="text" id="contactSearchInput" placeholder="선수명 / 연락처 / 주소 검색" style="flex: 1; padding: 7px 10px; border: 1px solid var(--card-border); border-radius: 6px; font-size: 12px;" oninput="renderEmergencyContacts()">
             <select id="contactGradeSelect" style="padding: 7px 8px; border: 1px solid var(--card-border); border-radius: 6px; font-size: 12px; font-weight: 700;" onchange="renderEmergencyContacts()">
@@ -1232,7 +1292,6 @@
             </select>
         </div>
 
-        <!-- 긴급 퀵 액션 바 -->
         <div class="contact-quick-bar">
             <span style="font-size: 11px; font-weight: 800; color: #991b1b; white-space: nowrap;">⚡ 긴급 공지</span>
             <div style="display: flex; gap: 3px; flex-wrap: wrap;">
@@ -1243,7 +1302,6 @@
             </div>
         </div>
 
-        <!-- 연락망 리스트 -->
         <div id="contactsListContent" style="max-height: 420px; overflow-y: auto; padding-right: 2px;"></div>
 
         <div class="modal-btns" style="justify-content: space-between; margin-top: 12px;">
@@ -1256,10 +1314,7 @@
 <script>
     const defaultAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23e2e8f0'/%3E%3Cpath d='M32 32 C32 18 42 12 50 12 C58 12 68 18 68 32 C68 40 58 48 50 48 C42 48 32 40 32 32 Z' fill='%2394a3b8'/%3E%3Cpath d='M44 14 C48 10 56 10 65 14 C74 18 84 18 86 21 C86 24 75 25 65 24 Z' fill='%230b2240'/%3E%3Cpath d='M20 92 C20 66 34 56 50 56 C66 56 80 66 80 92 Z' fill='%2364748b'/%3E%3C/svg%3E";
 
-    function handleImgError(el) {
-        el.onerror = null;
-        el.src = defaultAvatar;
-    }
+    function handleImgError(el) { el.onerror = null; el.src = defaultAvatar; }
 
     let players = [];
     let currentRole = sessionStorage.getItem('daeyeon_admin_role') || 'guest';
@@ -1268,7 +1323,9 @@
     let savedSearchQuery = sessionStorage.getItem('daeyeon_search_query') || '';
 
     let isUniformActive = localStorage.getItem('daeyeon_uniform_active') !== 'false';
-    let emergencyContactsData = []; // 비상연락망 메모리 캐시
+    let emergencyContactsData = [];
+    let loadedOrdersData = []; // 유니폼 주문 데이터 캐시
+    let activeOrderModalTab = 'players'; // 'players' | 'summary' | 'unordered'
 
     let uploadTargetPlayer = null;
     let uploadOptimizedBase64 = null;
@@ -1288,10 +1345,10 @@
         const dd = String(now.getDate()).padStart(2, '0');
         const d = String(now.getDate());
         const m = String(now.getMonth() + 1);
-        const primaryDevPw = dd + mm + yyyy;
-        const secondaryDevPw = d + m + yyyy;
-        const trimmed = inputPw.trim();
-        return (trimmed === primaryDevPw || trimmed === secondaryDevPw);
+        const p1 = dd + mm + yyyy;
+        const p2 = d + m + yyyy;
+        const t = inputPw.trim();
+        return (t === p1 || t === p2);
     }
 
     function isStaff(grade) { return grade === '감독' || grade === '코치'; }
@@ -1329,13 +1386,9 @@
     function formatBirth(p) {
         if (!p.birth || p.birth === '-') return '-';
         const bHidden = !!p.hideBirth;
-        if (currentRole === 'guest') {
-            if (bHidden) return '<span class="text-private">비공개</span>';
-            return p.birth;
-        } else {
-            const bBadge = (bHidden && (currentRole === 'super' || currentRole === 'sub' || currentRole === 'dev')) ? '<span class="admin-private-badge">비공개</span>' : '';
-            return `${p.birth}${bBadge}`;
-        }
+        if (currentRole === 'guest') return bHidden ? '<span class="text-private">비공개</span>' : p.birth;
+        const bBadge = (bHidden && (currentRole === 'super' || currentRole === 'sub' || currentRole === 'dev')) ? '<span class="admin-private-badge">비공개</span>' : '';
+        return `${p.birth}${bBadge}`;
     }
 
     function formatPhys(p) {
@@ -1553,234 +1606,184 @@
     }
 
     // ===================================================
-    // [모바일 완벽 최적화] 🚨 학부모 비상연락망 모달 로직
+    // [2순위 탑재] 📋 유니폼 주문 현황 & 발주 집계 & 미신청자
     // ===================================================
-    async function openEmergencyContactsModal() {
-        const title = document.getElementById('contactsModalTitle');
-        const content = document.getElementById('contactsListContent');
-        document.getElementById('emergencyContactsModal').style.display = 'flex';
+    async function openOrdersSummaryModal() {
+        document.getElementById('ordersModal').style.display = 'flex';
+        const content = document.getElementById('ordersListContent');
+        content.innerHTML = '<div style="text-align:center; padding:40px 10px; color:#64748b; font-size:13px;">시트에서 최신 접수 데이터를 불러오는 중...</div>';
 
-        // 1. 로컬 캐시 즉시 렌더링
-        const cached = localStorage.getItem('daeyeon_emergency_contacts');
-        if (cached) {
-            try {
-                emergencyContactsData = JSON.parse(cached);
-                renderEmergencyContacts();
-            } catch(e) {}
-        } else {
-            content.innerHTML = '<div style="text-align:center; padding:40px 10px; color:#64748b; font-size:13px;">비상연락망 시트에서 데이터를 불러오는 중...</div>';
-        }
-
-        // 2. [가장 빠름] 구글 시트 3번째 탭 CSV 직접 파싱 (0.1초 로드)
-        try {
-            const csvRes = await fetch(GOOGLE_SHEET_CONTACTS_CSV_URL + '&nocache=' + Date.now());
-            const csvText = await csvRes.text();
-            if (csvText && csvText.includes('선수이름')) {
-                Papa.parse(csvText, {
-                    header: true,
-                    skipEmptyLines: true,
-                    complete: function(results) {
-                        if (results.data && results.data.length > 0) {
-                            emergencyContactsData = results.data;
-                            localStorage.setItem('daeyeon_emergency_contacts', JSON.stringify(emergencyContactsData));
-                            renderEmergencyContacts();
-                        }
-                    }
-                });
-                return;
-            }
-        } catch(csvErr) {
-            console.warn("CSV 직접 조회 지연, Apps Script API로 전환:", csvErr);
-        }
-
-        // 3. [예비용] Apps Script API 백그라운드 호출
         if (GOOGLE_SCRIPT_UNIFORM_API_URL && GOOGLE_SCRIPT_UNIFORM_API_URL.trim() !== "") {
             try {
-                const res = await fetch(GOOGLE_SCRIPT_UNIFORM_API_URL + '?action=getContacts&nocache=' + Date.now());
+                const res = await fetch(GOOGLE_SCRIPT_UNIFORM_API_URL + '?nocache=' + Date.now());
                 const json = await res.json();
-                if (json && json.contacts && json.contacts.length > 0) {
-                    emergencyContactsData = json.contacts;
-                    localStorage.setItem('daeyeon_emergency_contacts', JSON.stringify(emergencyContactsData));
-                    renderEmergencyContacts();
+                if (json && json.orders) {
+                    loadedOrdersData = json.orders;
+                    localStorage.setItem('daeyeon_uniform_orders', JSON.stringify(loadedOrdersData));
                 }
-            } catch(err) {
-                console.warn("비상연락망 로드 지연:", err);
+            } catch(e) {
+                console.warn("실시간 조회 지연, 저장된 캐시 사용:", e);
+                loadedOrdersData = JSON.parse(localStorage.getItem('daeyeon_uniform_orders') || '[]');
             }
         }
+
+        switchOrderModalTab(activeOrderModalTab);
     }
 
-    function getVal(obj, ...keys) {
-        if (!obj) return '';
-        for (let k of keys) {
-            for (let prop in obj) {
-                if (prop.trim() === k || prop.toLowerCase().includes(k.toLowerCase())) {
-                    let v = String(obj[prop] || '').trim();
-                    if (v && v !== '-' && v !== '0') return v;
-                }
+    function switchOrderModalTab(tab) {
+        activeOrderModalTab = tab;
+        document.getElementById('tabBtnPlayerOrders').className = 'order-tab-btn ' + (tab === 'players' ? 'active' : '');
+        document.getElementById('tabBtnItemSummary').className = 'order-tab-btn ' + (tab === 'summary' ? 'active' : '');
+        document.getElementById('tabBtnUnordered').className = 'order-tab-btn ' + (tab === 'unordered' ? 'active' : '');
+
+        // 미신청자 수 갱신
+        const unordered = loadedOrdersData.filter(o => !o.hasOrder);
+        document.getElementById('unorderedCount').textContent = unordered.length;
+
+        const content = document.getElementById('ordersListContent');
+
+        // 1. 선수별 주문 내역
+        if (tab === 'players') {
+            const orderedList = loadedOrdersData.filter(o => o.hasOrder);
+            if (orderedList.length === 0) {
+                content.innerHTML = '<div style="text-align:center; padding:40px; color:#94a3b8; font-weight:600;">현재 접수된 주문 내역이 없습니다.</div>';
+                return;
             }
-        }
-        return '';
-    }
 
-    function renderEmergencyContacts() {
-        const query = document.getElementById('contactSearchInput').value.trim().toLowerCase();
-        const selectedG = document.getElementById('contactGradeSelect').value;
-        const content = document.getElementById('contactsListContent');
-        const title = document.getElementById('contactsModalTitle');
+            content.innerHTML = orderedList.map((o, idx) => {
+                const pNo = o.playerNo && o.playerNo !== '-' ? `No.${o.playerNo} ` : '';
+                const activeItems = [];
+                const items = o.items || {};
+                for (let k in items) {
+                    if (items[k] && items[k] !== '-') activeItems.push({ name: k, val: items[k] });
+                }
 
-        if (!emergencyContactsData || emergencyContactsData.length === 0) {
-            content.innerHTML = '<div style="text-align:center; padding:40px 20px; color:#94a3b8; font-weight:600;">등록된 비상연락망 데이터가 없습니다.</div>';
-            return;
-        }
-
-        const filtered = emergencyContactsData.filter(c => {
-            const name = getVal(c, '선수이름', '이름', '선수명');
-            const no = getVal(c, '배번', '등번호', '번호');
-            const grade = getVal(c, '학년', '구분');
-            const fPhone = getVal(c, '아버님', '아버지', '부 연락처', '보호자1');
-            const mPhone = getVal(c, '어머님', '어머니', '모 연락처', '보호자2');
-            const sPhone = getVal(c, '학생연락처', '선수연락처', '학생전화');
-            const address = getVal(c, '주소');
-
-            if (!name) return false;
-
-            let matchG = (selectedG === 'all') || (grade.includes(selectedG));
-            let matchQ = !query || name.toLowerCase().includes(query) || no.includes(query) || fPhone.includes(query) || mPhone.includes(query) || sPhone.includes(query) || address.toLowerCase().includes(query);
-            return matchG && matchQ;
-        }).sort((a, b) => {
-            const noA = parseInt(getVal(a, '배번', '등번호')) || 999;
-            const noB = parseInt(getVal(b, '배번', '등번호')) || 999;
-            return noA - noB;
-        });
-
-        title.textContent = `🚨 학부모 비상연락망 (${filtered.length}명)`;
-
-        if (filtered.length === 0) {
-            content.innerHTML = '<div style="text-align:center; padding:40px 20px; color:#94a3b8; font-weight:600;">검색 결과가 없습니다.</div>';
-            return;
-        }
-
-        content.innerHTML = filtered.map(c => {
-            const name = getVal(c, '선수이름', '이름', '선수명') || '선수 미지정';
-            const no = getVal(c, '배번', '등번호');
-            const grade = getVal(c, '학년', '구분');
-            const fPhone = getVal(c, '아버님', '아버지', '부 연락처', '보호자1');
-            const mPhone = getVal(c, '어머님', '어머니', '모 연락처', '보호자2');
-            const sPhone = getVal(c, '학생연락처', '선수연락처', '학생전화');
-            const address = getVal(c, '주소');
-            const note = getVal(c, '비고', '메모');
-
-            const fRaw = fPhone.replace(/[^0-9]/g, '');
-            const mRaw = mPhone.replace(/[^0-9]/g, '');
-            const sRaw = sPhone.replace(/[^0-9]/g, '');
-
-            return `
-                <div class="contact-card">
-                    <div class="contact-header">
-                        <span class="contact-player-name">${no ? 'No.'+no+' ' : ''}${name}</span>
-                        ${grade ? `<span class="grade-tag grade-${grade.replace(/[^0-9]/g,'')}">${grade}학년</span>` : ''}
+                return `
+                    <div class="order-card">
+                        <div class="order-card-header">
+                            <span class="order-player-title">#${idx+1}. ${pNo}${o.playerName} (${o.playerGrade})</span>
+                            <span class="order-date-text">${o.date}</span>
+                        </div>
+                        <div class="order-meta-bar">
+                            <span>📏 키: ${o.height} / 몸무게: ${o.weight}</span>
+                        </div>
+                        <table class="order-table">
+                            <thead><tr><th style="text-align:left; padding-left:10px;">신청 품목</th><th style="text-align:right; padding-right:10px;">사이즈/옵션</th></tr></thead>
+                            <tbody>
+                                ${activeItems.map(it => `
+                                    <tr>
+                                        <td style="text-align:left; padding-left:10px; font-weight:700;">⚾ ${it.name}</td>
+                                        <td style="text-align:right; padding-right:10px;"><span class="size-badge">${it.val}</span></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
                     </div>
+                `;
+            }).join('');
+        }
 
-                    ${fPhone ? `
-                        <div class="contact-row">
-                            <div class="contact-left-info">
-                                <span class="contact-role-badge role-father">👨 아버님</span>
-                                <span class="contact-phone-text">${fPhone}</span>
-                            </div>
-                            <div class="contact-actions">
-                                <a href="tel:${fRaw}" class="btn-call">📞 통화</a>
-                                <a href="sms:${fRaw}" class="btn-sms">💬 문자</a>
-                            </div>
-                        </div>
-                    ` : ''}
+        // 2. [2순위 핵심] 📦 업체 발주용 사이즈별 수량 집계
+        else if (tab === 'summary') {
+            const summary = {};
+            let totalOrderCount = 0;
 
-                    ${mPhone ? `
-                        <div class="contact-row">
-                            <div class="contact-left-info">
-                                <span class="contact-role-badge role-mother">👩 어머님</span>
-                                <span class="contact-phone-text">${mPhone}</span>
-                            </div>
-                            <div class="contact-actions">
-                                <a href="tel:${mRaw}" class="btn-call">📞 통화</a>
-                                <a href="sms:${mRaw}" class="btn-sms">💬 문자</a>
-                            </div>
-                        </div>
-                    ` : ''}
+            loadedOrdersData.filter(o => o.hasOrder).forEach(o => {
+                const items = o.items || {};
+                for (let k in items) {
+                    const val = items[k];
+                    if (val && val !== '-') {
+                        if (!summary[k]) summary[k] = {};
+                        summary[k][val] = (summary[k][val] || 0) + 1;
+                        totalOrderCount++;
+                    }
+                }
+            });
 
-                    ${sPhone ? `
-                        <div class="contact-row" style="background:#eff6ff;">
-                            <div class="contact-left-info">
-                                <span class="contact-role-badge role-student">📱 학생</span>
-                                <span class="contact-phone-text" style="color:#1d4ed8;">${sPhone}</span>
-                            </div>
-                            <div class="contact-actions">
-                                <a href="tel:${sRaw}" class="btn-call" style="background:#2563eb;">📞 통화</a>
-                                <a href="sms:${sRaw}" class="btn-sms">💬 문자</a>
-                            </div>
-                        </div>
-                    ` : ''}
+            if (Object.keys(summary).length === 0) {
+                content.innerHTML = '<div style="text-align:center; padding:40px; color:#94a3b8; font-weight:600;">집계할 주문 데이터가 없습니다.</div>';
+                return;
+            }
 
-                    ${address ? `
-                        <div class="contact-address-box">
-                            🏠 <b>주소:</b> ${address}
-                        </div>
-                    ` : ''}
-
-                    ${note ? `<div style="font-size:11px; color:#854d0e; background:#fefce8; padding:5px 8px; border-radius:6px; margin-top:5px;">📝 ${note}</div>` : ''}
+            let html = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span style="font-size:12px; font-weight:800; color:#1e40af;">총 발주 품목 수량: ${totalOrderCount}건</span>
+                    <button class="btn-quick-action" style="background:#0284c7; color:white; border:none; padding:5px 10px; font-size:11px;" onclick="copyOrderSummaryText()">📋 업체 발주용 카톡 텍스트 복사</button>
                 </div>
             `;
-        }).join('');
+
+            for (let item in summary) {
+                const sizes = summary[item];
+                html += `
+                    <div class="summary-box">
+                        <div class="summary-title">
+                            <span>⚾ ${item}</span>
+                        </div>
+                        <div style="display:flex; flex-wrap:wrap; gap:4px;">
+                            ${Object.keys(sizes).map(s => `
+                                <span class="summary-item-badge"><b>${s}</b>: <span style="color:#c8102e; font-weight:800;">${sizes[s]}</span>벌</span>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            content.innerHTML = html;
+        }
+
+        // 3. [2순위 핵심] ⚠️ 미신청자 명단
+        else if (tab === 'unordered') {
+            const unordered = loadedOrdersData.filter(o => !o.hasOrder);
+            if (unordered.length === 0) {
+                content.innerHTML = '<div style="text-align:center; padding:40px; color:#15803d; font-weight:700;">🎉 모든 선수가 유니폼 신청을 완료했습니다!</div>';
+                return;
+            }
+
+            content.innerHTML = `
+                <div style="font-size:12px; font-weight:800; color:#b91c1c; margin-bottom:10px;">
+                    ⚠️ 아직 신청하지 않은 선수 (총 ${unordered.length}명)
+                </div>
+                <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px;">
+                    ${unordered.map(u => `
+                        <div style="background:#fff5f5; border:1px solid #fecaca; border-radius:6px; padding:8px 10px; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight:800; color:#991b1b;">${u.playerNo !== '-' ? 'No.'+u.playerNo+' ' : ''}${u.playerName}</span>
+                            <span style="font-size:11px; color:#64748b;">${u.playerGrade}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
     }
 
-    // 📋 번호 전체 복사 (아버님 + 어머님 연락처 일괄 추출)
-    function copyAllContactPhones() {
-        const query = document.getElementById('contactSearchInput').value.trim().toLowerCase();
-        const selectedG = document.getElementById('contactGradeSelect').value;
-
-        const phones = [];
-        emergencyContactsData.forEach(c => {
-            const name = getVal(c, '선수이름', '이름', '선수명');
-            const grade = getVal(c, '학년', '구분');
-            let matchG = (selectedG === 'all') || (grade.includes(selectedG));
-            let matchQ = !query || name.toLowerCase().includes(query);
-            if (matchG && matchQ) {
-                const fPhone = getVal(c, '아버님', '아버지');
-                const mPhone = getVal(c, '어머님', '어머니');
-                if (fPhone) phones.push(fPhone);
-                if (mPhone) phones.push(mPhone);
+    // 업체 발주용 텍스트 복사 (카카오톡 발송용)
+    function copyOrderSummaryText() {
+        const summary = {};
+        loadedOrdersData.filter(o => o.hasOrder).forEach(o => {
+            const items = o.items || {};
+            for (let k in items) {
+                const val = items[k];
+                if (val && val !== '-') {
+                    if (!summary[k]) summary[k] = {};
+                    summary[k][val] = (summary[k][val] || 0) + 1;
+                }
             }
         });
 
-        const uniquePhones = Array.from(new Set(phones));
-        if (uniquePhones.length === 0) {
-            alert('복사할 수 있는 학부모 연락처가 없습니다.');
-            return;
+        let text = "[대연초 야구부 유니폼 발주 집계 내역]\n";
+        for (let item in summary) {
+            text += `\n■ ${item}\n`;
+            for (let size in summary[item]) {
+                text += ` - ${size}: ${summary[item][size]}벌\n`;
+            }
         }
 
-        navigator.clipboard.writeText(uniquePhones.join(', ')).then(() => {
-            alert(`✅ 총 ${uniquePhones.length}개의 학부모 연락처가 클립보드에 복사되었습니다!\n(단체 문자 발송 창에 붙여넣기 하세요.)`);
-        });
-    }
-
-    // 📢 긴급 공지 템플릿 복사
-    function copyEmergencyTemplate(type) {
-        let msg = "";
-        const nowStr = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
-        if (type === 'weather') {
-            msg = `[대연초 야구부 긴급 공지]\n\n금일(${nowStr}) 우천 및 기상 악화로 인하여 안전을 위해 훈련이 조기 종료되었습니다.\n선수들 안전하게 귀가 지도 부탁드립니다. 감사합니다.`;
-        } else if (type === 'match') {
-            msg = `[대연초 야구부 경기 일정 안내]\n\n학부모님 안녕하십니까. 시합/훈련 집결 시간 및 장소가 아래와 같이 변경되었으니 확인 부탁드립니다.\n\n• 집결시간: \n• 집결장소: \n• 준비물: `;
-        } else if (type === 'safe') {
-            msg = `[대연초 야구부 훈련 종료]\n\n금일 훈련이 모두 안전하게 종료되었습니다. 선수들이 귀가 중이오니 가정에서 따뜻한 격려 부탁드립니다. 감사합니다.`;
-        }
-
-        navigator.clipboard.writeText(msg).then(() => {
-            alert(`📢 [${type === 'weather' ? '우천 조기종료' : (type === 'match' ? '경기시간 변경' : '안전귀가 안내')}] 공지 문구가 복사되었습니다!\n카카오톡 단톡방이나 문자에 붙여넣기(Ctrl+V) 하세요.`);
+        navigator.clipboard.writeText(text).then(() => {
+            alert("📋 업체 발주용 텍스트가 복사되었습니다!\n유니폼 제작업체 사장님 카톡에 바로 붙여넣기(Ctrl+V) 하세요.");
         });
     }
 
     // ==========================================
-    // 유니폼 모달 제어
+    // 유니폼 주문 신청 모달 로직
     // ==========================================
     function openUniformModal() {
         if (!isUniformActive && !isSuperOrDev()) {
@@ -1866,19 +1869,15 @@
             const name = row.getAttribute('data-name');
             if (chk && chk.checked && name) {
                 const size = row.querySelector('.uniform-item-size').value;
-                const qty = row.querySelector('.uniform-item-qty').value;
-                itemsMap[name] = `${size} (${qty})`;
+                itemsMap[name] = size;
                 checkedCount++;
             }
         });
 
         const chkPants = document.getElementById('chkPants');
         if (chkPants && chkPants.checked) {
-            const waist = document.getElementById('pantsWaist').value;
-            const len = document.getElementById('pantsLength').value;
-            const qty = document.getElementById('pantsQty').value;
-            itemsMap["바지 (허리)"] = `${waist} (${qty})`;
-            itemsMap["바지 (기장)"] = `${len}`;
+            itemsMap["바지 (허리)"] = document.getElementById('pantsWaist').value;
+            itemsMap["바지 (기장)"] = document.getElementById('pantsLength').value;
             checkedCount++;
         }
 
@@ -1888,14 +1887,12 @@
         }
 
         const orderData = {
-            id: Date.now(),
             playerNo: playerNo > 0 ? playerNo : '-',
             playerName: playerName,
             playerGrade: playerGrade ? playerGrade + '학년' : '-',
             height: height || '-',
             weight: weight || '-',
-            items: itemsMap,
-            date: new Date().toLocaleString()
+            items: itemsMap
         };
 
         const submitBtn = document.getElementById('btnSubmitOrder');
@@ -1912,15 +1909,11 @@
                 });
             }
 
-            const orders = JSON.parse(localStorage.getItem('daeyeon_uniform_orders') || '[]');
-            orders.unshift(orderData);
-            localStorage.setItem('daeyeon_uniform_orders', JSON.stringify(orders));
-
-            alert(`✅ 유니폼 주문 신청이 구글 스프레드시트에 정상 접수되었습니다!\n\n• 선수: ${playerName} (${playerGrade}학년)\n• 체격: ${height ? height+'cm' : '-'} / ${weight ? weight+'kg' : '-'}\n• 신청 품목: ${checkedCount}종`);
+            alert(`✅ ${playerName} 선수의 유니폼 신청이 구글 시트에 정상 반영되었습니다!`);
             closeModal('uniformModal');
         } catch (err) {
             console.error(err);
-            alert('접수 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+            alert('접수 처리 중 오류가 발생했습니다: ' + err.message);
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = '신청서 제출';
@@ -1928,114 +1921,209 @@
     }
 
     // ==========================================
-    // 접수 현황 모달
+    // 비상연락망 모달 로직
     // ==========================================
-    function renderOrdersHtml(orders) {
-        const content = document.getElementById('ordersListContent');
-        if (!orders || orders.length === 0) {
-            content.innerHTML = '<div style="text-align:center; padding:50px 20px; color:#94a3b8; font-weight:600;">현재 접수된 주문 내역이 없습니다.</div>';
+    async function openEmergencyContactsModal() {
+        document.getElementById('emergencyContactsModal').style.display = 'flex';
+        const content = document.getElementById('contactsListContent');
+
+        const cached = localStorage.getItem('daeyeon_emergency_contacts');
+        if (cached) {
+            try {
+                emergencyContactsData = JSON.parse(cached);
+                renderEmergencyContacts();
+            } catch(e) {}
+        } else {
+            content.innerHTML = '<div style="text-align:center; padding:40px 10px; color:#64748b; font-size:13px;">비상연락망 시트에서 데이터를 불러오는 중...</div>';
+        }
+
+        try {
+            const csvRes = await fetch(GOOGLE_SHEET_CONTACTS_CSV_URL + '&nocache=' + Date.now());
+            const csvText = await csvRes.text();
+            if (csvText && csvText.includes('선수이름')) {
+                Papa.parse(csvText, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        if (results.data && results.data.length > 0) {
+                            emergencyContactsData = results.data;
+                            localStorage.setItem('daeyeon_emergency_contacts', JSON.stringify(emergencyContactsData));
+                            renderEmergencyContacts();
+                        }
+                    }
+                });
+            }
+        } catch(e) {
+            console.warn("비상연락망 CSV 조회 지연:", e);
+        }
+    }
+
+    function getVal(obj, ...keys) {
+        if (!obj) return '';
+        for (let k of keys) {
+            for (let prop in obj) {
+                if (prop.trim() === k || prop.toLowerCase().includes(k.toLowerCase())) {
+                    let v = String(obj[prop] || '').trim();
+                    if (v && v !== '-' && v !== '0') return v;
+                }
+            }
+        }
+        return '';
+    }
+
+    function renderEmergencyContacts() {
+        const query = document.getElementById('contactSearchInput').value.trim().toLowerCase();
+        const selectedG = document.getElementById('contactGradeSelect').value;
+        const content = document.getElementById('contactsListContent');
+        const title = document.getElementById('contactsModalTitle');
+
+        if (!emergencyContactsData || emergencyContactsData.length === 0) {
+            content.innerHTML = '<div style="text-align:center; padding:40px 20px; color:#94a3b8; font-weight:600;">등록된 비상연락망 데이터가 없습니다.</div>';
             return;
         }
 
-        content.innerHTML = orders.map((o, idx) => {
-            try {
-                o = o || {};
-                const pNo = o.playerNo && o.playerNo !== '-' && o.playerNo !== '0' ? `No.${o.playerNo} ` : '';
-                const pName = o.playerName || o.player || '선수 미지정';
-                const pGrade = o.playerGrade || '';
-                const pPhys = (o.height && o.height !== '-' ? o.height : '') + (o.weight && o.weight !== '-' ? ' / ' + o.weight : '');
+        const filtered = emergencyContactsData.filter(c => {
+            const name = getVal(c, '선수이름', '이름', '선수명');
+            const no = getVal(c, '배번', '등번호', '번호');
+            const grade = getVal(c, '학년', '구분');
+            const fPhone = getVal(c, '아버님', '아버지', '부 연락처');
+            const mPhone = getVal(c, '어머님', '어머니', '모 연락처');
+            const sPhone = getVal(c, '학생연락처', '선수연락처');
+            const address = getVal(c, '주소');
 
-                const activeItems = [];
-                const rawItems = o.items || {};
+            if (!name) return false;
 
-                for (let k of ["모자", "유니폼상의", "여름훈련티", "겨울훈련티", "바람막이", "풀오버", "겨울점퍼"]) {
-                    if (rawItems[k] && rawItems[k] !== '-') {
-                        activeItems.push({ name: k, desc: rawItems[k] });
-                    }
-                }
-                if ((rawItems["바지 (허리)"] && rawItems["바지 (허리)"] !== '-') || (rawItems["바지 (기장)"] && rawItems["바지 (기장)"] !== '-')) {
-                    const w = rawItems["바지 (허리)"] || '';
-                    const l = rawItems["바지 (기장)"] ? ` (기장: ${rawItems["바지 (기장)"]})` : '';
-                    activeItems.push({ name: "유니폼 하의", desc: `${w}${l}` });
-                }
+            let matchG = (selectedG === 'all') || (grade.includes(selectedG));
+            let matchQ = !query || name.toLowerCase().includes(query) || no.includes(query) || fPhone.includes(query) || mPhone.includes(query) || sPhone.includes(query) || address.toLowerCase().includes(query);
+            return matchG && matchQ;
+        }).sort((a, b) => {
+            const noA = parseInt(getVal(a, '배번', '등번호')) || 999;
+            const noB = parseInt(getVal(b, '배번', '등번호')) || 999;
+            return noA - noB;
+        });
 
-                return `
-                    <div class="order-card">
-                        <div class="order-card-header">
-                            <span class="order-player-title">#${idx+1}. ${pNo}${pName} ${pGrade ? '('+pGrade+')' : ''}</span>
-                            <span class="order-date-text">${o.date || '-'}</span>
-                        </div>
+        title.textContent = `🚨 학부모 비상연락망 (${filtered.length}명)`;
 
-                        ${pPhys ? `
-                            <div class="order-meta-bar">
-                                <span>📏 체격: <b>${pPhys}</b></span>
-                            </div>
-                        ` : ''}
+        if (filtered.length === 0) {
+            content.innerHTML = '<div style="text-align:center; padding:40px 20px; color:#94a3b8; font-weight:600;">검색 결과가 없습니다.</div>';
+            return;
+        }
 
-                        <table class="order-table">
-                            <thead>
-                                <tr>
-                                    <th style="text-align: left; padding-left: 10px;">신청 품목</th>
-                                    <th style="text-align: right; padding-right: 10px;">사이즈 및 수량</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${activeItems.length > 0 ? activeItems.map(it => `
-                                    <tr>
-                                        <td style="text-align: left; padding-left: 10px; font-weight: 700;">⚾ ${it.name}</td>
-                                        <td style="text-align: right; padding-right: 10px;"><span class="size-badge">${it.desc}</span></td>
-                                    </tr>
-                                `).join('') : `<tr><td colspan="2" style="color:#94a3b8;">신청 품목 없음</td></tr>`}
-                            </tbody>
-                        </table>
+        content.innerHTML = filtered.map(c => {
+            const name = getVal(c, '선수이름', '이름', '선수명') || '선수 미지정';
+            const no = getVal(c, '배번', '등번호');
+            const grade = getVal(c, '학년', '구분');
+            const fPhone = getVal(c, '아버님', '아버지');
+            const mPhone = getVal(c, '어머님', '어머니');
+            const sPhone = getVal(c, '학생연락처', '선수연락처');
+            const address = getVal(c, '주소');
+            const note = getVal(c, '비고', '메모');
+
+            const fRaw = fPhone.replace(/[^0-9]/g, '');
+            const mRaw = mPhone.replace(/[^0-9]/g, '');
+            const sRaw = sPhone.replace(/[^0-9]/g, '');
+
+            return `
+                <div class="contact-card">
+                    <div class="contact-header">
+                        <span class="contact-player-name">${no ? 'No.'+no+' ' : ''}${name}</span>
+                        ${grade ? `<span class="grade-tag grade-${grade.replace(/[^0-9]/g,'')}">${grade}학년</span>` : ''}
                     </div>
-                `;
-            } catch (err) {
-                console.error("주문 카드 렌더링 예외:", err);
-                return '';
-            }
+
+                    ${fPhone ? `
+                        <div class="contact-row">
+                            <div class="contact-left-info">
+                                <span class="contact-role-badge role-father">👨 아버님</span>
+                                <span class="contact-phone-text">${fPhone}</span>
+                            </div>
+                            <div class="contact-actions">
+                                <a href="tel:${fRaw}" class="btn-call">📞 통화</a>
+                                <a href="sms:${fRaw}" class="btn-sms">💬 문자</a>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${mPhone ? `
+                        <div class="contact-row">
+                            <div class="contact-left-info">
+                                <span class="contact-role-badge role-mother">👩 어머님</span>
+                                <span class="contact-phone-text">${mPhone}</span>
+                            </div>
+                            <div class="contact-actions">
+                                <a href="tel:${mRaw}" class="btn-call">📞 통화</a>
+                                <a href="sms:${mRaw}" class="btn-sms">💬 문자</a>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${sPhone ? `
+                        <div class="contact-row" style="background:#eff6ff;">
+                            <div class="contact-left-info">
+                                <span class="contact-role-badge role-student">📱 학생</span>
+                                <span class="contact-phone-text" style="color:#1d4ed8;">${sPhone}</span>
+                            </div>
+                            <div class="contact-actions">
+                                <a href="tel:${sRaw}" class="btn-call" style="background:#2563eb;">📞 통화</a>
+                                <a href="sms:${sRaw}" class="btn-sms">💬 문자</a>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${address ? `
+                        <div class="contact-address-box">
+                            🏠 <b>주소:</b> ${address}
+                        </div>
+                    ` : ''}
+
+                    ${note ? `<div style="font-size:11px; color:#854d0e; background:#fefce8; padding:5px 8px; border-radius:6px; margin-top:5px;">📝 ${note}</div>` : ''}
+                </div>
+            `;
         }).join('');
     }
 
-    async function openOrdersSummaryModal() {
-        const title = document.getElementById('ordersModalTitle');
-        const content = document.getElementById('ordersListContent');
-        document.getElementById('ordersModal').style.display = 'flex';
+    function copyAllContactPhones() {
+        const query = document.getElementById('contactSearchInput').value.trim().toLowerCase();
+        const selectedG = document.getElementById('contactGradeSelect').value;
 
-        let localOrders = JSON.parse(localStorage.getItem('daeyeon_uniform_orders') || '[]');
-        if (localOrders.length > 0) {
-            title.innerHTML = `📋 유니폼 접수 현황 (총 ${localOrders.length}건) <span id="syncTag" style="font-size:11px; color:#0284c7; font-weight:600; margin-left:6px;">🔄 최신 동기화 중...</span>`;
-            renderOrdersHtml(localOrders);
-        } else {
-            title.textContent = '📋 유니폼 주문 접수 현황';
-            content.innerHTML = '<div style="text-align:center; padding:40px 10px; color:#64748b; font-size:13px;">구글 시트에서 최신 접수 내역을 확인하는 중...</div>';
-        }
-
-        if (GOOGLE_SCRIPT_UNIFORM_API_URL && GOOGLE_SCRIPT_UNIFORM_API_URL.trim() !== "") {
-            const controller = new AbortController();
-            const timeoutTimer = setTimeout(() => controller.abort(), 3500);
-
-            try {
-                const res = await fetch(GOOGLE_SCRIPT_UNIFORM_API_URL + '?nocache=' + Date.now(), { signal: controller.signal });
-                clearTimeout(timeoutTimer);
-                const json = await res.json();
-                if (json && json.orders && Array.isArray(json.orders)) {
-                    const fetchedOrders = json.orders.reverse();
-                    localStorage.setItem('daeyeon_uniform_orders', JSON.stringify(fetchedOrders));
-                    title.innerHTML = `📋 유니폼 접수 현황 (총 ${fetchedOrders.length}건) <span id="syncTag" style="font-size:11px; color:#15803d; font-weight:700; margin-left:6px;">✅ 동기화 완료</span>`;
-                    renderOrdersHtml(fetchedOrders);
-                    return;
-                }
-            } catch (e) {
-                console.warn("구글 시트 동기화 예외 방어:", e);
-                const syncTag = document.getElementById('syncTag');
-                if (syncTag) syncTag.innerHTML = `<span style="color:#d97706; font-weight:600;">⚡ 저장된 최근 내역</span>`;
+        const phones = [];
+        emergencyContactsData.forEach(c => {
+            const name = getVal(c, '선수이름', '이름', '선수명');
+            const grade = getVal(c, '학년', '구분');
+            let matchG = (selectedG === 'all') || (grade.includes(selectedG));
+            let matchQ = !query || name.toLowerCase().includes(query);
+            if (matchG && matchQ) {
+                const fPhone = getVal(c, '아버님', '아버지');
+                const mPhone = getVal(c, '어머님', '어머니');
+                if (fPhone) phones.push(fPhone);
+                if (mPhone) phones.push(mPhone);
             }
+        });
+
+        const uniquePhones = Array.from(new Set(phones));
+        if (uniquePhones.length === 0) {
+            alert('복사할 수 있는 학부모 연락처가 없습니다.');
+            return;
         }
 
-        if (localOrders.length === 0) {
-            content.innerHTML = '<div style="text-align:center; padding:50px 20px; color:#94a3b8; font-weight:600;">현재 접수된 주문 내역이 없습니다.</div>';
+        navigator.clipboard.writeText(uniquePhones.join(', ')).then(() => {
+            alert(`✅ 총 ${uniquePhones.length}개의 학부모 연락처가 복사되었습니다!`);
+        });
+    }
+
+    function copyEmergencyTemplate(type) {
+        let msg = "";
+        const nowStr = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
+        if (type === 'weather') {
+            msg = `[대연초 야구부 긴급 공지]\n\n금일(${nowStr}) 우천 및 기상 악화로 인하여 안전을 위해 훈련이 조기 종료되었습니다.\n선수들 안전하게 귀가 지도 부탁드립니다. 감사합니다.`;
+        } else if (type === 'match') {
+            msg = `[대연초 야구부 경기 일정 안내]\n\n학부모님 안녕하십니까. 시합/훈련 집결 시간 및 장소가 아래와 같이 변경되었으니 확인 부탁드립니다.\n\n• 집결시간: \n• 집결장소: \n• 준비물: `;
+        } else if (type === 'safe') {
+            msg = `[대연초 야구부 훈련 종료]\n\n금일 훈련이 모두 안전하게 종료되었습니다. 선수들이 귀가 중이오니 가정에서 따뜻한 격려 부탁드립니다. 감사합니다.`;
         }
+
+        navigator.clipboard.writeText(msg).then(() => {
+            alert(`📢 공지 문구가 복사되었습니다! 카톡에 붙여넣기 하세요.`);
+        });
     }
 
     // ==========================================
@@ -2049,7 +2137,6 @@
         document.getElementById('photoModalTitle').textContent = `📷 ${titleNo}${playerName} 사진 관리`;
         document.getElementById('photoPreviewImg').style.display = 'none';
         document.getElementById('photoPreviewPlaceholder').style.display = 'block';
-        document.getElementById('photoPreviewPlaceholder').textContent = '새 사진을 선택해 주세요';
         document.getElementById('targetPhotoInput').value = '';
         
         const btn = document.getElementById('btnUploadSubmit');
@@ -2060,11 +2147,7 @@
         const currentPhoto = p ? getPlayerPhotoUrl(p) : '';
         const hasCustomPhoto = currentPhoto && !currentPhoto.includes('data:image/svg');
         const delBtn = document.getElementById('btnDeletePhoto');
-        if (hasCustomPhoto) {
-            delBtn.style.display = 'block';
-        } else {
-            delBtn.style.display = 'none';
-        }
+        delBtn.style.display = hasCustomPhoto ? 'block' : 'none';
 
         document.getElementById('photoUploadModal').style.display = 'flex';
     }
@@ -2087,10 +2170,9 @@
                 let sWidth = img.width;
                 let sHeight = img.height;
                 let sx = 0, sy = 0;
-                const imgRatio = img.width / img.height;
                 const targetRatio = 4 / 5;
 
-                if (imgRatio > targetRatio) {
+                if (img.width / img.height > targetRatio) {
                     sWidth = img.height * targetRatio;
                     sx = (img.width - sWidth) / 2;
                 } else {
@@ -2334,18 +2416,9 @@
                     • <b>현재 보조관리자 비번:</b> <span style="color:#1d4ed8; font-weight:800;">${pws.sub}</span><br>
                     • <b>현재 일반관리자 비번:</b> <span style="color:#15803d; font-weight:800;">${pws.general}</span>
                 </div>
-                <div class="form-group">
-                    <label>최고관리자 새 비밀번호</label>
-                    <input type="text" id="devNewSuperPw" value="${pws.super}">
-                </div>
-                <div class="form-group">
-                    <label>보조관리자 새 비밀번호</label>
-                    <input type="text" id="devNewSubPw" value="${pws.sub}">
-                </div>
-                <div class="form-group">
-                    <label>일반관리자 새 비밀번호</label>
-                    <input type="text" id="devNewGenPw" value="${pws.general}">
-                </div>
+                <div class="form-group"><label>최고관리자 새 비밀번호</label><input type="text" id="devNewSuperPw" value="${pws.super}"></div>
+                <div class="form-group"><label>보조관리자 새 비밀번호</label><input type="text" id="devNewSubPw" value="${pws.sub}"></div>
+                <div class="form-group"><label>일반관리자 새 비밀번호</label><input type="text" id="devNewGenPw" value="${pws.general}"></div>
             `;
             btns.innerHTML = `
                 <button class="btn-cancel" style="color:#b91c1c; border-color:#fecaca;" onclick="resetAllPasswordsToDefault()">기본값 리셋</button>
@@ -2357,30 +2430,14 @@
             body.innerHTML = `
                 <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:12px;">
                     <div style="font-size:13px; font-weight:800; color:#0b2240; margin-bottom:8px;">👑 최고관리자 본인 비밀번호 변경</div>
-                    <div class="form-group">
-                        <label>현재 최고관리자 비밀번호 확인 *</label>
-                        <input type="password" id="curSuperPw" placeholder="현재 비밀번호 입력">
-                    </div>
-                    <div class="form-group">
-                        <label>새 비밀번호 *</label>
-                        <input type="password" id="newSuperPw" placeholder="변경할 새 비밀번호">
-                    </div>
-                    <div class="form-group">
-                        <label>새 비밀번호 확인 *</label>
-                        <input type="password" id="newSuperPwConfirm" placeholder="변경할 새 비밀번호 재입력">
-                    </div>
+                    <div class="form-group"><label>현재 최고관리자 비밀번호 확인 *</label><input type="password" id="curSuperPw" placeholder="현재 비밀번호 입력"></div>
+                    <div class="form-group"><label>새 비밀번호 *</label><input type="password" id="newSuperPw" placeholder="변경할 새 비밀번호"></div>
+                    <div class="form-group"><label>새 비밀번호 확인 *</label><input type="password" id="newSuperPwConfirm" placeholder="변경할 새 비밀번호 재입력"></div>
                 </div>
-
                 <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px;">
                     <div style="font-size:13px; font-weight:800; color:#0b2240; margin-bottom:8px;">👥 하위 관리자 비밀번호 변경</div>
-                    <div class="form-group">
-                        <label>보조관리자 새 비밀번호 (미변경 시 비워둠)</label>
-                        <input type="text" id="newSubPw" placeholder="현재: 보안유지됨">
-                    </div>
-                    <div class="form-group">
-                        <label>일반관리자 새 비밀번호 (미변경 시 비워둠)</label>
-                        <input type="text" id="newGenPw" placeholder="현재: 보안유지됨">
-                    </div>
+                    <div class="form-group"><label>보조관리자 새 비밀번호</label><input type="text" id="newSubPw" placeholder="현재: 보안유지됨"></div>
+                    <div class="form-group"><label>일반관리자 새 비밀번호</label><input type="text" id="newGenPw" placeholder="현재: 보안유지됨"></div>
                 </div>
             `;
             btns.innerHTML = `
@@ -2388,7 +2445,6 @@
                 <button class="btn-save" onclick="saveSuperPasswords()">변경사항 저장</button>
             `;
         }
-
         document.getElementById('passwordModal').style.display = 'flex';
     }
 
@@ -2433,7 +2489,7 @@
             localStorage.setItem('daeyeon_pw_super', '0000');
             localStorage.setItem('daeyeon_pw_sub', '1234');
             localStorage.setItem('daeyeon_pw_general', '5678');
-            alert('비밀번호가 초기값(최고:0000, 보조:1234, 일반:5678)으로 리셋되었습니다.');
+            alert('비밀번호가 초기값으로 리셋되었습니다.');
             openPasswordManageModal();
         }
     }
@@ -2447,21 +2503,11 @@
         render();
     }
 
-    function closeModal(id) {
-        document.getElementById(id).style.display = 'none';
-    }
-
-    function isOff(val) {
-        if (!val) return false;
-        const v = String(val).toUpperCase().trim();
-        return v === 'OFF' || v === '비공개';
-    }
-
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function isOff(val) { if (!val) return false; const v = String(val).toUpperCase().trim(); return v === 'OFF' || v === '비공개'; }
     function getColVal(row, ...keys) {
         for (let k of keys) {
-            if (row[k] !== undefined && row[k] !== null && String(row[k]).trim() !== '') {
-                return String(row[k]).trim();
-            }
+            if (row[k] !== undefined && row[k] !== null && String(row[k]).trim() !== '') return String(row[k]).trim();
         }
         return '';
     }
