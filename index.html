@@ -11,7 +11,7 @@
         const GOOGLE_SCRIPT_UNIFORM_API_URL = "https://script.google.com/macros/s/AKfycbwAdnLPVvTMIUGt538hM18pS_upBZt8FhKRTESjWXNonKFHOH5e59Vxi0hjDqYend-IHg/exec";
         
         // 웹페이지 배포 버전
-        const APP_VERSION = "v1.7.7 · b260915";
+        const APP_VERSION = "v1.7.8 · b260915";
     </script>
 
     <meta charset="UTF-8">
@@ -1023,7 +1023,7 @@
         <button id="btnUniformCTA" class="btn-uniform-cta" style="display: none;" onclick="openUniformModal()">👕 유니폼 주문 접수</button>
         <div class="admin-btn-group">
             <button id="adminLoginBtn" class="admin-toggle-btn" onclick="openAdminModal()">🔒 관리자 로그인</button>
-            <span class="app-version-tag" id="appVersionDisplay">v1.7.7 · b260915</span>
+            <span class="app-version-tag" id="appVersionDisplay">v1.7.8 · b260915</span>
         </div>
     </div>
 </header>
@@ -1514,7 +1514,7 @@
         return p.no ? `data/photos/${p.no}.jpg` : defaultAvatar;
     }
 
-    // ★ [등번호 철저 우선 순차 정렬 엔진] ★
+    // ★ [철저한 번호순 순차 정렬 엔진] ★
     function render() {
         const searchEl = document.getElementById('searchInput');
         const query = searchEl.value.trim().toLowerCase();
@@ -1548,26 +1548,21 @@
             }
 
             // [선수단 정렬]
-            const hasNoA = Boolean(a.no && a.no > 0);
-            const hasNoB = Boolean(b.no && b.no > 0);
+            // 오직 등번호 숫자 크기(오름차순) 기준으로만 정렬합니다!
+            const noA = (a.no && a.no > 0) ? a.no : 9999;
+            const noB = (b.no && b.no > 0) ? b.no : 9999;
 
-            // 1단계: 등번호가 있는 선수를 무조건 위로, 없는 선수는 맨 아래로
-            if (hasNoA && !hasNoB) return -1;
-            if (!hasNoA && hasNoB) return 1;
-
-            // 2단계: 둘 다 번호가 있으면 '숫자 크기 순서'대로 정확히 오름차순 (10, 21, 22, 31, 44 등이 중간에 끼지 않고 47 앞으로 정렬됨)
-            if (hasNoA && hasNoB) {
-                return Number(a.no) - Number(b.no);
+            if (noA !== noB) {
+                return noA - noB;
             }
 
-            // 3단계: 둘 다 번호가 없으면 학년 높은 순 (6 -> 1)
+            // 등번호가 같거나 둘 다 없는 경우: 학년순 -> 이름순
             const gradeA = parseInt(String(a.grade).replace(/[^0-9]/g, ''), 10) || 0;
             const gradeB = parseInt(String(b.grade).replace(/[^0-9]/g, ''), 10) || 0;
             if (gradeA !== gradeB) {
                 return gradeB - gradeA;
             }
 
-            // 4단계: 학년도 같으면 이름 가나다순
             return a.name.localeCompare(b.name, 'ko');
         });
 
@@ -2329,7 +2324,7 @@
             delete customPhotos[uploadTargetPlayer.name];
             localStorage.setItem('daeyeon_custom_photos', JSON.stringify(customPhotos));
 
-            const p = players.find(item => (uploadTargetPlayer.no && item.no === uploadTargetPlayer.no) || item.name === target.name);
+            const p = players.find(item => (uploadTargetPlayer.no && item.no === uploadTargetPlayer.no) || item.name === uploadTargetPlayer.name);
             if (p) p.photoLink = "";
 
             alert(`✅ ${uploadTargetPlayer.name} 선수의 사진이 삭제되어 기본 이미지로 복원되었습니다.`);
@@ -2602,7 +2597,7 @@
                         const weightFlag = getColVal(row, '몸무게공개', '몸무게노출', '몸무게비공개');
                         const drivePhotoLink = getColVal(row, '사진링크', '드라이브사진', '사진URL', '이미지링크');
 
-                        // ★ [등번호 강제 숫자 정규화] 문자, 기호, 띄어쓰기 전부 제거 후 숫자로만 변환
+                        // 등번호 추출 (디버깅용 로그 포함)
                         const rawNoStr = String(row['등번호'] || '').replace(/[^0-9]/g, '');
                         const parsedNo = parseInt(rawNoStr, 10);
                         const no = (!isNaN(parsedNo) && parsedNo > 0) ? parsedNo : 0;
